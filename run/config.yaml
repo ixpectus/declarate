@@ -1,0 +1,17 @@
+- name: set variables
+  variables:
+    password: qwerty
+
+- name: main test
+  steps:
+    - name: get cluster 
+      pollInterval: ["10s", "10s"]
+      echo:
+        message: "-{{$password}}-"
+    - name: another step
+      steps:
+        - name: another step 
+          echo:
+            message: "{{$LANG}}{{$password}}"
+            response: "en_US.UTF-8qwerty"
+
