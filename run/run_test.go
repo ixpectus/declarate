@@ -1,23 +1,24 @@
 package run
 
 import (
-	"os"
 	"testing"
 
+	"github.com/ixpectus/declarate/commands/echo"
+	"github.com/ixpectus/declarate/commands/vars"
+	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/variables"
-	"github.com/k0kubun/pp"
-	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 )
 
 func TestSkelet(t *testing.T) {
-	file, err := os.ReadFile("./config.yaml")
-	require.NoError(t, err)
-	vars := variables.New()
-	configs := []RunConfig{}
-	pp.ColoringEnabled = false
-	yaml.Unmarshal(file, &configs)
-	Run(configs, vars)
+	runner := New(RunnerConfig{
+		file:      "./config.yaml",
+		variables: variables.New(),
+		builders: []contract.CommandBuilder{
+			echo.Build,
+			vars.Build,
+		},
+	})
+	runner.Run()
 
 	// configsEcho := []RunConfigEcho{}
 	// pp.ColoringEnabled = false

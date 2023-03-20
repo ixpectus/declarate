@@ -11,13 +11,17 @@ type Echo struct {
 	Vars   contract.Vars
 }
 
-func (e *Echo) FillData(unmarshal func(interface{}) error) error {
+func Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfg := &EchoConfig{}
 	if err := unmarshal(cfg); err != nil {
-		return err
+		return nil, err
 	}
-	e.Config = cfg
-	return nil
+	if cfg == nil {
+		return nil, nil
+	}
+	return &Echo{
+		Config: cfg,
+	}, nil
 }
 
 type EchoConfig struct {
@@ -34,7 +38,7 @@ func (e *Echo) SetVars(vv contract.Vars) {
 func (e *Echo) Do() error {
 	if e != nil && e.Config != nil && e.Config.Echo != nil {
 		e.Config.Echo.Message = e.Vars.Apply(e.Config.Echo.Message)
-		fmt.Printf("\n>>> %v <<< debug\n", e.Config.Echo.Message)
+		fmt.Printf("\n>>> %v <<<\n", e.Config.Echo.Message)
 	}
 	return nil
 }

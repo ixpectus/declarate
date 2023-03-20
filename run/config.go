@@ -1,33 +1,33 @@
 package run
 
 import (
-	"github.com/ixpectus/declarate/commands/echo"
-	"github.com/ixpectus/declarate/commands/vars"
+	"fmt"
+
 	"github.com/ixpectus/declarate/contract"
 )
 
-type RunConfig struct {
+type runConfig struct {
 	Name     string      `yaml:"name,omitempty"`
-	Steps    []RunConfig `yaml:"steps,omitempty"`
+	Steps    []runConfig `yaml:"steps,omitempty"`
 	Commands []contract.Doer
+	Builders []contract.CommandBuilder
 	Vars     contract.Vars
 }
 
-func (u *RunConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	type raw RunConfig
+func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type raw runConfig
 	if err := unmarshal((*raw)(u)); err != nil {
 		return err
 	}
-	e := &echo.Echo{}
-	if err := e.FillData(unmarshal); err != nil {
-		return err
+	u.Commands = []contract.Doer{}
+	for _, v := range builders {
+		b, err := v(unmarshal)
+		if err != nil {
+			return fmt.Errorf("unmarshal build err: %w", err)
+		}
+		if b != nil {
+			u.Commands = append(u.Commands, b)
+		}
 	}
-	u.Commands = append(u.Commands, e)
-	vv := &vars.VarsCmd{}
-	if err := vv.FillData(unmarshal); err != nil {
-		return err
-	}
-	u.Commands = append(u.Commands, vv)
-
 	return nil
 }

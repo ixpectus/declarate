@@ -4,8 +4,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/k0kubun/pp"
 )
 
 var variableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
@@ -22,11 +20,9 @@ func New() *Variables {
 
 func (v *Variables) Set(k, val string) {
 	v.data[k] = val
-	pp.Println(v.data)
 }
 
 func (v *Variables) Get(k string) string {
-	pp.Println(v.data)
 	if v, ok := v.data[k]; ok {
 		return v
 	}

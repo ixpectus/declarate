@@ -17,13 +17,17 @@ func (e *VarsCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
-func (e *VarsCmd) FillData(unmarshal func(interface{}) error) error {
+func Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfg := &Config{}
 	if err := unmarshal(cfg); err != nil {
-		return err
+		return nil, err
 	}
-	e.Config = cfg
-	return nil
+	if cfg == nil {
+		return nil, nil
+	}
+	return &VarsCmd{
+		Config: cfg,
+	}, nil
 }
 
 func (e *VarsCmd) Do() error {
