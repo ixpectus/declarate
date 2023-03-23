@@ -12,13 +12,18 @@ type ShellCmd struct {
 	responseBody string
 }
 
-type Config struct {
-	Shell *ShellConfig `yaml:"shell,omitempty"`
+type extendedConfig struct {
+	Shell *shellConfig `yaml:"shell,omitempty"`
 }
 
-type ShellConfig struct {
-	Cmd            string            `json:"cmd,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set"`
+type shellConfig struct {
+	Cmd            string            `yaml:"shell_cmd,omitempty"`
+	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
+}
+
+type Config struct {
+	Cmd            string
+	VariablesToSet map[string]string
 }
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
@@ -34,22 +39,37 @@ type Unmarshaller struct {
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
-	cfg := &Config{}
+	cfgExtended := &extendedConfig{}
+	if err := unmarshal(cfgExtended); err != nil {
+		return nil, err
+	}
+	cfg := &shellConfig{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
 	}
-	if cfg == nil {
+	if cfg == nil && cfgExtended == nil {
 		return nil, nil
 	}
+	if cfgExtended != nil && cfgExtended.Shell != nil {
+		return &ShellCmd{
+			Config: &Config{
+				Cmd:            cfgExtended.Shell.Cmd,
+				VariablesToSet: cfgExtended.Shell.VariablesToSet,
+			},
+		}, nil
+	}
 	return &ShellCmd{
-		Config: cfg,
+		Config: &Config{
+			Cmd:            cfg.Cmd,
+			VariablesToSet: cfg.VariablesToSet,
+		},
 	}, nil
 }
 
 func (e *ShellCmd) Do() error {
-	if e.Config != nil && e.Config.Shell != nil && e.Config.Shell.Cmd != "" {
-		e.Config.Shell.Cmd = e.Vars.Apply(e.Config.Shell.Cmd)
-		res, err := Run(e.Config.Shell.Cmd)
+	if e.Config != nil && e.Config.Cmd != "" {
+		e.Config.Cmd = e.Vars.Apply(e.Config.Cmd)
+		res, err := Run(e.Config.Cmd)
 		if err != nil {
 			return err
 		}
@@ -70,8 +90,8 @@ func (e *ShellCmd) Check() error {
 }
 
 func (e *ShellCmd) VariablesToSet() map[string]string {
-	if e.Config.Shell != nil {
-		return e.Config.Shell.VariablesToSet
+	if e.Config != nil {
+		return e.Config.VariablesToSet
 	}
 	return nil
 }

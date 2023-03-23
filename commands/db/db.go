@@ -40,10 +40,10 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if err := unmarshal(cfgShort); err != nil {
 		return nil, err
 	}
-	if cfg == nil && cfgShort == nil {
+	if cfg.isEmpty() && cfgShort.isEmpty() {
 		return nil, nil
 	}
-	if cfg.Check != nil {
+	if !cfg.Check.isEmpty() {
 		return &DbCommand{
 			Config:     cfg.Check,
 			Connection: u.connection,
@@ -59,12 +59,20 @@ type DbCheck struct {
 	Check *CheckConfig `yaml:"db,omitempty"`
 }
 
+func (d *DbCheck) isEmpty() bool {
+	return d == nil || d.Check == nil || d.Check.DbQuery == ""
+}
+
 type CheckConfig struct {
 	DbConn           string                `json:"dbConn" yaml:"dbConn"`
 	DbQuery          string                `json:"dbQuery" yaml:"dbQuery"`
 	DbResponse       string                `json:"dbResponse" yaml:"dbResponse"`
 	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
 	VariablesToSet   map[string]string     `yaml:"variables_to_set"`
+}
+
+func (d *CheckConfig) isEmpty() bool {
+	return d == nil || d.DbQuery == ""
 }
 
 func (e *DbCommand) SetVars(vv contract.Vars) {

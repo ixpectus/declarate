@@ -3,7 +3,7 @@
 - name: shell command
   shell: 
     cmd: | 
-      ls -la
+      ls -la | head -n1
       ps aux | grep dbaas
       echo {{$name1}}
     variables_to_set:
@@ -11,5 +11,14 @@
 
 - name: check echo
   echo:
-    message: '{{$name}}'
+    message: '{{$name1}}'
+
+- name: shell command 2
+  shell_cmd: | 
+    ls -la | head -n1
+  variables_to_set:
+    name2: '*'
+
+- name: check echo 2
+  echo_message: '{{$name2}}'
 
