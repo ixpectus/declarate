@@ -106,7 +106,7 @@ func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
 		if b != nil {
-			errs, err := compareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
+			errs, err := compare.CompareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
 			if len(errs) > 0 {
 				msg := ""
 				for _, v := range errs {

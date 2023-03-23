@@ -16,7 +16,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
-type DbCommand struct {
+type Db struct {
 	Config       *CheckConfig
 	Vars         contract.Vars
 	Connection   string
@@ -44,12 +44,12 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return nil, nil
 	}
 	if !cfg.Check.isEmpty() {
-		return &DbCommand{
+		return &Db{
 			Config:     cfg.Check,
 			Connection: u.connection,
 		}, nil
 	}
-	return &DbCommand{
+	return &Db{
 		Config:     cfgShort,
 		Connection: u.connection,
 	}, nil
@@ -75,11 +75,11 @@ func (d *CheckConfig) isEmpty() bool {
 	return d == nil || d.DbQuery == ""
 }
 
-func (e *DbCommand) SetVars(vv contract.Vars) {
+func (e *Db) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
-func (e *DbCommand) Do() error {
+func (e *Db) Do() error {
 	if e.Config != nil {
 		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
 		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
@@ -106,20 +106,20 @@ func (e *DbCommand) Do() error {
 	return nil
 }
 
-func (e *DbCommand) ResponseBody() *string {
+func (e *Db) ResponseBody() *string {
 	return e.responseBody
 }
 
-func (e *DbCommand) VariablesToSet() map[string]string {
+func (e *Db) VariablesToSet() map[string]string {
 	if e != nil && e.Config != nil {
 		return e.Config.VariablesToSet
 	}
 	return nil
 }
 
-func (e *DbCommand) Check() error {
+func (e *Db) Check() error {
 	if e.Config != nil && e.responseBody != nil && e.Config.DbResponse != "" {
-		errs, err := compareJsonBody(e.Config.DbResponse, *e.responseBody, e.Config.ComparisonParams)
+		errs, err := compare.CompareJsonBody(e.Config.DbResponse, *e.responseBody, e.Config.ComparisonParams)
 		if len(errs) > 0 {
 			msg := ""
 			for _, v := range errs {

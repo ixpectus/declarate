@@ -13,7 +13,6 @@ type CompareParams struct {
 	IgnoreArraysOrdering *bool `json:"ignoreArraysOrdering" yaml:"ignoreArraysOrdering"`
 	DisallowExtraFields  *bool `json:"disallowExtraFields" yaml:"disallowExtraFields"`
 	AllowArrayExtraItems *bool `json:"allowArrayExtraItems" yaml:"allowArrayExtraItems"`
-	IgnoreDbOrdering     *bool `json:"IgnoreDbOrdering" yaml:"ignoreDbOrdering"`
 	failFast             bool  // End compare operation after first error
 }
 

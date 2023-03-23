@@ -51,10 +51,7 @@ func (r *Runner) run(
 	cc []runConfig,
 ) {
 	for _, v := range cc {
-		err := r.runOne(v, 0)
-		if err != nil {
-			fmt.Printf("\n>>> %v <<< debug\n", err)
-		}
+		_ = r.runOne(v, 0)
 	}
 }
 
