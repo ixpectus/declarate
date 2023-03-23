@@ -68,11 +68,19 @@ func (e *DbCommand) Do() error {
 		if err != nil {
 			return err
 		}
-		res, err := makeQuery(e.Config.Check.DbQuery, db)
-		if err != nil {
+
+		if e.Config.Check.DbResponse != "" || e.Config.Check.VariablesToSet != nil {
+			res, err := makeQuery(e.Config.Check.DbQuery, db)
+			if err != nil {
+				return err
+			}
+			e.responseBody = &res
+
+			return nil
+		}
+		if err := execQuery(e.Config.Check.DbQuery, db); err != nil {
 			return err
 		}
-		e.responseBody = &res
 	}
 
 	return nil
@@ -90,7 +98,7 @@ func (e *DbCommand) VariablesToSet() map[string]string {
 }
 
 func (e *DbCommand) Check() error {
-	if e.Config.Check != nil {
+	if e.Config.Check != nil && e.responseBody != nil && e.Config.Check.DbResponse != "" {
 		errs, err := compareJsonBody(e.Config.Check.DbResponse, *e.responseBody, e.Config.Check.ComparisonParams)
 		if len(errs) > 0 {
 			msg := ""
@@ -164,6 +172,17 @@ func compareDbResponseLength(expected, actual []string, query interface{}) error
 		)
 	}
 	return err
+}
+
+func execQuery(dbQuery string, db *sql.DB) error {
+	if idx := strings.IndexByte(dbQuery, ';'); idx >= 0 {
+		dbQuery = dbQuery[:idx]
+	}
+	if _, err := db.Exec(dbQuery); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func makeQuery(dbQuery string, db *sql.DB) (string, error) {

@@ -1,14 +1,29 @@
 - name: set variables
   variables:
     password: qwerty
-- name: check db
+
+- name: create and populate table
   steps:
-    - db:
+    - name: create table
+      db:
         dbQuery: >
-          select 1 as a
-        dbResponse: >
-          [
-            {"a": 2 }
-          ]
+          create table if not exists t1 (id text, deleted_at timestamp);
+    - name: populate with data
+      db:
+        dbQuery: >
+          insert into t1(id, deleted_at) values ('q', now());
+    - name: get count
+      db:
+        dbQuery: >
+          select count(*) as cnt from t1;
+        variables_to_set:
+          cnt: '0.cnt'
 
+- name: show count
+  echo:
+    message: '{{$cnt}}'
 
+- name: drop table
+  db:
+    dbQuery: >
+      drop table t1;

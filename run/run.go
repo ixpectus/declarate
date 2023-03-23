@@ -147,10 +147,12 @@ func (r *Runner) outputErr(err error, conf runConfig, lvl int) {
 		})
 		return
 	}
-	r.output.Log(contract.Message{
-		Name:    conf.Name,
-		Message: fmt.Sprintf("failed %v", err),
-		Lvl:     lvl,
-		Type:    contract.MessageTypeError,
-	})
+	if err != nil {
+		r.output.Log(contract.Message{
+			Name:    conf.Name,
+			Message: fmt.Sprintf("failed %v", err),
+			Lvl:     lvl,
+			Type:    contract.MessageTypeError,
+		})
+	}
 }

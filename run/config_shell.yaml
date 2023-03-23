@@ -5,6 +5,7 @@
       ps aux | grep dbaas
     variables_to_set:
       name: '*'
+
 - name: check echo
   echo:
     message: '{{$name}}'
