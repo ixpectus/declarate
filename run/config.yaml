@@ -4,14 +4,20 @@
 
 - name: main test
   steps:
-    - name: get cluster 
+    - name: variables to set
       pollInterval: ["10s", "10s"]
       echo:
-        message: "-{{$password}}-"
+        message: '{"val":23}'
+        response: '{"val":23}'
+        variables_to_set:
+          name: val
+    - name: echo name
+      pollInterval: ["10s", "10s"]
+      echo:
+        message: '{{$name}}'
     - name: another step
       steps:
         - name: another step 
           echo:
             message: "{{$LANG}}{{$password}}"
             response: "en_US.UTF-8qwerty"
-

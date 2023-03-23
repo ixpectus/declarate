@@ -1,0 +1,14 @@
+- name: set variables
+  variables:
+    password: qwerty
+- name: check db
+  steps:
+    - db:
+        dbQuery: >
+          select 1 as a
+        dbResponse: >
+          [
+            {"a": 2 }
+          ]
+
+

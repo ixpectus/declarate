@@ -10,8 +10,11 @@ type Echo struct {
 	Config *EchoConfig
 	Vars   contract.Vars
 }
+type Unmarshaller struct {
+	host string
+}
 
-func Build(unmarshal func(interface{}) error) (contract.Doer, error) {
+func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfg := &EchoConfig{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
@@ -26,8 +29,9 @@ func Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 
 type EchoConfig struct {
 	Echo *struct {
-		Message  string  `yaml:"message,omitempty"`
-		Response *string `yaml:"response,omitempty"`
+		Message        string            `yaml:"message,omitempty"`
+		Response       *string           `yaml:"response,omitempty"`
+		VariablesToSet map[string]string `yaml:"variables_to_set"`
 	} `yaml:"echo,omitempty"`
 }
 
@@ -38,7 +42,7 @@ func (e *Echo) SetVars(vv contract.Vars) {
 func (e *Echo) Do() error {
 	if e != nil && e.Config != nil && e.Config.Echo != nil {
 		e.Config.Echo.Message = e.Vars.Apply(e.Config.Echo.Message)
-		fmt.Printf("\n>>> %v <<<\n", e.Config.Echo.Message)
+		fmt.Printf("\necho %v \n", e.Config.Echo.Message)
 	}
 	return nil
 }
@@ -46,6 +50,13 @@ func (e *Echo) Do() error {
 func (e *Echo) ResponseBody() *string {
 	if e != nil && e.Config.Echo != nil {
 		return e.Config.Echo.Response
+	}
+	return nil
+}
+
+func (e *Echo) VariablesToSet() map[string]string {
+	if e != nil && e.Config.Echo != nil {
+		return e.Config.Echo.VariablesToSet
 	}
 	return nil
 }

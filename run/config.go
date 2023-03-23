@@ -7,11 +7,12 @@ import (
 )
 
 type runConfig struct {
-	Name     string      `yaml:"name,omitempty"`
-	Steps    []runConfig `yaml:"steps,omitempty"`
-	Commands []contract.Doer
-	Builders []contract.CommandBuilder
-	Vars     contract.Vars
+	Name           string      `yaml:"name,omitempty"`
+	Steps          []runConfig `yaml:"steps,omitempty"`
+	Vars           contract.Vars
+	VariablesToSet map[string]string `yaml:"variables_to_set"`
+	Commands       []contract.Doer
+	Builders       []contract.CommandBuilder
 }
 
 func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -21,8 +22,9 @@ func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	u.Commands = []contract.Doer{}
 	for _, v := range builders {
-		b, err := v(unmarshal)
+		b, err := v.Build(unmarshal)
 		if err != nil {
+			fmt.Printf("\n>>> %v <<< debug\n", err)
 			return fmt.Errorf("unmarshal build err: %w", err)
 		}
 		if b != nil {

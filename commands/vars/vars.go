@@ -17,7 +17,11 @@ func (e *VarsCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
-func Build(unmarshal func(interface{}) error) (contract.Doer, error) {
+type Unmarshaller struct {
+	host string
+}
+
+func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfg := &Config{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
@@ -45,5 +49,9 @@ func (e *VarsCmd) ResponseBody() *string {
 }
 
 func (e *VarsCmd) Check() error {
+	return nil
+}
+
+func (e *VarsCmd) VariablesToSet() map[string]string {
 	return nil
 }
