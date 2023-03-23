@@ -17,7 +17,7 @@ import (
 )
 
 type DbCommand struct {
-	Config       *DbCheck
+	Config       *CheckConfig
 	Vars         contract.Vars
 	Connection   string
 	responseBody *string
@@ -36,12 +36,21 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
 	}
-
-	if cfg == nil {
+	cfgShort := &CheckConfig{}
+	if err := unmarshal(cfgShort); err != nil {
+		return nil, err
+	}
+	if cfg == nil && cfgShort == nil {
 		return nil, nil
 	}
+	if cfg.Check != nil {
+		return &DbCommand{
+			Config:     cfg.Check,
+			Connection: u.connection,
+		}, nil
+	}
 	return &DbCommand{
-		Config:     cfg,
+		Config:     cfgShort,
 		Connection: u.connection,
 	}, nil
 }
@@ -63,17 +72,17 @@ func (e *DbCommand) SetVars(vv contract.Vars) {
 }
 
 func (e *DbCommand) Do() error {
-	if e.Config.Check != nil {
-		e.Config.Check.DbConn = e.Vars.Apply(e.Config.Check.DbConn)
-		e.Config.Check.DbQuery = e.Vars.Apply(e.Config.Check.DbQuery)
-		e.Config.Check.DbResponse = e.Vars.Apply(e.Config.Check.DbResponse)
+	if e.Config != nil {
+		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
+		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
+		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
 		db, err := sql.Open("postgres", e.Connection)
 		if err != nil {
 			return err
 		}
 
-		if e.Config.Check.DbResponse != "" || e.Config.Check.VariablesToSet != nil {
-			res, err := makeQuery(e.Config.Check.DbQuery, db)
+		if e.Config.DbResponse != "" || e.Config.VariablesToSet != nil {
+			res, err := makeQuery(e.Config.DbQuery, db)
 			if err != nil {
 				return err
 			}
@@ -81,7 +90,7 @@ func (e *DbCommand) Do() error {
 
 			return nil
 		}
-		if err := execQuery(e.Config.Check.DbQuery, db); err != nil {
+		if err := execQuery(e.Config.DbQuery, db); err != nil {
 			return err
 		}
 	}
@@ -95,14 +104,14 @@ func (e *DbCommand) ResponseBody() *string {
 
 func (e *DbCommand) VariablesToSet() map[string]string {
 	if e != nil && e.Config != nil {
-		return e.Config.Check.VariablesToSet
+		return e.Config.VariablesToSet
 	}
 	return nil
 }
 
 func (e *DbCommand) Check() error {
-	if e.Config.Check != nil && e.responseBody != nil && e.Config.Check.DbResponse != "" {
-		errs, err := compareJsonBody(e.Config.Check.DbResponse, *e.responseBody, e.Config.Check.ComparisonParams)
+	if e.Config != nil && e.responseBody != nil && e.Config.DbResponse != "" {
+		errs, err := compareJsonBody(e.Config.DbResponse, *e.responseBody, e.Config.ComparisonParams)
 		if len(errs) > 0 {
 			msg := ""
 			for _, v := range errs {
@@ -110,7 +119,7 @@ func (e *DbCommand) Check() error {
 			}
 			return &contract.TestError{
 				Title:         "response body differs",
-				Expected:      e.Config.Check.DbResponse,
+				Expected:      e.Config.DbResponse,
 				Actual:        *e.responseBody,
 				Message:       msg,
 				OriginalError: fmt.Errorf("response body differs: %v", msg),

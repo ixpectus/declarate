@@ -7,27 +7,70 @@ import (
 )
 
 type Echo struct {
-	Config *EchoConfig
+	Config *Config
 	Vars   contract.Vars
 }
+
+func (ex *extendedConfig) isEmpty() bool {
+	return ex == nil || ex.Echo == nil || ex.Echo.Message == ""
+}
+
+func (c *config) isEmpty() bool {
+	return c == nil || c.Message == ""
+}
+
 type Unmarshaller struct {
 	host string
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
-	cfg := &EchoConfig{}
-	if err := unmarshal(cfg); err != nil {
+	cfgExtended := &extendedConfig{}
+	if err := unmarshal(cfgExtended); err != nil {
 		return nil, err
 	}
-	if cfg == nil {
+	cfgShort := &config{}
+	if err := unmarshal(cfgShort); err != nil {
+		return nil, err
+	}
+	if cfgExtended.isEmpty() && cfgShort.isEmpty() {
 		return nil, nil
 	}
+	if !cfgExtended.isEmpty() {
+		return &Echo{
+			Config: &Config{
+				Message:        cfgExtended.Echo.Message,
+				Response:       cfgExtended.Echo.Response,
+				VariablesToSet: cfgExtended.Echo.VariablesToSet,
+			},
+		}, nil
+	}
+
 	return &Echo{
-		Config: cfg,
+		Config: &Config{
+			Message:        cfgShort.Message,
+			Response:       cfgShort.Response,
+			VariablesToSet: cfgShort.VariablesToSet,
+		},
 	}, nil
 }
 
-type EchoConfig struct {
+type Config struct {
+	Message        string
+	Response       *string
+	VariablesToSet map[string]string
+}
+
+func (c *Config) isEmpty() bool {
+	return c == nil || c.Message == ""
+}
+
+type config struct {
+	Message        string            `yaml:"echo_message,omitempty"`
+	Response       *string           `yaml:"echo_response,omitempty"`
+	VariablesToSet map[string]string `yaml:"variables_to_set"`
+}
+
+type extendedConfig struct {
 	Echo *struct {
 		Message        string            `yaml:"message,omitempty"`
 		Response       *string           `yaml:"response,omitempty"`
@@ -40,35 +83,37 @@ func (e *Echo) SetVars(vv contract.Vars) {
 }
 
 func (e *Echo) Do() error {
-	if e != nil && e.Config != nil && e.Config.Echo != nil {
-		e.Config.Echo.Message = e.Vars.Apply(e.Config.Echo.Message)
-		fmt.Printf("\necho %v \n", e.Config.Echo.Message)
+	if !e.Config.isEmpty() {
+		e.Config.Message = e.Vars.Apply(e.Config.Message)
+		fmt.Printf("\necho %v \n", e.Config.Message)
+		return nil
 	}
 	return nil
 }
 
 func (e *Echo) ResponseBody() *string {
-	if e != nil && e.Config.Echo != nil {
-		return e.Config.Echo.Response
+	if !e.Config.isEmpty() {
+		return e.Config.Response
 	}
 	return nil
 }
 
 func (e *Echo) VariablesToSet() map[string]string {
-	if e != nil && e.Config.Echo != nil {
-		return e.Config.Echo.VariablesToSet
+	if e != nil && e.Config != nil {
+		return e.Config.VariablesToSet
 	}
 	return nil
 }
 
 func (e *Echo) Check() error {
-	if e != nil && e.Config.Echo != nil {
+	if e != nil && !e.Config.isEmpty() {
 		b := e.ResponseBody()
 		if b != nil {
-			if *b != e.Config.Echo.Message {
-				return fmt.Errorf("expected %s, got %s", *b, e.Config.Echo.Message)
+			if *b != e.Config.Message {
+				return fmt.Errorf("expected %s, got %s", *b, e.Config.Message)
 			}
 		}
+		return nil
 	}
 	return nil
 }
