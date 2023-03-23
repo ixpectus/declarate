@@ -64,6 +64,9 @@ func (e *DbCommand) SetVars(vv contract.Vars) {
 
 func (e *DbCommand) Do() error {
 	if e.Config.Check != nil {
+		e.Config.Check.DbConn = e.Vars.Apply(e.Config.Check.DbConn)
+		e.Config.Check.DbQuery = e.Vars.Apply(e.Config.Check.DbQuery)
+		e.Config.Check.DbResponse = e.Vars.Apply(e.Config.Check.DbResponse)
 		db, err := sql.Open("postgres", e.Connection)
 		if err != nil {
 			return err

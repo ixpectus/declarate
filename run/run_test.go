@@ -14,7 +14,7 @@ import (
 	"github.com/ixpectus/declarate/variables"
 )
 
-func TestSkelet(t *testing.T) {
+func TestReq(t *testing.T) {
 	color.NoColor = false
 	runner := New(RunnerConfig{
 		file:      "./config_req.yaml",

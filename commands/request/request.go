@@ -65,6 +65,10 @@ func (e *Request) SetVars(vv contract.Vars) {
 
 func (e *Request) Do() error {
 	if e.Config.Method != "" {
+		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
+		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
+		e.Config.ResponseTmpls = e.Vars.Apply(e.Config.ResponseTmpls)
+		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
 		req, err := newCommonRequest(e.Host, *e.Config)
 		if err != nil {
 			return err

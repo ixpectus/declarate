@@ -1,8 +1,12 @@
+- variables:
+    name: Tom
+    path: tom
+
 - name: check request
   method: GET
-  path: /tom
-  responseStatus: 201
+  path: /{{$path}}
+  responseStatus: 200
   response: |
-    {"age": 28,"name":"Tom", "items":[1, 2, 4, 3]}
+    {"age": 28,"name":"{{$name}}", "items":[1, 2, 4, 3]}
   comparisonParams:
     ignoreArraysOrdering: true

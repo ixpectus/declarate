@@ -48,6 +48,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 
 func (e *ShellCmd) Do() error {
 	if e.Config != nil && e.Config.Shell != nil && e.Config.Shell.Cmd != "" {
+		e.Config.Shell.Cmd = e.Vars.Apply(e.Config.Shell.Cmd)
 		res, err := Run(e.Config.Shell.Cmd)
 		if err != nil {
 			return err

@@ -1,8 +1,11 @@
+- variables:
+    name1: reddy
 - name: shell command
   shell: 
     cmd: | 
       ls -la
       ps aux | grep dbaas
+      echo {{$name1}}
     variables_to_set:
       name: '*'
 
