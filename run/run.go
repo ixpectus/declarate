@@ -21,7 +21,6 @@ type Runner struct {
 }
 
 type RunnerConfig struct {
-	File      string
 	Variables contract.Vars
 	Builders  []contract.CommandBuilder
 	Output    contract.Output
@@ -35,29 +34,31 @@ func New(c RunnerConfig) *Runner {
 	}
 }
 
-func (r *Runner) Run() error {
-	file, err := os.ReadFile(r.config.File)
+func (r *Runner) Run(fileName string) error {
+	file, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("file open: %w", err)
 	}
 	currentVars = r.config.Variables
 	configs := []runConfig{}
 	yaml.Unmarshal(file, &configs)
-	r.run(configs)
+	r.run(configs, fileName)
 	return nil
 }
 
 func (r *Runner) run(
 	cc []runConfig,
+	fileName string,
 ) {
 	for _, v := range cc {
-		_ = r.runOne(v, 0)
+		_ = r.runOne(v, 0, fileName)
 	}
 }
 
 func (r *Runner) runOne(
 	conf runConfig,
 	lvl int,
+	fileName string,
 ) error {
 	prefix := ""
 	for i := 0; i < lvl; i++ {
@@ -66,7 +67,7 @@ func (r *Runner) runOne(
 	if conf.Name != "" {
 		r.output.Log(contract.Message{
 			Name:    conf.Name,
-			Message: fmt.Sprintf("start  %v:%v", r.config.File, conf.Name),
+			Message: fmt.Sprintf("start  %v:%v", fileName, conf.Name),
 			Lvl:     lvl,
 			Type:    contract.MessageTypeNotify,
 		})
@@ -74,11 +75,11 @@ func (r *Runner) runOne(
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
 		if err := c.Do(); err != nil {
-			r.outputErr(err, conf, lvl)
+			r.outputErr(err, conf, lvl, fileName)
 			return err
 		}
 		if err := c.Check(); err != nil {
-			r.outputErr(err, conf, lvl)
+			r.outputErr(err, conf, lvl, fileName)
 			return err
 		}
 
@@ -96,7 +97,7 @@ func (r *Runner) runOne(
 				}
 				if len(jsonVars) > 0 {
 					vars, err := variables.FromJSON(jsonVars, *body)
-					r.outputErr(err, conf, lvl)
+					r.outputErr(err, conf, lvl, fileName)
 					if err != nil {
 						return fmt.Errorf(prefix+"test failed %v", err)
 					}
@@ -109,7 +110,7 @@ func (r *Runner) runOne(
 	}
 	if len(conf.Steps) > 0 {
 		for _, v := range conf.Steps {
-			err := r.runOne(v, lvl+1)
+			err := r.runOne(v, lvl+1, fileName)
 			if err != nil {
 				return err
 			}
@@ -118,14 +119,14 @@ func (r *Runner) runOne(
 
 	r.output.Log(contract.Message{
 		Name:    conf.Name,
-		Message: fmt.Sprintf("passed %v:%v", r.config.File, conf.Name),
+		Message: fmt.Sprintf("passed %v:%v", fileName, conf.Name),
 		Lvl:     lvl,
 		Type:    contract.MessageTypeSuccess,
 	})
 	return nil
 }
 
-func (r *Runner) outputErr(err error, conf runConfig, lvl int) {
+func (r *Runner) outputErr(err error, conf runConfig, lvl int, fileName string) {
 	var errTest *contract.TestError
 	if errors.As(err, &errTest) {
 		r.output.Log(contract.Message{
@@ -133,7 +134,7 @@ func (r *Runner) outputErr(err error, conf runConfig, lvl int) {
 			Message: err.Error(),
 			Title: fmt.Sprintf(
 				"failed %v:%v\n %v",
-				r.config.File,
+				fileName,
 				conf.Name,
 				errTest.Title,
 			),
