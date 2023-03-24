@@ -21,26 +21,26 @@ type Runner struct {
 }
 
 type RunnerConfig struct {
-	file      string
-	variables contract.Vars
-	builders  []contract.CommandBuilder
-	output    contract.Output
+	File      string
+	Variables contract.Vars
+	Builders  []contract.CommandBuilder
+	Output    contract.Output
 }
 
 func New(c RunnerConfig) *Runner {
-	builders = c.builders
+	builders = c.Builders
 	return &Runner{
 		config: c,
-		output: c.output,
+		output: c.Output,
 	}
 }
 
 func (r *Runner) Run() error {
-	file, err := os.ReadFile(r.config.file)
+	file, err := os.ReadFile(r.config.File)
 	if err != nil {
 		return fmt.Errorf("file open: %w", err)
 	}
-	currentVars = r.config.variables
+	currentVars = r.config.Variables
 	configs := []runConfig{}
 	yaml.Unmarshal(file, &configs)
 	r.run(configs)
@@ -66,7 +66,7 @@ func (r *Runner) runOne(
 	if conf.Name != "" {
 		r.output.Log(contract.Message{
 			Name:    conf.Name,
-			Message: fmt.Sprintf("start  %v:%v", r.config.file, conf.Name),
+			Message: fmt.Sprintf("start  %v:%v", r.config.File, conf.Name),
 			Lvl:     lvl,
 			Type:    contract.MessageTypeNotify,
 		})
@@ -118,7 +118,7 @@ func (r *Runner) runOne(
 
 	r.output.Log(contract.Message{
 		Name:    conf.Name,
-		Message: fmt.Sprintf("passed %v:%v", r.config.file, conf.Name),
+		Message: fmt.Sprintf("passed %v:%v", r.config.File, conf.Name),
 		Lvl:     lvl,
 		Type:    contract.MessageTypeSuccess,
 	})
@@ -133,7 +133,7 @@ func (r *Runner) outputErr(err error, conf runConfig, lvl int) {
 			Message: err.Error(),
 			Title: fmt.Sprintf(
 				"failed %v:%v\n %v",
-				r.config.file,
+				r.config.File,
 				conf.Name,
 				errTest.Title,
 			),

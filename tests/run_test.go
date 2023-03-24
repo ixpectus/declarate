@@ -1,4 +1,4 @@
-package run
+package tests
 
 import (
 	"testing"
@@ -11,19 +11,21 @@ import (
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/output"
+	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/variables"
 )
 
 func TestReq(t *testing.T) {
 	color.NoColor = false
-	runner := New(RunnerConfig{
-		file:      "./config_req.yaml",
-		variables: variables.New(),
-		output:    &output.Output{},
-		builders: []contract.CommandBuilder{
+	runner := run.New(run.RunnerConfig{
+		File:      "./yaml/config_req.yaml",
+		Variables: variables.New(),
+		Output:    &output.Output{},
+		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),
+			db.NewUnmarshaller("postgres://user:sdlfksdjflakdf@5.188.142.25:5432/dbaas_dev?sslmode=disable"),
 		},
 	})
 	runner.Run()
@@ -31,11 +33,11 @@ func TestReq(t *testing.T) {
 
 func TestDb(t *testing.T) {
 	color.NoColor = false
-	runner := New(RunnerConfig{
-		file:      "./config_db.yaml",
-		variables: variables.New(),
-		output:    &output.Output{},
-		builders: []contract.CommandBuilder{
+	runner := run.New(run.RunnerConfig{
+		File:      "./yaml/config_db.yaml",
+		Variables: variables.New(),
+		Output:    &output.Output{},
+		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),
@@ -47,11 +49,11 @@ func TestDb(t *testing.T) {
 
 func TestShell(t *testing.T) {
 	color.NoColor = false
-	runner := New(RunnerConfig{
-		file:      "./config_shell.yaml",
-		variables: variables.New(),
-		output:    &output.Output{},
-		builders: []contract.CommandBuilder{
+	runner := run.New(run.RunnerConfig{
+		File:      "./yaml/config_shell.yaml",
+		Variables: variables.New(),
+		Output:    &output.Output{},
+		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),

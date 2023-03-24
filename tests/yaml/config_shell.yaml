@@ -1,5 +1,9 @@
+- test_info:
+    tags: []
+
 - variables:
     name1: reddy
+
 - name: shell command
   shell: 
     cmd: | 
@@ -21,4 +25,3 @@
 
 - name: check echo 2
   echo_message: '{{$name2}}'
-
