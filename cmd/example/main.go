@@ -44,7 +44,7 @@ func (f *stringList) Set(value string) error {
 func main() {
 	go tests.Handle()
 	color.NoColor = true
-	if err := waitStartService("127.0.0.1", "8181"); err != nil {
+	if err := waitStartAPI("127.0.0.1", "8181"); err != nil {
 		log.Fatal(err)
 	}
 	flag.Var(
@@ -79,7 +79,7 @@ func main() {
 	}
 }
 
-func waitStartService(host string, port string) error {
+func waitStartAPI(host string, port string) error {
 	connected := false
 	for i := 0; i < 5; i++ {
 		connected = checkConnect(host, port)

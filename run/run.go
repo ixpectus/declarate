@@ -42,17 +42,20 @@ func (r *Runner) Run(fileName string) error {
 	currentVars = r.config.Variables
 	configs := []runConfig{}
 	yaml.Unmarshal(file, &configs)
-	r.run(configs, fileName)
-	return nil
+	return r.run(configs, fileName)
 }
 
 func (r *Runner) run(
 	cc []runConfig,
 	fileName string,
-) {
+) error {
 	for _, v := range cc {
-		_ = r.runOne(v, 0, fileName)
+		err := r.runOne(v, 0, fileName)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (r *Runner) runOne(
