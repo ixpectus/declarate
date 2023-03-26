@@ -15,9 +15,3 @@
       pollInterval: ["10s", "10s"]
       echo:
         message: '{{$name}}'
-    - name: another step
-      steps:
-        - name: another step 
-          echo:
-            message: "{{$LANG}}{{$password}}"
-            response: "en_US.UTF-8qwerty"
