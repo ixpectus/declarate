@@ -11,7 +11,6 @@ import (
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/output"
 	"github.com/ixpectus/declarate/run"
-	"github.com/ixpectus/declarate/suite"
 	"github.com/ixpectus/declarate/variables"
 )
 
@@ -24,7 +23,7 @@ var (
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),
-			db.NewUnmarshaller("postgres://user:sdlfksdjflakdf@5.188.142.25:5432/dbaas_dev?sslmode=disable"),
+			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable"),
 		},
 	})
 )
@@ -37,7 +36,7 @@ func TestReq(t *testing.T) {
 
 func TestDb(t *testing.T) {
 	color.NoColor = false
-	runner.Run("./yaml/config_db.yaml")
+	runner.Run("./yaml/db.yaml")
 	vv.Reset()
 }
 
@@ -45,26 +44,4 @@ func TestShell(t *testing.T) {
 	color.NoColor = false
 	runner.Run("./yaml/config_shell.yaml")
 	vv.Reset()
-}
-
-func TestSuite(t *testing.T) {
-	s := suite.New("./yaml", suite.RunConfig{
-		RunAll:       false,
-		Tags:         []string{},
-		Filename:     []string{},
-		SkipFilename: []string{},
-		DryRun:       false,
-		Variables:    vv,
-		Output:       &output.Output{},
-		Builders: []contract.CommandBuilder{
-			&echo.Unmarshaller{},
-			&vars.Unmarshaller{},
-			request.NewUnmarshaller("http://localhost:8181/"),
-			db.NewUnmarshaller("postgres://user:sdlfksdjflakdf@5.188.142.25:5432/dbaas_dev?sslmode=disable"),
-		},
-	})
-	err := s.Run()
-	if err != nil {
-		t.Fail()
-	}
 }
