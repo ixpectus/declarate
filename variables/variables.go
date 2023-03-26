@@ -25,6 +25,10 @@ func (v *Variables) Set(k, val string) {
 	v.data[k] = val
 }
 
+func (v *Variables) Reset() {
+	v.data = map[string]string{}
+}
+
 func (v *Variables) Get(k string) string {
 	if v, ok := v.data[k]; ok {
 		return v

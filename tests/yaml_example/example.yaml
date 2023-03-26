@@ -1,0 +1,67 @@
+- name: test dry run for directory
+  shell_cmd: | 
+    ./build/main -dryRun -dir ./tests/yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    ./tests/yaml/nested/nested.yaml
+    ./tests/yaml/req.yaml
+    ./tests/yaml/shell.yaml
+
+
+- name: test dry run for single file
+  shell_cmd: | 
+    ./build/main -dryRun -dir ./tests/yaml/req.yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/req.yaml
+
+- name: test dry run for directory with skipped files
+  shell_cmd: | 
+     ./build/main -dryRun -dir ./tests/yaml  -s req.yaml -s db.yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/nested/nested.yaml
+    ./tests/yaml/shell.yaml
+
+- name: test requests success
+  shell_cmd: | 
+    ./build/main -dir ./tests/yaml/req.yaml
+  shell_response: |
+    start  ./tests/yaml/req.yaml:set variables
+    passed ./tests/yaml/req.yaml:set variables
+    start  ./tests/yaml/req.yaml:check request
+    passed ./tests/yaml/req.yaml:check request
+    start  ./tests/yaml/req.yaml:check request
+    passed ./tests/yaml/req.yaml:check request
+
+- name: test requests fail, wrong value in map
+  shell_cmd: | 
+    ./build/main -dir ./tests/yaml_failed/req_map.yaml
+  shell_response: |
+    start  ./tests/yaml_failed/req_map.yaml:check request fail map
+    expected: {"age": 28,"name":"Tom1", "items":[1, 2, 3, 4]}
+
+    got     : {"name":"Tom","age":28,"items":[1,2,3,4]}
+    failed ./tests/yaml_failed/req_map.yaml:check request fail map
+     response body differs: 
+    at path $.name values do not match:
+         expected: Tom1
+           actual: Tom
+
+- name: test requests fail, wrong value in array
+  shell_cmd: | 
+    ./build/main -dir ./tests/yaml_failed/req_array.yaml
+  shell_response: |
+    start  ./tests/yaml_failed/req_array.yaml:check request fail map
+    expected: {"age": 28,"name":"Tom", "items":[1, 3, 4]}
+
+    got     : {"name":"Tom","age":28,"items":[1,2,3,4]}
+    failed ./tests/yaml_failed/req_array.yaml:check request fail map
+     response body differs: 
+    at path $.items array lengths do not match:
+         expected: 3
+           actual: 4
+

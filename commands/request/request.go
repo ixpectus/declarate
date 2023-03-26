@@ -109,8 +109,12 @@ func (e *Request) Check() error {
 			errs, err := compare.CompareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
 			if len(errs) > 0 {
 				msg := ""
-				for _, v := range errs {
-					msg += v.Error() + "\n"
+				for i, v := range errs {
+					if i < len(errs)-1 {
+						msg += v.Error() + "\n"
+					} else {
+						msg += v.Error()
+					}
 				}
 				return &contract.TestError{
 					Title:         "response body differs",

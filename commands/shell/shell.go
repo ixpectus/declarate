@@ -1,8 +1,10 @@
 package shell
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 )
 
@@ -17,13 +19,15 @@ type extendedConfig struct {
 }
 
 type shellConfig struct {
-	Cmd            string            `yaml:"shell_cmd,omitempty"`
+	Cmd            string            `yaml:"cmd,omitempty"`
 	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
+	Response       *string           `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd            string
-	VariablesToSet map[string]string
+	Cmd            string            `yaml:"shell_cmd,omitempty"`
+	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
+	Response       *string           `yaml:"shell_response,omitempty"`
 }
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
@@ -43,7 +47,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if err := unmarshal(cfgExtended); err != nil {
 		return nil, err
 	}
-	cfg := &shellConfig{}
+	cfg := &Config{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
 	}
@@ -55,14 +59,12 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 			Config: &Config{
 				Cmd:            cfgExtended.Shell.Cmd,
 				VariablesToSet: cfgExtended.Shell.VariablesToSet,
+				Response:       cfgExtended.Shell.Response,
 			},
 		}, nil
 	}
 	return &ShellCmd{
-		Config: &Config{
-			Cmd:            cfg.Cmd,
-			VariablesToSet: cfg.VariablesToSet,
-		},
+		Config: cfg,
 	}, nil
 }
 
@@ -86,6 +88,27 @@ func (e *ShellCmd) ResponseBody() *string {
 }
 
 func (e *ShellCmd) Check() error {
+	if e.Config.Response != nil {
+		linesExpected := strings.Split(*e.Config.Response, "\n")
+		linesGot := strings.Split(e.responseBody, "\n")
+		if len(linesExpected) != len(linesGot) {
+			res := compare.MakeError(
+				"",
+				fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot)),
+				e.responseBody,
+				*e.Config.Response,
+			)
+			return res
+		}
+		errors := compare.Compare(
+			*e.Config.Response,
+			e.responseBody,
+			compare.CompareParams{},
+		)
+		if len(errors) > 0 {
+			return errors[0]
+		}
+	}
 	return nil
 }
 

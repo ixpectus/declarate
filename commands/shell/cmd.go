@@ -13,7 +13,13 @@ func CmdGet(scriptPath string) *exec.Cmd {
 	if strings.Contains(scriptPath, "\"") || strings.Contains(scriptPath, "|") {
 		return CmdGetWithBash(scriptPath)
 	}
-	parts := strings.Split(scriptPath, " ")
+	rawParts := strings.Split(scriptPath, " ")
+	parts := make([]string, 0, len(rawParts))
+	for _, v := range rawParts {
+		if v != " " && v != "" {
+			parts = append(parts, v)
+		}
+	}
 	var cmd *exec.Cmd
 	if len(parts) > 0 {
 		cmd = exec.Command(parts[0], parts[1:]...)

@@ -45,7 +45,7 @@ func compareBranch(
 
 	// compare types
 	if leafMatchType(expected) != regex && expectedType != actualType {
-		errors = append(errors, makeError(path, "types do not match", expectedType, actualType))
+		errors = append(errors, MakeError(path, "types do not match", expectedType, actualType))
 		return errors
 	}
 
@@ -60,7 +60,7 @@ func compareBranch(
 		actualArray := convertToArray(actual)
 
 		if (params == nil || params.AllowArrayExtraItems == nil || !*params.AllowArrayExtraItems) && len(expectedArray) != len(actualArray) {
-			errors = append(errors, makeError(path, "array lengths do not match", len(expectedArray), len(actualArray)))
+			errors = append(errors, MakeError(path, "array lengths do not match", len(expectedArray), len(actualArray)))
 			return errors
 		}
 
@@ -86,14 +86,14 @@ func compareBranch(
 		actualRef := reflect.ValueOf(actual)
 
 		if (params.DisallowExtraFields != nil && *params.DisallowExtraFields) && expectedRef.Len() != actualRef.Len() {
-			errors = append(errors, makeError(path, "map lengths do not match", expectedRef.Len(), actualRef.Len()))
+			errors = append(errors, MakeError(path, "map lengths do not match", expectedRef.Len(), actualRef.Len()))
 			return errors
 		}
 
 		for _, key := range expectedRef.MapKeys() {
 			// check keys presence
 			if ok := actualRef.MapIndex(key); !ok.IsValid() {
-				errors = append(errors, makeError(path, "key is missing", key.String(), "<missing>"))
+				errors = append(errors, MakeError(path, "key is missing", key.String(), "<missing>"))
 				if params.failFast {
 					return errors
 				}
@@ -155,7 +155,7 @@ func compareLeafs(path string, expected, actual interface{}) []error {
 
 func comparePure(path string, expected, actual interface{}) (errors []error) {
 	if expected != actual {
-		errors = append(errors, makeError(path, "values do not match", expected, actual))
+		errors = append(errors, MakeError(path, "values do not match", expected, actual))
 	}
 
 	return errors
@@ -164,7 +164,7 @@ func comparePure(path string, expected, actual interface{}) (errors []error) {
 func compareRegex(path string, expected, actual interface{}) (errors []error) {
 	regexExpr, ok := expected.(string)
 	if !ok {
-		errors = append(errors, makeError(path, "type mismatch", "string", reflect.TypeOf(expected)))
+		errors = append(errors, MakeError(path, "type mismatch", "string", reflect.TypeOf(expected)))
 		return errors
 	}
 
@@ -172,12 +172,12 @@ func compareRegex(path string, expected, actual interface{}) (errors []error) {
 
 	rx, err := regexp.Compile(retrieveRegexStr(regexExpr))
 	if err != nil {
-		errors = append(errors, makeError(path, "can not compile regex", nil, "error"))
+		errors = append(errors, MakeError(path, "can not compile regex", nil, "error"))
 		return errors
 	}
 
 	if !rx.MatchString(value) {
-		errors = append(errors, makeError(path, "value does not match regex", expected, actual))
+		errors = append(errors, MakeError(path, "value does not match regex", expected, actual))
 		return errors
 	}
 
@@ -205,7 +205,7 @@ func leafMatchType(expected interface{}) leafsMatchType {
 	return pure
 }
 
-func makeError(path, msg string, expected, actual interface{}) error {
+func MakeError(path, msg string, expected, actual interface{}) error {
 	return fmt.Errorf(
 		"at path %s %s:\n     expected: %s\n       actual: %s",
 		color.CyanString(path),
