@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/ixpectus/declarate/contract"
@@ -65,7 +66,16 @@ func (r *Runner) run(
 		if len(v.Poll.PollInterval()) > 0 {
 			for _, d := range v.Poll.PollInterval() {
 				testResult, err = r.runOne(v, 0, fileName)
-				if testResult != nil {
+				if testResult.Err != nil {
+					if v.Poll.ResponseRegexp != "" {
+						rx, err := regexp.Compile(v.Poll.ResponseRegexp)
+						if err != nil {
+							break
+						}
+						if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
+							break
+						}
+					}
 					r.output.Log(contract.Message{
 						Name:    v.Name,
 						Message: fmt.Sprintf("Sleep %v before next poll request", d),
@@ -82,7 +92,7 @@ func (r *Runner) run(
 		if err != nil {
 			return err
 		}
-		if testResult != nil {
+		if testResult.Err != nil {
 			r.outputErr(*testResult)
 		} else {
 			r.output.Log(contract.Message{
@@ -100,6 +110,7 @@ func (r *Runner) runOne(
 	lvl int,
 	fileName string,
 ) (*Result, error) {
+	var body *string
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
 		if err := c.Do(); err != nil {
@@ -110,16 +121,18 @@ func (r *Runner) runOne(
 				FileName: fileName,
 			}, nil
 		}
+
+		body = c.ResponseBody()
 		if err := c.Check(); err != nil {
 			return &Result{
 				Err:      err,
 				Name:     conf.Name,
 				Lvl:      lvl,
 				FileName: fileName,
+				Response: body,
 			}, nil
 		}
 
-		body := c.ResponseBody()
 		if body != nil {
 			if c.VariablesToSet() != nil {
 				varsToSet := c.VariablesToSet()
@@ -159,7 +172,7 @@ func (r *Runner) runOne(
 				})
 			}
 			testResult, err := r.runOne(v, lvl+1, fileName)
-			if testResult != nil {
+			if testResult.Err != nil {
 				return testResult, nil
 			}
 			if err != nil {
@@ -174,7 +187,9 @@ func (r *Runner) runOne(
 		}
 	}
 
-	return nil, nil
+	return &Result{
+		Response: body,
+	}, nil
 }
 
 func (r *Runner) outputErr(res Result) {

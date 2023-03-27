@@ -111,4 +111,23 @@
     Sleep 10ms before next poll request
     Sleep 10ms before next poll request
     passed ./tests/yaml_poll/poll.yaml:check poll handler
+    start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
+    start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
+    expected: {"age": 31,"name":"Tommy"}
+
+    got     : {"name":"Tom","age":28,"items":[1,2,3,4]}
+    failed ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
+     response body differs: 
+    at path $.age values do not match:
+         expected: 31
+           actual: 28
+    at path $.name values do not match:
+         expected: Tommy
+           actual: Tom
+
 

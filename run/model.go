@@ -3,9 +3,9 @@ package run
 import "time"
 
 type Poll struct {
-	Duration           time.Duration `json:"duration,omitempty" yaml:"duration"`
-	Interval           time.Duration `json:"interval,omitempty" yaml:"interval"`
-	ResponseBodyRegexp string        `json:"response_body_regexp,omitempty" yaml:"response_body_regexp"`
+	Duration       time.Duration `json:"duration,omitempty" yaml:"duration"`
+	Interval       time.Duration `json:"interval,omitempty" yaml:"interval"`
+	ResponseRegexp string        `json:"response_regexp,omitempty" yaml:"response_regexp"`
 }
 
 func (p *Poll) PollInterval() []time.Duration {
@@ -30,4 +30,5 @@ type Result struct {
 	Name     string
 	Lvl      int
 	FileName string
+	Response *string
 }
