@@ -41,7 +41,9 @@ func (r *Runner) Run(fileName string) error {
 	}
 	currentVars = r.config.Variables
 	configs := []runConfig{}
-	yaml.Unmarshal(file, &configs)
+	if err := yaml.Unmarshal(file, &configs); err != nil {
+		return fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
+	}
 	return r.run(configs, fileName)
 }
 

@@ -64,9 +64,9 @@ func (d *DbCheck) isEmpty() bool {
 }
 
 type CheckConfig struct {
-	DbConn           string                `json:"dbConn" yaml:"dbConn"`
-	DbQuery          string                `json:"dbQuery" yaml:"dbQuery"`
-	DbResponse       string                `json:"dbResponse" yaml:"dbResponse"`
+	DbConn           string                `json:"db_conn" yaml:"db_conn"`
+	DbQuery          string                `json:"db_query" yaml:"db_query"`
+	DbResponse       string                `json:"db_response" yaml:"db_response"`
 	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
 	VariablesToSet   map[string]string     `yaml:"variables_to_set"`
 }

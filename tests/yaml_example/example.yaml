@@ -68,3 +68,35 @@
          expected: 3
            actual: 4
 
+
+- name: test db success
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml/db.yaml
+  shell_response: |
+    start  ./tests/yaml/db.yaml:set variables
+    passed ./tests/yaml/db.yaml:set variables
+    start  ./tests/yaml/db.yaml:create and populate table
+     start  ./tests/yaml/db.yaml:tear up, drop table
+     passed ./tests/yaml/db.yaml:tear up, drop table
+     start  ./tests/yaml/db.yaml:create table
+     passed ./tests/yaml/db.yaml:create table
+     start  ./tests/yaml/db.yaml:populate with data
+     passed ./tests/yaml/db.yaml:populate with data
+     start  ./tests/yaml/db.yaml:get count
+     passed ./tests/yaml/db.yaml:get count
+     start  ./tests/yaml/db.yaml:get count 2
+     passed ./tests/yaml/db.yaml:get count 2
+    passed ./tests/yaml/db.yaml:create and populate table
+    start  ./tests/yaml/db.yaml:check values in table
+    passed ./tests/yaml/db.yaml:check values in table
+    start  ./tests/yaml/db.yaml:show count plain
+
+    echo 1 
+    passed ./tests/yaml/db.yaml:show count plain
+    start  ./tests/yaml/db.yaml:show count
+
+    echo 1 
+    passed ./tests/yaml/db.yaml:show count
+    start  ./tests/yaml/db.yaml:drop table
+    passed ./tests/yaml/db.yaml:drop table
+

@@ -2,6 +2,7 @@ package suite
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -54,7 +55,10 @@ func (s *Suite) Run() error {
 	},
 	)
 	for _, v := range tests {
-		_ = runner.Run(v)
+		err := runner.Run(v)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	return nil
 }
