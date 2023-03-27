@@ -1,0 +1,11 @@
+- name: check poll handler
+  method: GET
+  path: /poll
+  responseStatus: 200
+  response: |
+    {"age": 31,"name":"Tommy"}
+  poll:
+    duration: 100ms
+    interval: 10ms
+
+

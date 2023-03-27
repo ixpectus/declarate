@@ -100,3 +100,15 @@
     start  ./tests/yaml/db.yaml:drop table
     passed ./tests/yaml/db.yaml:drop table
 
+
+- name: test poll success
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml_poll/poll.yaml
+  shell_response: |
+    start  ./tests/yaml_poll/poll.yaml:check poll handler
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    Sleep 10ms before next poll request
+    passed ./tests/yaml_poll/poll.yaml:check poll handler
+

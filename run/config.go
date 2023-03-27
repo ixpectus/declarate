@@ -13,6 +13,7 @@ type runConfig struct {
 	VariablesToSet map[string]string `yaml:"variables_to_set"`
 	Commands       []contract.Doer
 	Builders       []contract.CommandBuilder
+	Poll           *Poll `yaml:"poll,omitempty"`
 }
 
 func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
