@@ -8,6 +8,8 @@ import (
 
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/run"
+	"github.com/ixpectus/declarate/tools"
+	"gopkg.in/yaml.v2"
 )
 
 type SuiteConfig struct {
@@ -38,10 +40,49 @@ func New(directory string, cfg RunConfig) *Suite {
 	}
 }
 
+func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
+	definitions := make([]testWithDefinition, 0, len(tests))
+	for _, v := range tests {
+		data, err := os.ReadFile(v)
+		if err != nil {
+			return nil, err
+		}
+		var testDefinitions []testDefinition
+		err = yaml.Unmarshal(data, &testDefinitions)
+		if err != nil {
+			return nil, err
+		}
+		if len(testDefinitions) == 0 {
+			continue
+		}
+		realDefinitions := []testWithDefinition{}
+		for _, d := range testDefinitions {
+			if d.Definition != nil {
+				realDefinitions = append(realDefinitions, testWithDefinition{
+					file:       v,
+					definition: d,
+				})
+			}
+		}
+		if len(realDefinitions) > 1 {
+			return nil, fmt.Errorf("test file %v should have only one definition", v)
+		}
+		if len(realDefinitions) > 0 {
+			definitions = append(definitions, realDefinitions[0])
+		}
+	}
+	return definitions, nil
+}
+
 func (s *Suite) Run() error {
 	tests, err := s.allTests(s.Directory)
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
+	}
+	tests, err = s.filterTestsByTags(tests)
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 	if s.Config.DryRun {
 		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
@@ -61,6 +102,29 @@ func (s *Suite) Run() error {
 		}
 	}
 	return nil
+}
+
+func (r *Suite) filterTestsByTags(tests []string) ([]string, error) {
+	if len(r.Config.Tags) == 0 {
+		return tests, nil
+	}
+	res := make([]string, 0, len(tests))
+	definitions, err := r.testsDefinitions(tests)
+	if err != nil {
+		return nil, err
+	}
+	definitions = tools.Filter(definitions, func(test testWithDefinition) bool {
+		return !tools.Contains(test.definition.Definition.Tags, "skip")
+	})
+	for _, v := range r.Config.Tags {
+		for _, v1 := range definitions {
+			if tools.Contains(v1.definition.Definition.Tags, v) && !tools.Contains(res, v1.file) {
+				res = append(res, v1.file)
+			}
+		}
+	}
+
+	return res, nil
 }
 
 func (r *Suite) allTests(testPath string) ([]string, error) {

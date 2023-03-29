@@ -12,7 +12,6 @@
     ./tests/yaml/req.yaml
     ./tests/yaml/shell.yaml
 
-
 - name: test dry run for single file
   shell_cmd: | 
     {{$cmd}} -dryRun -dir ./tests/yaml/req.yaml
@@ -68,7 +67,6 @@
          expected: 3
            actual: 4
 
-
 - name: test db success
   shell_cmd: | 
     {{$cmd}} -dir ./tests/yaml/db.yaml
@@ -100,7 +98,6 @@
     start  ./tests/yaml/db.yaml:drop table
     passed ./tests/yaml/db.yaml:drop table
 
-
 - name: test poll success
   shell_cmd: | 
     {{$cmd}} -dir ./tests/yaml_poll/poll.yaml
@@ -129,5 +126,39 @@
     at path $.name values do not match:
          expected: Tommy
            actual: Tom
+
+- name: test tags, pass existing tags
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml -tags "base,advanced" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    ./tests/yaml/req.yaml
+
+- name: test tags, pass one tag
+  shell_cmd: |
+    {{$cmd}} -dir ./tests/yaml -tags "base" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+
+
+- name: test tags, tests should be ordered by tags
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml -tags "advanced,base" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/req.yaml
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    
+- name: test tags, nested directories
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml -tags "tiny" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/nested/nested.yaml
 
 

@@ -54,6 +54,9 @@ func (r *Runner) run(
 	fileName string,
 ) error {
 	for _, v := range cc {
+		if len(v.Commands) == 0 && len(v.Steps) == 0 {
+			continue
+		}
 		var err error
 		var testResult *Result
 		if v.Name != "" {

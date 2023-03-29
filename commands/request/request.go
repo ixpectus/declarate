@@ -39,6 +39,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if cfg == nil {
 		return nil, nil
 	}
+	if cfg.RequestURL == "" {
+		return nil, nil
+	}
 	return &Request{
 		Config: cfg,
 		Host:   u.host,

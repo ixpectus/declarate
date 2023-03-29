@@ -29,6 +29,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if cfg == nil {
 		return nil, nil
 	}
+	if cfg.Data == nil {
+		return nil, nil
+	}
 	return &VarsCmd{
 		Config: cfg,
 	}, nil

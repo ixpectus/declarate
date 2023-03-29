@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -27,6 +28,11 @@ var (
 	)
 	flagDryRun = flag.Bool(
 		"dryRun", false, "show tests for run, don't run them",
+	)
+	flagTags = flag.String(
+		"tags",
+		"",
+		"tags for filter tags, example `tags tag1,tag2`",
 	)
 )
 
@@ -61,7 +67,6 @@ func main() {
 	vv := variables.New()
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:       false,
-		Tags:         []string{},
 		Filename:     []string{},
 		SkipFilename: coreTestsToSkip,
 		DryRun:       *flagDryRun,
@@ -74,6 +79,10 @@ func main() {
 			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable"),
 		},
 	})
+
+	if *flagTags != "" {
+		s.Config.Tags = strings.Split(*flagTags, ",")
+	}
 	if err := s.Run(); err != nil {
 		log.Println(err)
 	}

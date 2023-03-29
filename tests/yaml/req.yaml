@@ -1,3 +1,6 @@
+- definition:
+    tags: ["advanced"]
+
 - name: set variables
   variables:
     name: Tom
