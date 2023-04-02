@@ -20,7 +20,7 @@ type SuiteConfig struct {
 type RunConfig struct {
 	RunAll       bool
 	Tags         []string
-	Filename     []string
+	Filepathes   []string
 	SkipFilename []string
 	DryRun       bool
 	Variables    contract.Vars
@@ -75,20 +75,26 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 }
 
 func (s *Suite) Run() error {
-	tests, err := s.allTests(s.Directory)
+	allTests, err := s.allTests(s.Directory)
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
 	}
-	tests, err = s.filterTestsByTags(tests)
+	tests, err := s.filterTestsByTags(allTests)
 	if err != nil {
 		log.Println(err)
 		return err
+	}
+	if len(s.Config.Filepathes) > 0 {
+		if len(s.Config.Tags) > 0 {
+			tests = s.filterTestsByPathes(allTests, tests)
+		} else {
+			tests = s.filterTestsByPathes(allTests, []string{})
+		}
 	}
 	if s.Config.DryRun {
 		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
 		return nil
 	}
-
 	runner := run.New(run.RunnerConfig{
 		Variables: s.Config.Variables,
 		Output:    s.Config.Output,
@@ -102,6 +108,22 @@ func (s *Suite) Run() error {
 		}
 	}
 	return nil
+}
+
+func (s *Suite) filterTestsByPathes(
+	allTests []string,
+	selectedTests []string,
+) []string {
+	for _, v := range s.Config.Filepathes {
+		fullName := s.Directory + "/" + v
+		for _, v1 := range allTests {
+			if strings.Contains(v1, fullName) && !tools.Contains(selectedTests, v1) {
+				selectedTests = append(selectedTests, v1)
+			}
+		}
+	}
+
+	return selectedTests
 }
 
 func (r *Suite) filterTestsByTags(tests []string) ([]string, error) {

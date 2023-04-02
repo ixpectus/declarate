@@ -32,7 +32,13 @@ var (
 	flagTags = flag.String(
 		"tags",
 		"",
-		"tags for filter tags, example `tags tag1,tag2`",
+		"tags for filter tags, example `-tags tag1,tag2`",
+	)
+
+	flagTests = flag.String(
+		"tests",
+		"",
+		"test files, example `-tests config,db`",
 	)
 )
 
@@ -67,7 +73,7 @@ func main() {
 	vv := variables.New()
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:       false,
-		Filename:     []string{},
+		Filepathes:   []string{},
 		SkipFilename: coreTestsToSkip,
 		DryRun:       *flagDryRun,
 		Variables:    vv,
@@ -82,6 +88,9 @@ func main() {
 
 	if *flagTags != "" {
 		s.Config.Tags = strings.Split(*flagTags, ",")
+	}
+	if *flagTests != "" {
+		s.Config.Filepathes = strings.Split(*flagTests, ",")
 	}
 	if err := s.Run(); err != nil {
 		log.Println(err)
