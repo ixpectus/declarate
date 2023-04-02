@@ -197,3 +197,19 @@
     echo  
     passed ./tests/yaml_script/script_success.yaml:check output extended
 
+
+- name: test eval 
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests -tests yaml_variables
+  shell_response: |
+    start  ./tests/yaml_variables/eval.yaml:set variables
+    passed ./tests/yaml_variables/eval.yaml:set variables
+    start  ./tests/yaml_variables/eval.yaml:check echo
+
+    echo Donny 
+    passed ./tests/yaml_variables/eval.yaml:check echo
+    start  ./tests/yaml_variables/eval.yaml:check eval direct call
+
+    echo 2 
+    passed ./tests/yaml_variables/eval.yaml:check eval direct call
+

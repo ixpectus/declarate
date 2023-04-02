@@ -9,14 +9,16 @@ import (
 	"github.com/ixpectus/declarate/commands/request"
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/eval"
 	"github.com/ixpectus/declarate/output"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/variables"
 )
 
 var (
-	vv     = variables.New()
-	runner = run.New(run.RunnerConfig{
+	evaluator = eval.NewEval(nil)
+	vv        = variables.New(evaluator)
+	runner    = run.New(run.RunnerConfig{
 		Variables: vv,
 		Output:    &output.Output{},
 		Builders: []contract.CommandBuilder{

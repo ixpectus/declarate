@@ -1,0 +1,12 @@
+- name: set variables
+  variables:
+    password: qwerty
+    anotherVar: "{{$(someName())}}"
+
+- name: check echo
+  echo:
+    message: '{{$anotherVar}}'
+
+- name: check eval direct call
+  echo:
+    message: '{{$(1+1)}}'

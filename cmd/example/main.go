@@ -16,6 +16,7 @@ import (
 	"github.com/ixpectus/declarate/commands/shell"
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/eval"
 	"github.com/ixpectus/declarate/output"
 	"github.com/ixpectus/declarate/suite"
 	"github.com/ixpectus/declarate/tests"
@@ -72,7 +73,8 @@ func main() {
 		"test to skip",
 	)
 	flag.Parse()
-	vv := variables.New()
+	evaluator := eval.NewEval(nil)
+	vv := variables.New(evaluator)
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:       false,
 		Filepathes:   []string{},
@@ -82,7 +84,7 @@ func main() {
 		Output:       &output.OutputPrintln{},
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
-			&vars.Unmarshaller{},
+			vars.NewUnmarshaller(evaluator),
 			shell.NewUnmarshaller(),
 			script.NewUnmarshaller(),
 			request.NewUnmarshaller("http://localhost:8181/"),

@@ -3,10 +3,12 @@ module github.com/ixpectus/declarate
 go 1.19
 
 require (
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/fatih/color v1.15.0
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/kylelemons/godebug v1.1.0
 	github.com/lib/pq v1.10.7
+	github.com/maja42/goval v1.3.1
 	github.com/tidwall/gjson v1.14.4
 	gopkg.in/yaml.v2 v2.4.0
 )

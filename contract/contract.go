@@ -62,3 +62,7 @@ type Message struct {
 type Output interface {
 	Log(message Message)
 }
+
+type Evaluator interface {
+	Evaluate(s string) string
+}

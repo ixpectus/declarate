@@ -6,19 +6,27 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/brianvoe/gofakeit"
+	"github.com/ixpectus/declarate/contract"
+	"github.com/maja42/goval"
 	"github.com/tidwall/gjson"
 )
 
 var variableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
 
 type Variables struct {
-	data map[string]string
+	data      map[string]string
+	eval      contract.Evaluator
+	functions map[string]goval.ExpressionFunction
 }
 
-func New() *Variables {
-	return &Variables{
+func New(evaluator contract.Evaluator) *Variables {
+	gofakeit.Seed(0)
+	vv := &Variables{
 		data: map[string]string{},
+		eval: evaluator,
 	}
+	return vv
 }
 
 func (v *Variables) Set(k, val string) {
@@ -41,6 +49,7 @@ func (v *Variables) Apply(text string) string {
 	for _, val := range used {
 		text = strings.ReplaceAll(text, "{{$"+val+"}}", v.Get(val))
 	}
+	text = v.eval.Evaluate(text)
 	return text
 }
 

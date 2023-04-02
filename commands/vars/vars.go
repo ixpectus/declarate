@@ -7,6 +7,7 @@ import (
 type VarsCmd struct {
 	Config *Config
 	Vars   contract.Vars
+	eval   contract.Evaluator
 }
 
 type Config struct {
@@ -18,7 +19,13 @@ func (e *VarsCmd) SetVars(vv contract.Vars) {
 }
 
 type Unmarshaller struct {
-	host string
+	eval contract.Evaluator
+}
+
+func NewUnmarshaller(eval contract.Evaluator) *Unmarshaller {
+	return &Unmarshaller{
+		eval: eval,
+	}
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
