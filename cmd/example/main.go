@@ -12,6 +12,8 @@ import (
 	"github.com/ixpectus/declarate/commands/db"
 	"github.com/ixpectus/declarate/commands/echo"
 	"github.com/ixpectus/declarate/commands/request"
+	"github.com/ixpectus/declarate/commands/script"
+	"github.com/ixpectus/declarate/commands/shell"
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/output"
@@ -81,6 +83,8 @@ func main() {
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
+			shell.NewUnmarshaller(),
+			script.NewUnmarshaller(),
 			request.NewUnmarshaller("http://localhost:8181/"),
 			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable"),
 		},

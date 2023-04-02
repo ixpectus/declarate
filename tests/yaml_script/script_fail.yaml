@@ -1,0 +1,10 @@
+- name: set variables
+  variables:
+    name1: reddy
+    name2: bobby
+
+- name: script check extended fail
+  script: 
+    path: "./tests/scripts/echo.sh {{$name1}}"
+    variables_to_set:
+      res: '*'

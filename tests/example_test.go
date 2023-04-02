@@ -9,6 +9,7 @@ import (
 	"github.com/ixpectus/declarate/commands/db"
 	"github.com/ixpectus/declarate/commands/echo"
 	"github.com/ixpectus/declarate/commands/request"
+	"github.com/ixpectus/declarate/commands/script"
 	"github.com/ixpectus/declarate/commands/shell"
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/contract"
@@ -24,6 +25,7 @@ func TestExample(t *testing.T) {
 		Output:    &output.Output{},
 		Builders: []contract.CommandBuilder{
 			shell.NewUnmarshaller(),
+			script.NewUnmarshaller(),
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),

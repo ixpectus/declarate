@@ -178,4 +178,22 @@
     ./tests/yaml/req.yaml
     ./tests/yaml/nested/nested.yaml
 
+- name: test script, success
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests -tests yaml_script/script_success
+  shell_response: |
+    start  ./tests/yaml_script/script_success.yaml:set variables
+    passed ./tests/yaml_script/script_success.yaml:set variables
+    start  ./tests/yaml_script/script_success.yaml:script check
+    failed process finished with error = exit status 1, output , std err 
+    start  ./tests/yaml_script/script_success.yaml:check output
+
+    echo  
+    passed ./tests/yaml_script/script_success.yaml:check output
+    start  ./tests/yaml_script/script_success.yaml:script check extended
+    failed process finished with error = exit status 1, output , std err 
+    start  ./tests/yaml_script/script_success.yaml:check output extended
+
+    echo  
+    passed ./tests/yaml_script/script_success.yaml:check output extended
 

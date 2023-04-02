@@ -1,4 +1,4 @@
-package shell
+package script
 
 import (
 	"fmt"
@@ -8,29 +8,37 @@ import (
 	"github.com/ixpectus/declarate/contract"
 )
 
-type ShellCmd struct {
+type ScriptCmd struct {
 	Config       *Config
 	Vars         contract.Vars
 	responseBody string
 }
 
 type extendedConfig struct {
-	Shell *shellConfig `yaml:"shell,omitempty"`
+	Script *scriptConfig `yaml:"script,omitempty"`
 }
 
-type shellConfig struct {
-	Cmd            string            `yaml:"cmd,omitempty"`
+type scriptConfig struct {
+	Path           string            `yaml:"path,omitempty"`
 	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
 	Response       *string           `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd            string            `yaml:"shell_cmd,omitempty"`
+	Cmd            string            `yaml:"script_path,omitempty"`
 	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
-	Response       *string           `yaml:"shell_response,omitempty"`
+	Response       *string           `yaml:"script_response,omitempty"`
 }
 
-func (e *ShellCmd) SetVars(vv contract.Vars) {
+func (ex *extendedConfig) isEmpty() bool {
+	return ex == nil || ex.Script == nil || ex.Script.Path == ""
+}
+
+func (c *Config) isEmpty() bool {
+	return c == nil || c.Cmd == ""
+}
+
+func (e *ScriptCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
@@ -40,14 +48,6 @@ func NewUnmarshaller() *Unmarshaller {
 
 type Unmarshaller struct {
 	host string
-}
-
-func (ex *extendedConfig) isEmpty() bool {
-	return ex == nil || ex.Shell == nil || ex.Shell.Cmd == ""
-}
-
-func (c *Config) isEmpty() bool {
-	return c == nil || c.Cmd == ""
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
@@ -62,28 +62,28 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if cfg.isEmpty() && cfgExtended.isEmpty() {
 		return nil, nil
 	}
-	if cfgExtended != nil && cfgExtended.Shell != nil {
-		return &ShellCmd{
+	if cfgExtended != nil && cfgExtended.Script != nil {
+		return &ScriptCmd{
 			Config: &Config{
-				Cmd:            cfgExtended.Shell.Cmd,
-				VariablesToSet: cfgExtended.Shell.VariablesToSet,
-				Response:       cfgExtended.Shell.Response,
+				Cmd:            cfgExtended.Script.Path,
+				VariablesToSet: cfgExtended.Script.VariablesToSet,
+				Response:       cfgExtended.Script.Response,
 			},
 		}, nil
 	}
-	return &ShellCmd{
+	return &ScriptCmd{
 		Config: cfg,
 	}, nil
 }
 
-func (e *ShellCmd) Do() error {
+func (e *ScriptCmd) Do() error {
 	if e.Config != nil && e.Config.Cmd != "" {
 		e.Config.Cmd = e.Vars.Apply(e.Config.Cmd)
 		res, err := Run(e.Config.Cmd)
 		if err != nil {
 			return err
 		}
-		e.responseBody = strings.Join(res, "\n")
+		e.responseBody = res
 
 		return nil
 	}
@@ -91,11 +91,11 @@ func (e *ShellCmd) Do() error {
 	return nil
 }
 
-func (e *ShellCmd) ResponseBody() *string {
+func (e *ScriptCmd) ResponseBody() *string {
 	return &e.responseBody
 }
 
-func (e *ShellCmd) Check() error {
+func (e *ScriptCmd) Check() error {
 	if e.Config.Response != nil {
 		linesExpected := strings.Split(*e.Config.Response, "\n")
 		linesGot := strings.Split(e.responseBody, "\n")
@@ -120,7 +120,7 @@ func (e *ShellCmd) Check() error {
 	return nil
 }
 
-func (e *ShellCmd) VariablesToSet() map[string]string {
+func (e *ScriptCmd) VariablesToSet() map[string]string {
 	if e.Config != nil {
 		return e.Config.VariablesToSet
 	}
