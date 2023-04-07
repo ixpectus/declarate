@@ -30,6 +30,9 @@ func New(evaluator contract.Evaluator) *Variables {
 }
 
 func (v *Variables) Set(k, val string) {
+	if strings.ToUpper(k) == k {
+		os.Setenv(k, val)
+	}
 	v.data[k] = val
 }
 
