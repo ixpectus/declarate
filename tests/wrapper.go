@@ -1,10 +1,10 @@
 package tests
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ixpectus/declarate/contract"
-	"github.com/k0kubun/pp"
 )
 
 type DebugWrapper struct{}
@@ -15,12 +15,24 @@ func NewDebugWrapper() *DebugWrapper {
 
 func (d *DebugWrapper) BeforeTest(file string, conf contract.RunConfig, lvl int) {
 	if strings.Contains(file, "yaml_wrapper") {
-		pp.Println(file, conf)
+		fmt.Printf("before test %v\n", conf.Name)
 	}
 }
 
 func (d *DebugWrapper) AfterTest(conf contract.RunConfig, result contract.Result) {
 	if strings.Contains(result.FileName, "yaml_wrapper") {
-		pp.Println(conf, result)
+		fmt.Printf("after test %v\n", conf.Name)
+	}
+}
+
+func (d *DebugWrapper) BeforeTestStep(file string, conf contract.RunConfig, lvl int) {
+	if strings.Contains(file, "yaml_wrapper") && lvl > 0 {
+		fmt.Printf("before test step %v\n", conf.Name)
+	}
+}
+
+func (d *DebugWrapper) AfterTestStep(conf contract.RunConfig, result contract.Result) {
+	if strings.Contains(result.FileName, "yaml_wrapper") && result.Lvl > 0 {
+		fmt.Printf("after test step %v\n", conf.Name)
 	}
 }

@@ -65,6 +65,8 @@ type Evaluator interface {
 type TestWrapper interface {
 	BeforeTest(file string, conf RunConfig, lvl int)
 	AfterTest(conf RunConfig, result Result)
+	BeforeTestStep(file string, conf RunConfig, lvl int)
+	AfterTestStep(conf RunConfig, result Result)
 }
 
 type RunConfig struct {

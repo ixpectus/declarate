@@ -213,3 +213,30 @@
     echo 2 
     passed ./tests/yaml_variables/eval.yaml:check eval direct call
 
+- name: test debug wrapper 
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests -tests yaml_wrapper
+  shell_response: |
+    before test set variables
+    start  ./tests/yaml_wrapper/wrapper.yaml:set variables
+    after test set variables
+    passed ./tests/yaml_wrapper/wrapper.yaml:set variables
+    before test check request 2
+    start  ./tests/yaml_wrapper/wrapper.yaml:check request 2
+    after test check request 2
+    passed ./tests/yaml_wrapper/wrapper.yaml:check request 2
+    before test nested steps
+    start  ./tests/yaml_wrapper/wrapper.yaml:nested steps
+     start  ./tests/yaml_wrapper/wrapper.yaml:check request nested1
+    before test step check request nested1
+    after test step check request nested1
+     passed ./tests/yaml_wrapper/wrapper.yaml:check request nested1
+     start  ./tests/yaml_wrapper/wrapper.yaml:check request nested2
+    before test step check request nested2
+    after test step check request nested2
+     passed ./tests/yaml_wrapper/wrapper.yaml:check request nested2
+    after test nested steps
+    passed ./tests/yaml_wrapper/wrapper.yaml:nested steps
+
+
+

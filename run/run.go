@@ -73,12 +73,10 @@ func (r *Runner) run(
 		} else {
 			testResult, err = r.runOne(v, 0, fileName)
 		}
-		testResult.FileName = fileName
-		testResult.Name = v.Name
 		if err != nil {
 			return err
 		}
-		r.afterTest(v, *testResult)
+		r.afterTest(fileName, v, *testResult)
 		if testResult.Err != nil {
 			r.outputErr(*testResult)
 		} else {
@@ -103,7 +101,7 @@ func (r *Runner) beforeTest(file string, conf runConfig, lvl int) {
 	}
 }
 
-func (r *Runner) afterTest(conf runConfig, result Result) {
+func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 	if r.config.Wrapper != nil {
 		r.config.Wrapper.AfterTest(contract.RunConfig{
 			Name:           conf.Name,
@@ -113,9 +111,39 @@ func (r *Runner) afterTest(conf runConfig, result Result) {
 		},
 			contract.Result{
 				Err:      result.Err,
-				Name:     result.Name,
+				Name:     conf.Name,
 				Lvl:      result.Lvl,
-				FileName: result.FileName,
+				FileName: file,
+				Response: result.Response,
+			},
+		)
+	}
+}
+
+func (r *Runner) beforeTestStep(file string, conf runConfig, lvl int) {
+	if r.config.Wrapper != nil {
+		r.config.Wrapper.BeforeTestStep(file, contract.RunConfig{
+			Name:           conf.Name,
+			Vars:           currentVars,
+			VariablesToSet: conf.VariablesToSet,
+			Commands:       conf.Commands,
+		}, lvl)
+	}
+}
+
+func (r *Runner) afterTestStep(file string, conf runConfig, result Result) {
+	if r.config.Wrapper != nil {
+		r.config.Wrapper.AfterTestStep(contract.RunConfig{
+			Name:           conf.Name,
+			Vars:           currentVars,
+			VariablesToSet: conf.VariablesToSet,
+			Commands:       conf.Commands,
+		},
+			contract.Result{
+				Err:      result.Err,
+				Name:     conf.Name,
+				Lvl:      result.Lvl,
+				FileName: file,
 				Response: result.Response,
 			},
 		)
@@ -161,6 +189,7 @@ func (r *Runner) runOne(
 	var body *string
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
+		r.beforeTestStep(fileName, conf, lvl)
 		if err := c.Do(); err != nil {
 			return &Result{
 				Err:      err,
@@ -172,13 +201,15 @@ func (r *Runner) runOne(
 
 		body = c.ResponseBody()
 		if err := c.Check(); err != nil {
-			return &Result{
+			res := &Result{
 				Err:      err,
 				Name:     conf.Name,
 				Lvl:      lvl,
 				FileName: fileName,
 				Response: body,
-			}, nil
+			}
+			r.afterTestStep(fileName, conf, *res)
+			return res, nil
 		}
 
 		if body != nil {
@@ -195,12 +226,14 @@ func (r *Runner) runOne(
 				if len(jsonVars) > 0 {
 					vars, err := variables.FromJSON(jsonVars, *body)
 					if err != nil {
-						return &Result{
+						res := &Result{
 							Err:      err,
 							Name:     conf.Name,
 							Lvl:      lvl,
 							FileName: fileName,
-						}, nil
+						}
+						r.afterTestStep(fileName, conf, *res)
+						return res, nil
 					}
 					for k, v := range vars {
 						currentVars.Set(k, v)
@@ -235,9 +268,13 @@ func (r *Runner) runOne(
 		}
 	}
 
-	return &Result{
+	res := &Result{
 		Response: body,
-	}, nil
+		Lvl:      lvl,
+		FileName: fileName,
+	}
+	r.afterTestStep(fileName, conf, *res)
+	return res, nil
 }
 
 func (r *Runner) outputErr(res Result) {
