@@ -1,0 +1,26 @@
+- definition:
+    tags: ["advanced"]
+
+- name: set variables
+  variables:
+    name: Tom
+    path: tom
+
+- name: check request
+  method: GET
+  path: /{{$path}}
+  responseStatus: 200
+  response: |
+    {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}
+  comparisonParams:
+    ignoreArraysOrdering: true
+
+- name: check request
+  method: GET
+  path: /{{$path}}
+  responseStatus: 200
+  response: |
+    {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}
+  comparisonParams:
+    ignoreArraysOrdering: true
+    allowArrayExtraItems: true

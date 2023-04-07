@@ -14,14 +14,9 @@ type Doer interface {
 	Do() error
 	ResponseBody() *string
 	VariablesToSet() map[string]string
+	GetConfig() interface{}
 	Check() error
 	SetVars(vv Vars)
-}
-
-type Result struct {
-	File   string
-	Name   string
-	Passed bool
 }
 
 type TestError struct {
@@ -65,4 +60,25 @@ type Output interface {
 
 type Evaluator interface {
 	Evaluate(s string) string
+}
+
+type TestWrapper interface {
+	BeforeTest(file string, conf RunConfig, lvl int)
+	AfterTest(conf RunConfig, result Result)
+}
+
+type RunConfig struct {
+	Name           string      `yaml:"name,omitempty"`
+	Steps          []RunConfig `yaml:"steps,omitempty"`
+	Vars           Vars
+	VariablesToSet map[string]string `yaml:"variables_to_set"`
+	Commands       []Doer
+}
+
+type Result struct {
+	Err      error
+	Name     string
+	Lvl      int
+	FileName string
+	Response *string
 }

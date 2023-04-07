@@ -76,12 +76,13 @@ func main() {
 	evaluator := eval.NewEval(nil)
 	vv := variables.New(evaluator)
 	s := suite.New(*flagDir, suite.RunConfig{
-		RunAll:       false,
-		Filepathes:   []string{},
-		SkipFilename: coreTestsToSkip,
-		DryRun:       *flagDryRun,
-		Variables:    vv,
-		Output:       &output.OutputPrintln{},
+		RunAll:         false,
+		Filepathes:     []string{},
+		SkipFilename:   coreTestsToSkip,
+		TestRunWrapper: tests.NewDebugWrapper(),
+		DryRun:         *flagDryRun,
+		Variables:      vv,
+		Output:         &output.OutputPrintln{},
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			vars.NewUnmarshaller(evaluator),

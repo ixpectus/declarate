@@ -44,6 +44,10 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	}, nil
 }
 
+func (e *VarsCmd) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *VarsCmd) Do() error {
 	if e.Config != nil {
 		for k, v := range e.Config.Data {

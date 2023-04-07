@@ -26,6 +26,7 @@ type RunnerConfig struct {
 	Variables contract.Vars
 	Builders  []contract.CommandBuilder
 	Output    contract.Output
+	Wrapper   contract.TestWrapper
 }
 
 func New(c RunnerConfig) *Runner {
@@ -57,6 +58,7 @@ func (r *Runner) run(
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
 		}
+		r.beforeTest(fileName, v, 0)
 		var err error
 		var testResult *Result
 		if v.Name != "" {
@@ -67,34 +69,16 @@ func (r *Runner) run(
 			})
 		}
 		if len(v.Poll.PollInterval()) > 0 {
-			for _, d := range v.Poll.PollInterval() {
-				testResult, err = r.runOne(v, 0, fileName)
-				if testResult.Err != nil {
-					if v.Poll.ResponseRegexp != "" {
-						rx, err := regexp.Compile(v.Poll.ResponseRegexp)
-						if err != nil {
-							break
-						}
-						if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
-							break
-						}
-					}
-					r.output.Log(contract.Message{
-						Name:    v.Name,
-						Message: fmt.Sprintf("Sleep %v before next poll request", d),
-						Type:    contract.MessageTypeNotify,
-					})
-					time.Sleep(d)
-				} else {
-					break
-				}
-			}
+			testResult, err = r.runWithPollInterval(v, fileName)
 		} else {
 			testResult, err = r.runOne(v, 0, fileName)
 		}
+		testResult.FileName = fileName
+		testResult.Name = v.Name
 		if err != nil {
 			return err
 		}
+		r.afterTest(v, *testResult)
 		if testResult.Err != nil {
 			r.outputErr(*testResult)
 		} else {
@@ -106,6 +90,67 @@ func (r *Runner) run(
 		}
 	}
 	return nil
+}
+
+func (r *Runner) beforeTest(file string, conf runConfig, lvl int) {
+	if r.config.Wrapper != nil {
+		r.config.Wrapper.BeforeTest(file, contract.RunConfig{
+			Name:           conf.Name,
+			Vars:           currentVars,
+			VariablesToSet: conf.VariablesToSet,
+			Commands:       conf.Commands,
+		}, lvl)
+	}
+}
+
+func (r *Runner) afterTest(conf runConfig, result Result) {
+	if r.config.Wrapper != nil {
+		r.config.Wrapper.AfterTest(contract.RunConfig{
+			Name:           conf.Name,
+			Vars:           currentVars,
+			VariablesToSet: conf.VariablesToSet,
+			Commands:       conf.Commands,
+		},
+			contract.Result{
+				Err:      result.Err,
+				Name:     result.Name,
+				Lvl:      result.Lvl,
+				FileName: result.FileName,
+				Response: result.Response,
+			},
+		)
+	}
+}
+
+func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, error) {
+	var err error
+	var testResult *Result
+	for _, d := range v.Poll.PollInterval() {
+		testResult, err = r.runOne(v, 0, fileName)
+		if err != nil {
+			return nil, err
+		}
+		if testResult.Err != nil {
+			if v.Poll.ResponseRegexp != "" {
+				rx, err := regexp.Compile(v.Poll.ResponseRegexp)
+				if err != nil {
+					break
+				}
+				if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
+					break
+				}
+			}
+			r.output.Log(contract.Message{
+				Name:    v.Name,
+				Message: fmt.Sprintf("Sleep %v before next poll request", d),
+				Type:    contract.MessageTypeNotify,
+			})
+			time.Sleep(d)
+		} else {
+			break
+		}
+	}
+	return testResult, err
 }
 
 func (r *Runner) runOne(

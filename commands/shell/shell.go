@@ -91,6 +91,10 @@ func (e *ShellCmd) Do() error {
 	return nil
 }
 
+func (e *ShellCmd) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *ShellCmd) ResponseBody() *string {
 	return &e.responseBody
 }

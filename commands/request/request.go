@@ -66,6 +66,10 @@ func (e *Request) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
+func (e *Request) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)

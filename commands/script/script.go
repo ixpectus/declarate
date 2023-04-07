@@ -76,6 +76,10 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	}, nil
 }
 
+func (e *ScriptCmd) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *ScriptCmd) Do() error {
 	if e.Config != nil && e.Config.Cmd != "" {
 		e.Config.Cmd = e.Vars.Apply(e.Config.Cmd)

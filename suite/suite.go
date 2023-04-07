@@ -18,14 +18,15 @@ type SuiteConfig struct {
 }
 
 type RunConfig struct {
-	RunAll       bool
-	Tags         []string
-	Filepathes   []string
-	SkipFilename []string
-	DryRun       bool
-	Variables    contract.Vars
-	Builders     []contract.CommandBuilder
-	Output       contract.Output
+	RunAll         bool
+	Tags           []string
+	Filepathes     []string
+	SkipFilename   []string
+	DryRun         bool
+	Variables      contract.Vars
+	Builders       []contract.CommandBuilder
+	Output         contract.Output
+	TestRunWrapper contract.TestWrapper
 }
 
 type Suite struct {
@@ -99,6 +100,7 @@ func (s *Suite) Run() error {
 		Variables: s.Config.Variables,
 		Output:    s.Config.Output,
 		Builders:  s.Config.Builders,
+		Wrapper:   s.Config.TestRunWrapper,
 	},
 	)
 	for _, v := range tests {

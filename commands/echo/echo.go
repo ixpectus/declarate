@@ -91,6 +91,10 @@ func (e *Echo) Do() error {
 	return nil
 }
 
+func (e *Echo) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *Echo) ResponseBody() *string {
 	if !e.Config.isEmpty() {
 		return e.Config.Response

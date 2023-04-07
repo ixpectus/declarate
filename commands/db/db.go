@@ -79,6 +79,10 @@ func (e *Db) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
+func (e *Db) GetConfig() interface{} {
+	return e.Config
+}
+
 func (e *Db) Do() error {
 	if e.Config != nil {
 		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
