@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func CompareJsonBody(expectedBody string, realBody string, params CompareParams) ([]error, error) {
+func compareJsonBody(expectedBody string, realBody string, params CompareParams) ([]error, error) {
 	// decode expected body
 	var expected interface{}
 	if err := json.Unmarshal([]byte(expectedBody), &expected); err != nil {
@@ -22,5 +22,5 @@ func CompareJsonBody(expectedBody string, realBody string, params CompareParams)
 		return []error{errors.New("could not parse response")}, nil
 	}
 
-	return Compare(expected, actual, params), nil
+	return compare(expected, actual, params), nil
 }

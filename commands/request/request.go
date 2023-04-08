@@ -2,8 +2,6 @@ package request
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,14 +18,16 @@ type Request struct {
 	Host           string
 	responseBody   *string
 	responseStatus int
+	comparer       contract.Comparer
 }
 
 type Unmarshaller struct {
-	host string
+	host     string
+	comparer contract.Comparer
 }
 
-func NewUnmarshaller(host string) *Unmarshaller {
-	return &Unmarshaller{host: host}
+func NewUnmarshaller(host string, comparer contract.Comparer) *Unmarshaller {
+	return &Unmarshaller{host: host, comparer: comparer}
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
@@ -43,8 +43,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return nil, nil
 	}
 	return &Request{
-		Config: cfg,
-		Host:   u.host,
+		Config:   cfg,
+		Host:     u.host,
+		comparer: u.comparer,
 	}, nil
 }
 
@@ -113,7 +114,7 @@ func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
 		if b != nil {
-			errs, err := compare.CompareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
+			errs, err := e.comparer.CompareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
 			if len(errs) > 0 {
 				msg := ""
 				for i, v := range errs {
@@ -151,25 +152,6 @@ func (e *Request) Check() error {
 		}
 	}
 	return nil
-}
-
-func compareJsonBody(expectedBody string, realBody string, params compare.CompareParams) ([]error, error) {
-	// decode expected body
-	var expected interface{}
-	if err := json.Unmarshal([]byte(expectedBody), &expected); err != nil {
-		return nil, fmt.Errorf(
-			"invalid JSON in response for test : %s",
-			err.Error(),
-		)
-	}
-
-	// decode actual body
-	var actual interface{}
-	if err := json.Unmarshal([]byte(realBody), &actual); err != nil {
-		return []error{errors.New("could not parse response")}, nil
-	}
-
-	return compare.Compare(expected, actual, params), nil
 }
 
 func request(r RequestConfig, b *bytes.Buffer, host string) (*http.Request, error) {

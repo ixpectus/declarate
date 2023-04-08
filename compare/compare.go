@@ -25,12 +25,12 @@ const (
 
 var regexExprRx = regexp.MustCompile(`^\$matchRegexp\((.+)\)$`)
 
-// Compare compares values as plain text
+// compare compares values as plain text
 // It can be compared several ways:
 //   - Pure values: should be equal
 //   - Regex: try to compile 'expected' as regex and match 'actual' with it
 //     It activates on following syntax: $matchRegexp(%EXPECTED_VALUE%)
-func Compare(expected, actual interface{}, params CompareParams) []error {
+func compare(expected, actual interface{}, params CompareParams) []error {
 	return compareBranch("$", expected, actual, &params)
 }
 

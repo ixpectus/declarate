@@ -9,7 +9,7 @@ func New(c CompareParams) *Comparer {
 }
 
 func (c *Comparer) Compare(expected, actual interface{}, params CompareParams) []error {
-	return Compare(expected, actual, c.merge(params))
+	return compare(expected, actual, c.merge(params))
 }
 
 func (c *Comparer) CompareJsonBody(
@@ -17,7 +17,7 @@ func (c *Comparer) CompareJsonBody(
 	realBody string,
 	params CompareParams,
 ) ([]error, error) {
-	return CompareJsonBody(expectedBody, realBody, c.merge(params))
+	return compareJsonBody(expectedBody, realBody, c.merge(params))
 }
 
 func (c *Comparer) merge(params CompareParams) CompareParams {

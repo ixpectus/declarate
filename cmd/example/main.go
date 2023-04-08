@@ -88,9 +88,9 @@ func main() {
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			vars.NewUnmarshaller(evaluator),
-			shell.NewUnmarshaller(),
-			script.NewUnmarshaller(),
-			request.NewUnmarshaller("http://localhost:8181/"),
+			shell.NewUnmarshaller(cmp),
+			script.NewUnmarshaller(cmp),
+			request.NewUnmarshaller("http://localhost:8181/", cmp),
 			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
 		},
 	})

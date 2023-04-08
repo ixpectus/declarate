@@ -12,6 +12,7 @@ type ScriptCmd struct {
 	Config       *Config
 	Vars         contract.Vars
 	responseBody string
+	comparer     contract.Comparer
 }
 
 type extendedConfig struct {
@@ -42,12 +43,14 @@ func (e *ScriptCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
-func NewUnmarshaller() *Unmarshaller {
-	return &Unmarshaller{}
+func NewUnmarshaller(comparer contract.Comparer) *Unmarshaller {
+	return &Unmarshaller{
+		comparer: comparer,
+	}
 }
 
 type Unmarshaller struct {
-	host string
+	comparer contract.Comparer
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
@@ -64,6 +67,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	}
 	if cfgExtended != nil && cfgExtended.Script != nil {
 		return &ScriptCmd{
+			comparer: u.comparer,
 			Config: &Config{
 				Cmd:            cfgExtended.Script.Path,
 				VariablesToSet: cfgExtended.Script.VariablesToSet,
@@ -72,7 +76,8 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		}, nil
 	}
 	return &ScriptCmd{
-		Config: cfg,
+		comparer: u.comparer,
+		Config:   cfg,
 	}, nil
 }
 
@@ -112,7 +117,7 @@ func (e *ScriptCmd) Check() error {
 			)
 			return res
 		}
-		errors := compare.Compare(
+		errors := e.comparer.Compare(
 			*e.Config.Response,
 			e.responseBody,
 			compare.CompareParams{},

@@ -12,6 +12,7 @@ type ShellCmd struct {
 	Config       *Config
 	Vars         contract.Vars
 	responseBody string
+	comparer     contract.Comparer
 }
 
 type extendedConfig struct {
@@ -34,12 +35,14 @@ func (e *ShellCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
-func NewUnmarshaller() *Unmarshaller {
-	return &Unmarshaller{}
+func NewUnmarshaller(comparer contract.Comparer) *Unmarshaller {
+	return &Unmarshaller{
+		comparer: comparer,
+	}
 }
 
 type Unmarshaller struct {
-	host string
+	comparer contract.Comparer
 }
 
 func (ex *extendedConfig) isEmpty() bool {
@@ -64,6 +67,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	}
 	if cfgExtended != nil && cfgExtended.Shell != nil {
 		return &ShellCmd{
+			comparer: u.comparer,
 			Config: &Config{
 				Cmd:            cfgExtended.Shell.Cmd,
 				VariablesToSet: cfgExtended.Shell.VariablesToSet,
@@ -72,7 +76,8 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		}, nil
 	}
 	return &ShellCmd{
-		Config: cfg,
+		comparer: u.comparer,
+		Config:   cfg,
 	}, nil
 }
 
@@ -112,7 +117,7 @@ func (e *ShellCmd) Check() error {
 			)
 			return res
 		}
-		errors := compare.Compare(
+		errors := e.comparer.Compare(
 			*e.Config.Response,
 			e.responseBody,
 			compare.CompareParams{},

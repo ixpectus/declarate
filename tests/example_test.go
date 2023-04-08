@@ -26,11 +26,11 @@ func TestExample(t *testing.T) {
 		Variables: vv,
 		Output:    &output.Output{},
 		Builders: []contract.CommandBuilder{
-			shell.NewUnmarshaller(),
-			script.NewUnmarshaller(),
+			shell.NewUnmarshaller(cmp),
+			script.NewUnmarshaller(cmp),
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
-			request.NewUnmarshaller("http://localhost:8181/"),
+			request.NewUnmarshaller("http://localhost:8181/", cmp),
 			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
 		},
 	})
