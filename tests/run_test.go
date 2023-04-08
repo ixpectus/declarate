@@ -8,6 +8,7 @@ import (
 	"github.com/ixpectus/declarate/commands/echo"
 	"github.com/ixpectus/declarate/commands/request"
 	"github.com/ixpectus/declarate/commands/vars"
+	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/eval"
 	"github.com/ixpectus/declarate/output"
@@ -18,6 +19,7 @@ import (
 var (
 	evaluator = eval.NewEval(nil)
 	vv        = variables.New(evaluator)
+	cmp       = compare.New(compare.CompareParams{})
 	runner    = run.New(run.RunnerConfig{
 		Variables: vv,
 		Output:    &output.Output{},
@@ -25,7 +27,7 @@ var (
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/"),
-			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable"),
+			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
 		},
 	})
 )

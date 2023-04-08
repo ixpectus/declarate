@@ -59,8 +59,10 @@ func (r *Runner) run(
 			continue
 		}
 		r.beforeTest(fileName, v, 0)
-		var err error
-		var testResult *Result
+		var (
+			err        error
+			testResult *Result
+		)
 		if v.Name != "" {
 			r.output.Log(contract.Message{
 				Name:    v.Name,

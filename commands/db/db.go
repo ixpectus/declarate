@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -19,16 +18,24 @@ import (
 type Db struct {
 	Config       *CheckConfig
 	Vars         contract.Vars
+	Comparer     contract.Comparer
 	Connection   string
 	responseBody *string
 }
 
 type Unmarshaller struct {
 	connection string
+	comparer   contract.Comparer
 }
 
-func NewUnmarshaller(connection string) *Unmarshaller {
-	return &Unmarshaller{connection: connection}
+func NewUnmarshaller(
+	connection string,
+	comparer contract.Comparer,
+) *Unmarshaller {
+	return &Unmarshaller{
+		connection: connection,
+		comparer:   comparer,
+	}
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
@@ -47,11 +54,13 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &Db{
 			Config:     cfg.Check,
 			Connection: u.connection,
+			Comparer:   u.comparer,
 		}, nil
 	}
 	return &Db{
 		Config:     cfgShort,
 		Connection: u.connection,
+		Comparer:   u.comparer,
 	}, nil
 }
 
@@ -123,7 +132,11 @@ func (e *Db) VariablesToSet() map[string]string {
 
 func (e *Db) Check() error {
 	if e.Config != nil && e.responseBody != nil && e.Config.DbResponse != "" {
-		errs, err := compare.CompareJsonBody(e.Config.DbResponse, *e.responseBody, e.Config.ComparisonParams)
+		errs, err := e.Comparer.CompareJsonBody(
+			e.Config.DbResponse,
+			*e.responseBody,
+			e.Config.ComparisonParams,
+		)
 		if len(errs) > 0 {
 			msg := ""
 			for _, v := range errs {
@@ -143,25 +156,6 @@ func (e *Db) Check() error {
 	}
 
 	return nil
-}
-
-func compareJsonBody(expectedBody string, realBody string, params compare.CompareParams) ([]error, error) {
-	// decode expected body
-	var expected interface{}
-	if err := json.Unmarshal([]byte(expectedBody), &expected); err != nil {
-		return nil, fmt.Errorf(
-			"invalid JSON in response for test : %s",
-			err.Error(),
-		)
-	}
-
-	// decode actual body
-	var actual interface{}
-	if err := json.Unmarshal([]byte(realBody), &actual); err != nil {
-		return []error{errors.New("could not parse response")}, nil
-	}
-
-	return compare.Compare(expected, actual, params), nil
 }
 
 func toJsonArray(items []string, qual, testName string) ([]interface{}, error) {

@@ -15,6 +15,7 @@ import (
 	"github.com/ixpectus/declarate/commands/script"
 	"github.com/ixpectus/declarate/commands/shell"
 	"github.com/ixpectus/declarate/commands/vars"
+	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/eval"
 	"github.com/ixpectus/declarate/output"
@@ -75,6 +76,7 @@ func main() {
 	flag.Parse()
 	evaluator := eval.NewEval(nil)
 	vv := variables.New(evaluator)
+	cmp := compare.New(compare.CompareParams{})
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:         false,
 		Filepathes:     []string{},
@@ -89,7 +91,7 @@ func main() {
 			shell.NewUnmarshaller(),
 			script.NewUnmarshaller(),
 			request.NewUnmarshaller("http://localhost:8181/"),
-			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable"),
+			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
 		},
 	})
 

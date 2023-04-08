@@ -1,5 +1,7 @@
 package contract
 
+import "github.com/ixpectus/declarate/compare"
+
 type Vars interface {
 	Set(k, val string)
 	Get(k string) string
@@ -83,4 +85,13 @@ type Result struct {
 	Lvl      int
 	FileName string
 	Response *string
+}
+
+type Comparer interface {
+	Compare(expected, actual interface{}, params compare.CompareParams) []error
+	CompareJsonBody(
+		expectedBody string,
+		realBody string,
+		params compare.CompareParams,
+	) ([]error, error)
 }
