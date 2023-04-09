@@ -22,6 +22,7 @@ func TestExample(t *testing.T) {
 	os.Chdir("../")
 	color.NoColor = false
 	cmp := compare.New(compare.CompareParams{})
+	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	runner = run.New(run.RunnerConfig{
 		Variables: vv,
 		Output:    &output.Output{},
@@ -31,7 +32,7 @@ func TestExample(t *testing.T) {
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/", cmp),
-			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
+			db.NewUnmarshaller(connLoader, cmp),
 		},
 	})
 	err := runner.Run("./tests/yaml_example/example.yaml")

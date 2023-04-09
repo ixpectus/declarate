@@ -77,6 +77,7 @@ func main() {
 	evaluator := eval.NewEval(nil)
 	vv := variables.New(evaluator)
 	cmp := compare.New(compare.CompareParams{})
+	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:         false,
 		Filepathes:     []string{},
@@ -91,7 +92,7 @@ func main() {
 			shell.NewUnmarshaller(cmp),
 			script.NewUnmarshaller(cmp),
 			request.NewUnmarshaller("http://localhost:8181/", cmp),
-			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
+			db.NewUnmarshaller(connLoader, cmp),
 		},
 	})
 

@@ -1,6 +1,10 @@
 package contract
 
-import "github.com/ixpectus/declarate/compare"
+import (
+	"database/sql"
+
+	"github.com/ixpectus/declarate/compare"
+)
 
 type Vars interface {
 	Set(k, val string)
@@ -94,4 +98,8 @@ type Comparer interface {
 		realBody string,
 		params compare.CompareParams,
 	) ([]error, error)
+}
+
+type DBConnectLoader interface {
+	Get(string) (*sql.DB, error)
 }

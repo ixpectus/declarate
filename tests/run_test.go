@@ -17,17 +17,18 @@ import (
 )
 
 var (
-	evaluator = eval.NewEval(nil)
-	vv        = variables.New(evaluator)
-	cmp       = compare.New(compare.CompareParams{})
-	runner    = run.New(run.RunnerConfig{
+	evaluator  = eval.NewEval(nil)
+	vv         = variables.New(evaluator)
+	cmp        = compare.New(compare.CompareParams{})
+	connLoader = db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
+	runner     = run.New(run.RunnerConfig{
 		Variables: vv,
 		Output:    &output.Output{},
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			&vars.Unmarshaller{},
 			request.NewUnmarshaller("http://localhost:8181/", cmp),
-			db.NewUnmarshaller("postgres://postgres@127.0.0.1:5440/?sslmode=disable", cmp),
+			db.NewUnmarshaller(connLoader, cmp),
 		},
 	})
 )

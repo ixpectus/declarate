@@ -16,25 +16,25 @@ import (
 )
 
 type Db struct {
-	Config       *CheckConfig
-	Vars         contract.Vars
-	Comparer     contract.Comparer
-	Connection   string
-	responseBody *string
+	Config        *CheckConfig
+	Vars          contract.Vars
+	Comparer      contract.Comparer
+	connectLoader contract.DBConnectLoader
+	responseBody  *string
 }
 
 type Unmarshaller struct {
-	connection string
-	comparer   contract.Comparer
+	connectLoader contract.DBConnectLoader
+	comparer      contract.Comparer
 }
 
 func NewUnmarshaller(
-	connection string,
+	connectLoader contract.DBConnectLoader,
 	comparer contract.Comparer,
 ) *Unmarshaller {
 	return &Unmarshaller{
-		connection: connection,
-		comparer:   comparer,
+		connectLoader: connectLoader,
+		comparer:      comparer,
 	}
 }
 
@@ -52,15 +52,15 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	}
 	if !cfg.Check.isEmpty() {
 		return &Db{
-			Config:     cfg.Check,
-			Connection: u.connection,
-			Comparer:   u.comparer,
+			Config:        cfg.Check,
+			connectLoader: u.connectLoader,
+			Comparer:      u.comparer,
 		}, nil
 	}
 	return &Db{
-		Config:     cfgShort,
-		Connection: u.connection,
-		Comparer:   u.comparer,
+		Config:        cfgShort,
+		connectLoader: u.connectLoader,
+		Comparer:      u.comparer,
 	}, nil
 }
 
@@ -97,7 +97,7 @@ func (e *Db) Do() error {
 		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
 		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
 		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
-		db, err := sql.Open("postgres", e.Connection)
+		db, err := e.connectLoader.Get(e.Config.DbConn)
 		if err != nil {
 			return err
 		}
