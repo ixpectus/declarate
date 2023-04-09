@@ -58,7 +58,7 @@ func (r *Runner) run(
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
 		}
-		r.beforeTest(fileName, v, 0)
+		r.beforeTest(fileName, &v, 0)
 		var (
 			err        error
 			testResult *Result
@@ -92,25 +92,28 @@ func (r *Runner) run(
 	return nil
 }
 
-func (r *Runner) beforeTest(file string, conf runConfig, lvl int) {
+func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
-		r.config.Wrapper.BeforeTest(file, contract.RunConfig{
+		cfg := &contract.RunConfig{
 			Name:           conf.Name,
 			Vars:           currentVars,
 			VariablesToSet: conf.VariablesToSet,
 			Commands:       conf.Commands,
-		}, lvl)
+		}
+		r.config.Wrapper.BeforeTest(file, cfg, lvl)
+		conf.Commands = cfg.Commands
 	}
 }
 
 func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 	if r.config.Wrapper != nil {
-		r.config.Wrapper.AfterTest(contract.RunConfig{
+		cfg := &contract.RunConfig{
 			Name:           conf.Name,
 			Vars:           currentVars,
 			VariablesToSet: conf.VariablesToSet,
 			Commands:       conf.Commands,
-		},
+		}
+		r.config.Wrapper.AfterTest(cfg,
 			contract.Result{
 				Err:      result.Err,
 				Name:     conf.Name,
@@ -119,28 +122,32 @@ func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 				Response: result.Response,
 			},
 		)
+		conf.Commands = cfg.Commands
 	}
 }
 
-func (r *Runner) beforeTestStep(file string, conf runConfig, lvl int) {
+func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
-		r.config.Wrapper.BeforeTestStep(file, contract.RunConfig{
+		cfg := &contract.RunConfig{
 			Name:           conf.Name,
 			Vars:           currentVars,
 			VariablesToSet: conf.VariablesToSet,
 			Commands:       conf.Commands,
-		}, lvl)
+		}
+		r.config.Wrapper.BeforeTestStep(file, cfg, lvl)
+		conf.Commands = cfg.Commands
 	}
 }
 
-func (r *Runner) afterTestStep(file string, conf runConfig, result Result) {
+func (r *Runner) afterTestStep(file string, conf *runConfig, result Result) {
 	if r.config.Wrapper != nil {
-		r.config.Wrapper.AfterTestStep(contract.RunConfig{
+		cfg := &contract.RunConfig{
 			Name:           conf.Name,
 			Vars:           currentVars,
 			VariablesToSet: conf.VariablesToSet,
 			Commands:       conf.Commands,
-		},
+		}
+		r.config.Wrapper.AfterTestStep(cfg,
 			contract.Result{
 				Err:      result.Err,
 				Name:     conf.Name,
@@ -149,6 +156,7 @@ func (r *Runner) afterTestStep(file string, conf runConfig, result Result) {
 				Response: result.Response,
 			},
 		)
+		conf.Commands = cfg.Commands
 	}
 }
 
@@ -191,7 +199,7 @@ func (r *Runner) runOne(
 	var body *string
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
-		r.beforeTestStep(fileName, conf, lvl)
+		r.beforeTestStep(fileName, &conf, lvl)
 		if err := c.Do(); err != nil {
 			return &Result{
 				Err:      err,
@@ -210,7 +218,7 @@ func (r *Runner) runOne(
 				FileName: fileName,
 				Response: body,
 			}
-			r.afterTestStep(fileName, conf, *res)
+			r.afterTestStep(fileName, &conf, *res)
 			return res, nil
 		}
 
@@ -234,7 +242,7 @@ func (r *Runner) runOne(
 							Lvl:      lvl,
 							FileName: fileName,
 						}
-						r.afterTestStep(fileName, conf, *res)
+						r.afterTestStep(fileName, &conf, *res)
 						return res, nil
 					}
 					for k, v := range vars {
@@ -275,7 +283,7 @@ func (r *Runner) runOne(
 		Lvl:      lvl,
 		FileName: fileName,
 	}
-	r.afterTestStep(fileName, conf, *res)
+	r.afterTestStep(fileName, &conf, *res)
 	return res, nil
 }
 

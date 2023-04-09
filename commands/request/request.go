@@ -41,7 +41,7 @@ func NewUnmarshaller(
 	comparer contract.Comparer,
 	opts ...Option,
 ) *Unmarshaller {
-	u := &Unmarshaller{host: host, comparer: comparer}
+	u := &Unmarshaller{host: host, comparer: comparer, defaultConfig: DefaultConfig{}}
 	for _, v := range opts {
 		v(u)
 	}
@@ -109,6 +109,9 @@ func (e *Request) Do() error {
 		e.Config.ResponseTmpls = e.Vars.Apply(e.Config.ResponseTmpls)
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
 		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
+		if defaultHeaders == nil {
+			defaultHeaders = map[string]string{}
+		}
 		headers := e.applyHeadersVal(e.Config.HeadersVal)
 		for k, v := range headers {
 			defaultHeaders[k] = v
