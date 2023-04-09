@@ -103,16 +103,16 @@
     {{$cmd}} -dir ./tests/yaml_poll/poll.yaml
   shell_response: |
     start  ./tests/yaml_poll/poll.yaml:check poll handler
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms
     passed ./tests/yaml_poll/poll.yaml:check poll handler
     start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
-    Sleep 10ms before next poll request
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
     passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
     start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
     expected: {"age": 31,"name":"Tommy"}
@@ -126,6 +126,7 @@
     at path $.name values do not match:
          expected: Tommy
            actual: Tom
+
 
 - name: test tags, pass existing tags
   shell_cmd: | 

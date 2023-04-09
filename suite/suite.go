@@ -51,7 +51,7 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 		var testDefinitions []testDefinition
 		err = yaml.Unmarshal(data, &testDefinitions)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse test definitions from file %s: %w", v, err)
 		}
 		if len(testDefinitions) == 0 {
 			continue
@@ -83,7 +83,7 @@ func (s *Suite) Run() error {
 	tests, err := s.filterTestsByTags(allTests)
 	if err != nil {
 		log.Println(err)
-		return err
+		return fmt.Errorf("filter tests by tags: %w", err)
 	}
 	if len(s.Config.Filepathes) > 0 {
 		if len(s.Config.Tags) > 0 {
@@ -92,6 +92,7 @@ func (s *Suite) Run() error {
 			tests = s.filterTestsByPathes(allTests, []string{})
 		}
 	}
+
 	if s.Config.DryRun {
 		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
 		return nil

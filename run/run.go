@@ -47,7 +47,10 @@ func (r *Runner) Run(fileName string) error {
 	if err := yaml.Unmarshal(file, &configs); err != nil {
 		return fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
-	return r.run(configs, fileName)
+	if err := r.run(configs, fileName); err != nil {
+		return fmt.Errorf("run failed for file %s: %w", fileName, err)
+	}
+	return nil
 }
 
 func (r *Runner) run(
@@ -76,7 +79,7 @@ func (r *Runner) run(
 			testResult, err = r.runOne(v, 0, fileName)
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("run test for file %s: %w", fileName, err)
 		}
 		r.afterTest(fileName, v, *testResult)
 		if testResult.Err != nil {
@@ -180,7 +183,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			}
 			r.output.Log(contract.Message{
 				Name:    v.Name,
-				Message: fmt.Sprintf("Sleep %v before next poll request", d),
+				Message: fmt.Sprintf("poll %s:%s, wait %v", fileName, v.Name, d),
 				Type:    contract.MessageTypeNotify,
 			})
 			time.Sleep(d)

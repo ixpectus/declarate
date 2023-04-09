@@ -74,7 +74,7 @@ type DefaultConfig struct {
 type RequestConfig struct {
 	Method           string                    `json:"method" yaml:"method"`
 	RequestTmpl      string                    `json:"request" yaml:"request"`
-	ResponseTmpls    string                    `json:"response" yaml:"response"`
+	ResponseTmpls    *string                   `json:"response" yaml:"response"`
 	ResponseStatus   *int                      `json:"responseStatus" yaml:"responseStatus"`
 	ResponseHeaders  map[int]map[string]string `json:"responseHeaders" yaml:"responseHeaders"`
 	HeadersVal       map[string]string         `json:"headers" yaml:"headers"`
@@ -106,7 +106,10 @@ func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
-		e.Config.ResponseTmpls = e.Vars.Apply(e.Config.ResponseTmpls)
+		if e.Config.ResponseTmpls != nil {
+			s := e.Vars.Apply(*e.Config.ResponseTmpls)
+			e.Config.ResponseTmpls = &s
+		}
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
 		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
 		if defaultHeaders == nil {
@@ -118,11 +121,13 @@ func (e *Request) Do() error {
 		}
 		config := *e.Config
 		config.HeadersVal = defaultHeaders
-		req, err := newCommonRequest(e.Host, *e.Config)
+		req, err := newCommonRequest(e.Host, config)
 		if err != nil {
 			return err
 		}
 		client := &http.Client{}
+		// curlReq, _ := http2curl.GetCurlCommand(req)
+		// pp.Println(curlReq)
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
@@ -154,8 +159,8 @@ func (e *Request) VariablesToSet() map[string]string {
 func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
-		if b != nil {
-			errs, err := e.comparer.CompareJsonBody(e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
+		if b != nil && e.Config.ResponseTmpls != nil {
+			errs, err := e.comparer.CompareJsonBody(*e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
 			if len(errs) > 0 {
 				msg := ""
 				for i, v := range errs {
@@ -167,7 +172,7 @@ func (e *Request) Check() error {
 				}
 				return &contract.TestError{
 					Title:         "response body differs",
-					Expected:      e.Config.ResponseTmpls,
+					Expected:      *e.Config.ResponseTmpls,
 					Actual:        *b,
 					Message:       msg,
 					OriginalError: fmt.Errorf("response body differs: %v", msg),
