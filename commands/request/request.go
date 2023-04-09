@@ -14,6 +14,7 @@ import (
 
 type Request struct {
 	Config         *RequestConfig
+	defaultConfig  DefaultConfig
 	Vars           contract.Vars
 	Host           string
 	responseBody   *string
@@ -22,12 +23,29 @@ type Request struct {
 }
 
 type Unmarshaller struct {
-	host     string
-	comparer contract.Comparer
+	host          string
+	comparer      contract.Comparer
+	defaultConfig DefaultConfig
 }
 
-func NewUnmarshaller(host string, comparer contract.Comparer) *Unmarshaller {
-	return &Unmarshaller{host: host, comparer: comparer}
+type Option func(*Unmarshaller)
+
+func OptionDefaultRequestConfig(config DefaultConfig) Option {
+	return func(c *Unmarshaller) {
+		c.defaultConfig = config
+	}
+}
+
+func NewUnmarshaller(
+	host string,
+	comparer contract.Comparer,
+	opts ...Option,
+) *Unmarshaller {
+	u := &Unmarshaller{host: host, comparer: comparer}
+	for _, v := range opts {
+		v(u)
+	}
+	return u
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
@@ -43,12 +61,16 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return nil, nil
 	}
 	return &Request{
-		Config:   cfg,
-		Host:     u.host,
-		comparer: u.comparer,
+		Config:        cfg,
+		Host:          u.host,
+		comparer:      u.comparer,
+		defaultConfig: u.defaultConfig,
 	}, nil
 }
 
+type DefaultConfig struct {
+	HeadersVal map[string]string `json:"headers" yaml:"headers"`
+}
 type RequestConfig struct {
 	Method           string                    `json:"method" yaml:"method"`
 	RequestTmpl      string                    `json:"request" yaml:"request"`
@@ -71,12 +93,28 @@ func (e *Request) GetConfig() interface{} {
 	return e.Config
 }
 
+func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
+	for k, v := range headers {
+		k = e.Vars.Apply(k)
+		v = e.Vars.Apply(v)
+		headers[k] = v
+	}
+	return headers
+}
+
 func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
 		e.Config.ResponseTmpls = e.Vars.Apply(e.Config.ResponseTmpls)
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
+		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
+		headers := e.applyHeadersVal(e.Config.HeadersVal)
+		for k, v := range headers {
+			defaultHeaders[k] = v
+		}
+		config := *e.Config
+		config.HeadersVal = defaultHeaders
 		req, err := newCommonRequest(e.Host, *e.Config)
 		if err != nil {
 			return err
