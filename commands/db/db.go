@@ -98,6 +98,7 @@ func (e *Db) Do() error {
 		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
 		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
 		db, err := e.connectLoader.Get(e.Config.DbConn)
+		defer db.Close()
 		if err != nil {
 			return err
 		}

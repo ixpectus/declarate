@@ -54,6 +54,7 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 			continue
 		}
 		if t != nil {
+			v.Name = currentVars.Apply(v.Name)
 			failed := t.Run(v.Name, func(t1 *testing.T) {
 				testResult, err := r.run(v, fileName)
 				if err != nil {
@@ -79,6 +80,7 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 				t.FailNow()
 			}
 		} else {
+			v.Name = currentVars.Apply(v.Name)
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
@@ -121,7 +123,7 @@ func (r *Runner) run(
 	if len(v.Poll.PollInterval()) > 0 {
 		testResult, err = r.runWithPollInterval(v, fileName)
 	} else {
-		testResult, err = r.runOne(v, 0, fileName)
+		testResult, err = r.runOne(v, 0, fileName, false)
 	}
 	if err != nil {
 		return testResult, fmt.Errorf("run test for file %s: %w", fileName, err)
@@ -177,7 +179,7 @@ func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
 	}
 }
 
-func (r *Runner) afterTestStep(file string, conf *runConfig, result Result) {
+func (r *Runner) afterTestStep(file string, conf *runConfig, result Result, polling bool) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
 			Name:           conf.Name,
@@ -193,6 +195,7 @@ func (r *Runner) afterTestStep(file string, conf *runConfig, result Result) {
 				FileName: file,
 				Response: result.Response,
 			},
+			polling,
 		)
 		conf.Commands = cfg.Commands
 	}
@@ -201,8 +204,12 @@ func (r *Runner) afterTestStep(file string, conf *runConfig, result Result) {
 func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, error) {
 	var err error
 	var testResult *Result
-	for _, d := range v.Poll.PollInterval() {
-		testResult, err = r.runOne(v, 0, fileName)
+	for i, d := range v.Poll.PollInterval() {
+		isPolling := true
+		if len(v.Poll.PollInterval())-1 == i {
+			isPolling = false
+		}
+		testResult, err = r.runOne(v, 0, fileName, isPolling)
 		if err != nil {
 			return nil, err
 		}
@@ -233,10 +240,12 @@ func (r *Runner) runOne(
 	conf runConfig,
 	lvl int,
 	fileName string,
+	polling bool,
 ) (*Result, error) {
 	var body *string
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
+		conf.Name = currentVars.Apply(conf.Name)
 		r.beforeTestStep(fileName, &conf, lvl)
 		if err := c.Do(); err != nil {
 			return &Result{
@@ -256,7 +265,7 @@ func (r *Runner) runOne(
 				FileName: fileName,
 				Response: body,
 			}
-			r.afterTestStep(fileName, &conf, *res)
+			r.afterTestStep(fileName, &conf, *res, polling)
 			return res, nil
 		}
 
@@ -280,7 +289,7 @@ func (r *Runner) runOne(
 							Lvl:      lvl,
 							FileName: fileName,
 						}
-						r.afterTestStep(fileName, &conf, *res)
+						r.afterTestStep(fileName, &conf, *res, polling)
 						return res, nil
 					}
 					for k, v := range vars {
@@ -300,7 +309,7 @@ func (r *Runner) runOne(
 					Type:    contract.MessageTypeNotify,
 				})
 			}
-			testResult, err := r.runOne(v, lvl+1, fileName)
+			testResult, err := r.runOne(v, lvl+1, fileName, polling)
 			if testResult.Err != nil {
 				return testResult, nil
 			}
@@ -321,7 +330,7 @@ func (r *Runner) runOne(
 		Lvl:      lvl,
 		FileName: fileName,
 	}
-	r.afterTestStep(fileName, &conf, *res)
+	r.afterTestStep(fileName, &conf, *res, polling)
 	return res, nil
 }
 

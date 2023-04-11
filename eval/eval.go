@@ -30,7 +30,7 @@ func (e *Eval) Evaluate(s string) string {
 		eval := goval.NewEvaluator()
 		result, err := eval.Evaluate(val, nil, e.functions)
 		if err == nil {
-			s = strings.ReplaceAll(s, fmt.Sprintf("{{$(%s)}}", val), fmt.Sprintf("%v", result))
+			s = strings.ReplaceAll(s, fmt.Sprintf("$(%s)", val), fmt.Sprintf("%v", result))
 		}
 	}
 	return s

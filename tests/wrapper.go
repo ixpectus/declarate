@@ -50,7 +50,7 @@ func (d *DebugWrapper) BeforeTestStep(file string, conf *contract.RunConfig, lvl
 	}
 }
 
-func (d *DebugWrapper) AfterTestStep(conf *contract.RunConfig, result contract.Result) {
+func (d *DebugWrapper) AfterTestStep(conf *contract.RunConfig, result contract.Result, isPolling bool) {
 	if strings.Contains(result.FileName, "yaml_wrapper") && result.Lvl > 0 {
 		fmt.Printf("after test step %v\n", conf.Name)
 	}
