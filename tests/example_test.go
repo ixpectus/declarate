@@ -35,7 +35,7 @@ func TestExample(t *testing.T) {
 			db.NewUnmarshaller(connLoader, cmp),
 		},
 	})
-	err := runner.Run("./tests/yaml_example/example.yaml")
+	err := runner.Run("./tests/yaml_example/example.yaml", nil)
 	if err != nil {
 		fmt.Println(err)
 	}

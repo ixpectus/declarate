@@ -35,18 +35,18 @@ var (
 
 func TestReq(t *testing.T) {
 	color.NoColor = false
-	runner.Run("./yaml/config_req.yaml")
+	runner.Run("./yaml/config_req.yaml", nil)
 	vv.Reset()
 }
 
 func TestDb(t *testing.T) {
 	color.NoColor = false
-	runner.Run("./yaml/db.yaml")
+	runner.Run("./yaml/db.yaml", nil)
 	vv.Reset()
 }
 
 func TestShell(t *testing.T) {
 	color.NoColor = false
-	runner.Run("./yaml/config_shell.yaml")
+	runner.Run("./yaml/config_shell.yaml", nil)
 	vv.Reset()
 }

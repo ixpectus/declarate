@@ -14,6 +14,10 @@ var (
 	colorFail    = color.New(color.FgRed)
 )
 
+func New() *Output {
+	return &Output{}
+}
+
 type Output struct{}
 
 func (o *Output) Log(message contract.Message) {
@@ -31,10 +35,10 @@ func (o *Output) Log(message contract.Message) {
 	}
 	if message.Type == contract.MessageTypeError {
 		if message.Title != "" {
-			logText := colorFail.Sprint(message.Title) + ": \n" + message.Message
+			logText := colorFail.Sprint("FAILED: "+message.Title) + ": \n" + message.Message
 			log.Println(logText)
 		} else {
-			logText := colorFail.Sprint(message.Message)
+			logText := colorFail.Sprint("FAILED: " + message.Message)
 			log.Println(prefix + logText)
 		}
 	}

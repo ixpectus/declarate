@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"testing"
 	"time"
 
 	"github.com/ixpectus/declarate/contract"
@@ -27,6 +28,7 @@ type RunnerConfig struct {
 	Builders  []contract.CommandBuilder
 	Output    contract.Output
 	Wrapper   contract.TestWrapper
+	T         *testing.T
 }
 
 func New(c RunnerConfig) *Runner {
@@ -37,7 +39,7 @@ func New(c RunnerConfig) *Runner {
 	}
 }
 
-func (r *Runner) Run(fileName string) error {
+func (r *Runner) Run(fileName string, t *testing.T) error {
 	file, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("file open: %w", err)
@@ -47,52 +49,85 @@ func (r *Runner) Run(fileName string) error {
 	if err := yaml.Unmarshal(file, &configs); err != nil {
 		return fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
-	if err := r.run(configs, fileName); err != nil {
-		return fmt.Errorf("run failed for file %s: %w", fileName, err)
+	for _, v := range configs {
+		if len(v.Commands) == 0 && len(v.Steps) == 0 {
+			continue
+		}
+		if t != nil {
+			failed := t.Run(v.Name, func(t1 *testing.T) {
+				testResult, err := r.run(v, fileName)
+				if err != nil {
+					r.output.Log(contract.Message{
+						Name:    v.Name,
+						Message: fmt.Sprintf("run failed for file %s: %s", fileName, err),
+						Type:    contract.MessageTypeError,
+					})
+					t1.FailNow()
+				}
+				if testResult.Err != nil {
+					r.outputErr(*testResult)
+					t1.FailNow()
+				} else {
+					r.output.Log(contract.Message{
+						Name:    v.Name,
+						Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
+						Type:    contract.MessageTypeSuccess,
+					})
+				}
+			})
+			if !failed {
+				t.FailNow()
+			}
+		} else {
+			testResult, err := r.run(v, fileName)
+			if err != nil {
+				r.output.Log(contract.Message{
+					Name:    v.Name,
+					Message: fmt.Sprintf("run failed for file %s: %s", fileName, err),
+					Type:    contract.MessageTypeError,
+				})
+			}
+			if testResult.Err != nil {
+				r.outputErr(*testResult)
+				continue
+			} else {
+				r.output.Log(contract.Message{
+					Name:    v.Name,
+					Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
+					Type:    contract.MessageTypeSuccess,
+				})
+			}
+		}
 	}
 	return nil
 }
 
 func (r *Runner) run(
-	cc []runConfig,
+	v runConfig,
 	fileName string,
-) error {
-	for _, v := range cc {
-		if len(v.Commands) == 0 && len(v.Steps) == 0 {
-			continue
-		}
-		r.beforeTest(fileName, &v, 0)
-		var (
-			err        error
-			testResult *Result
-		)
-		if v.Name != "" {
-			r.output.Log(contract.Message{
-				Name:    v.Name,
-				Message: fmt.Sprintf("start  %v:%v", fileName, v.Name),
-				Type:    contract.MessageTypeNotify,
-			})
-		}
-		if len(v.Poll.PollInterval()) > 0 {
-			testResult, err = r.runWithPollInterval(v, fileName)
-		} else {
-			testResult, err = r.runOne(v, 0, fileName)
-		}
-		if err != nil {
-			return fmt.Errorf("run test for file %s: %w", fileName, err)
-		}
-		r.afterTest(fileName, v, *testResult)
-		if testResult.Err != nil {
-			r.outputErr(*testResult)
-		} else {
-			r.output.Log(contract.Message{
-				Name:    v.Name,
-				Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
-				Type:    contract.MessageTypeSuccess,
-			})
-		}
+) (*Result, error) {
+	r.beforeTest(fileName, &v, 0)
+	var (
+		err        error
+		testResult *Result
+	)
+	if v.Name != "" {
+		r.output.Log(contract.Message{
+			Name:    v.Name,
+			Message: fmt.Sprintf("start  %v:%v", fileName, v.Name),
+			Type:    contract.MessageTypeNotify,
+		})
 	}
-	return nil
+	if len(v.Poll.PollInterval()) > 0 {
+		testResult, err = r.runWithPollInterval(v, fileName)
+	} else {
+		testResult, err = r.runOne(v, 0, fileName)
+	}
+	if err != nil {
+		return testResult, fmt.Errorf("run test for file %s: %w", fileName, err)
+	}
+	r.afterTest(fileName, v, *testResult)
+	return testResult, nil
 }
 
 func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {

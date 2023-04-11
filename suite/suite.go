@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"testing"
 
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/run"
@@ -27,6 +28,7 @@ type RunConfig struct {
 	Builders       []contract.CommandBuilder
 	Output         contract.Output
 	TestRunWrapper contract.TestWrapper
+	T              *testing.T
 }
 
 type Suite struct {
@@ -102,12 +104,23 @@ func (s *Suite) Run() error {
 		Output:    s.Config.Output,
 		Builders:  s.Config.Builders,
 		Wrapper:   s.Config.TestRunWrapper,
+		T:         s.Config.T,
 	},
 	)
 	for _, v := range tests {
-		err := runner.Run(v)
-		if err != nil {
-			log.Println(err)
+		if s.Config.T != nil {
+			s.Config.T.Run(v, func(t *testing.T) {
+				err := runner.Run(v, t)
+				if err != nil {
+					log.Println(err)
+					t.Fail()
+				}
+			})
+		} else {
+			err := runner.Run(v, nil)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 	return nil
