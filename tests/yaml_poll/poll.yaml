@@ -19,6 +19,17 @@
     duration: 100ms
     interval: 10ms
 
+- name: check poll handler with regexp success with response body
+  method: GET
+  path: /poll
+  responseStatus: 200
+  response: |
+    {"age": 31,"name":"Tommy"}
+  poll:
+    response: | 
+      {"name":"Tom"}
+    duration: 100ms
+    interval: 10ms
 
 - name: check poll handler with regexp fail
   method: GET
@@ -28,6 +39,18 @@
     {"age": 31,"name":"Tommy"}
   poll:
     response_regexp: ".+Zen.+"
+    duration: 100ms
+    interval: 10ms
+
+- name: check poll handler with fail by response body
+  method: GET
+  path: /poll
+  responseStatus: 200
+  response: |
+    {"age": 31,"name":"Tommy"}
+  poll:
+    response: | 
+      {"name":"Zen"}
     duration: 100ms
     interval: 10ms
 

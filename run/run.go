@@ -1,13 +1,13 @@
 package run
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/variables"
 	"gopkg.in/yaml.v2"
@@ -29,10 +29,14 @@ type RunnerConfig struct {
 	Output    contract.Output
 	Wrapper   contract.TestWrapper
 	T         *testing.T
+	comparer  contract.Comparer
 }
 
 func New(c RunnerConfig) *Runner {
 	builders = c.Builders
+	if c.comparer == nil {
+		c.comparer = compare.New(compare.CompareParams{})
+	}
 	return &Runner{
 		config: c,
 		output: c.Output,
@@ -132,78 +136,10 @@ func (r *Runner) run(
 	return testResult, nil
 }
 
-func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {
-	if r.config.Wrapper != nil {
-		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
-		}
-		r.config.Wrapper.BeforeTest(file, cfg, lvl)
-		conf.Commands = cfg.Commands
-	}
-}
-
-func (r *Runner) afterTest(file string, conf runConfig, result Result) {
-	if r.config.Wrapper != nil {
-		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
-		}
-		r.config.Wrapper.AfterTest(cfg,
-			contract.Result{
-				Err:      result.Err,
-				Name:     conf.Name,
-				Lvl:      result.Lvl,
-				FileName: file,
-				Response: result.Response,
-			},
-		)
-		conf.Commands = cfg.Commands
-	}
-}
-
-func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
-	if r.config.Wrapper != nil {
-		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
-		}
-		r.config.Wrapper.BeforeTestStep(file, cfg, lvl)
-		conf.Commands = cfg.Commands
-	}
-}
-
-func (r *Runner) afterTestStep(file string, conf *runConfig, result Result, polling bool) {
-	if r.config.Wrapper != nil {
-		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
-		}
-		r.config.Wrapper.AfterTestStep(cfg,
-			contract.Result{
-				Err:      result.Err,
-				Name:     conf.Name,
-				Lvl:      result.Lvl,
-				FileName: file,
-				Response: result.Response,
-			},
-			polling,
-		)
-		conf.Commands = cfg.Commands
-	}
-}
-
 func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, error) {
 	var err error
 	var testResult *Result
+	v.Poll.comparer = r.config.comparer
 	for i, d := range v.Poll.PollInterval() {
 		isPolling := true
 		if len(v.Poll.PollInterval())-1 == i {
@@ -214,14 +150,17 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			return nil, err
 		}
 		if testResult.Err != nil {
-			if v.Poll.ResponseRegexp != "" {
-				rx, err := regexp.Compile(v.Poll.ResponseRegexp)
-				if err != nil {
+			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
+				if !v.Poll.pollContinue(testResult.Response) {
 					break
 				}
-				if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
-					break
-				}
+				// rx, err := regexp.Compile(v.Poll.ResponseRegexp)
+				// if err != nil {
+				// 	break
+				// }
+				// if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
+				// 	break
+				// }
 			}
 			r.output.Log(contract.Message{
 				Name:    v.Name,
@@ -300,6 +239,7 @@ func (r *Runner) runOne(
 		}
 	}
 	if len(conf.Steps) > 0 {
+		results := []string{}
 		for _, v := range conf.Steps {
 			if v.Name != "" {
 				r.output.Log(contract.Message{
@@ -313,6 +253,11 @@ func (r *Runner) runOne(
 			if testResult.Err != nil {
 				return testResult, nil
 			}
+			if testResult.Response != nil {
+				results = append(results, *testResult.Response)
+			} else {
+				results = append(results, "")
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -323,6 +268,38 @@ func (r *Runner) runOne(
 				Type:    contract.MessageTypeSuccess,
 			})
 		}
+		if len(results) > 0 {
+			s := "[" + strings.Join(results, ", ") + "]"
+			body = &s
+		}
+	}
+
+	if conf.VariablesToSet != nil {
+		varsToSet := conf.VariablesToSet
+		jsonVars := map[string]string{}
+		for k, v := range varsToSet {
+			if v == "*" {
+				currentVars.Set(k, *body)
+			} else {
+				jsonVars[k] = v
+			}
+		}
+		if len(jsonVars) > 0 {
+			vars, err := variables.FromJSON(jsonVars, *body)
+			if err != nil {
+				res := &Result{
+					Err:      err,
+					Name:     conf.Name,
+					Lvl:      lvl,
+					FileName: fileName,
+				}
+				r.afterTestStep(fileName, &conf, *res, polling)
+				return res, nil
+			}
+			for k, v := range vars {
+				currentVars.Set(k, v)
+			}
+		}
 	}
 
 	res := &Result{
@@ -332,33 +309,4 @@ func (r *Runner) runOne(
 	}
 	r.afterTestStep(fileName, &conf, *res, polling)
 	return res, nil
-}
-
-func (r *Runner) outputErr(res Result) {
-	var errTest *contract.TestError
-	if errors.As(res.Err, &errTest) {
-		r.output.Log(contract.Message{
-			Name:    res.Name,
-			Message: res.Err.Error(),
-			Title: fmt.Sprintf(
-				"failed %v:%v\n %v",
-				res.FileName,
-				res.Name,
-				errTest.Title,
-			),
-			Expected: errTest.Expected,
-			Actual:   errTest.Actual,
-			Lvl:      res.Lvl,
-			Type:     contract.MessageTypeError,
-		})
-		return
-	}
-	if res.Err != nil {
-		r.output.Log(contract.Message{
-			Name:    res.Name,
-			Message: fmt.Sprintf("failed %v", res.Err),
-			Lvl:     res.Lvl,
-			Type:    contract.MessageTypeError,
-		})
-	}
 }

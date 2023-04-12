@@ -1,11 +1,20 @@
 package run
 
-import "time"
+import (
+	"regexp"
+	"time"
+
+	"github.com/ixpectus/declarate/compare"
+	"github.com/ixpectus/declarate/contract"
+)
 
 type Poll struct {
-	Duration       time.Duration `json:"duration,omitempty" yaml:"duration"`
-	Interval       time.Duration `json:"interval,omitempty" yaml:"interval"`
-	ResponseRegexp string        `json:"response_regexp,omitempty" yaml:"response_regexp"`
+	Duration         time.Duration         `json:"duration,omitempty" yaml:"duration"`
+	Interval         time.Duration         `json:"interval,omitempty" yaml:"interval"`
+	ResponseRegexp   string                `json:"response_regexp,omitempty" yaml:"response_regexp"`
+	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
+	ResponseTmpls    *string               `json:"response" yaml:"response"`
+	comparer         contract.Comparer
 }
 
 func (p *Poll) PollInterval() []time.Duration {
@@ -23,6 +32,29 @@ func (p *Poll) PollInterval() []time.Duration {
 		return res
 	}
 	return []time.Duration{}
+}
+
+func (p *Poll) pollContinue(response *string) bool {
+	if p.ResponseTmpls != nil && response == nil {
+		return false
+	}
+	if p.ResponseRegexp != "" {
+		rx, err := regexp.Compile(p.ResponseRegexp)
+		if err != nil {
+			return false
+		}
+		if response == nil || !rx.MatchString(*response) {
+			return false
+		}
+		return true
+	}
+	if p.ResponseTmpls != nil && p.comparer != nil {
+		errs, err := p.comparer.CompareJsonBody(*p.ResponseTmpls, *response, p.ComparisonParams)
+		if len(errs) > 0 || err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 type Result struct {

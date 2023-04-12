@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 
 	"github.com/fatih/color"
 )
@@ -23,6 +24,15 @@ const (
 	regex
 )
 
+type ErrorSlice []error
+
+func (x ErrorSlice) Len() int           { return len(x) }
+func (x ErrorSlice) Less(i, j int) bool { return x[i].Error() < x[j].Error() }
+func (x ErrorSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+
+// Sort is a convenience method: x.Sort() calls Sort(x).
+func (x ErrorSlice) Sort() { sort.Sort(x) }
+
 var regexExprRx = regexp.MustCompile(`^\$matchRegexp\((.+)\)$`)
 
 // compare compares values as plain text
@@ -31,7 +41,9 @@ var regexExprRx = regexp.MustCompile(`^\$matchRegexp\((.+)\)$`)
 //   - Regex: try to compile 'expected' as regex and match 'actual' with it
 //     It activates on following syntax: $matchRegexp(%EXPECTED_VALUE%)
 func compare(expected, actual interface{}, params CompareParams) []error {
-	return compareBranch("$", expected, actual, &params)
+	errors := compareBranch("$", expected, actual, &params)
+	sort.Sort(ErrorSlice(errors))
+	return errors
 }
 
 func compareBranch(

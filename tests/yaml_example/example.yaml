@@ -114,6 +114,12 @@
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms
     passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
+    start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms
+    passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body
     start  ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
     expected: {"age": 31,"name":"Tommy"}
 
@@ -126,6 +132,19 @@
     at path $.name values do not match:
          expected: Tommy
            actual: Tom
+    start  ./tests/yaml_poll/poll.yaml:check poll handler with fail by response body
+    expected: {"age": 31,"name":"Tommy"}
+
+    got     : {"name":"Tom","age":28,"items":[1,2,3,4]}
+    failed ./tests/yaml_poll/poll.yaml:check poll handler with fail by response body
+     response body differs: 
+    at path $.age values do not match:
+         expected: 31
+           actual: 28
+    at path $.name values do not match:
+         expected: Tommy
+           actual: Tom
+
 
 
 - name: test tags, pass existing tags
