@@ -31,3 +31,7 @@ func Intersect[T comparable](a, b []T) []T {
 
 	return set
 }
+
+func To[T any](t T) *T {
+	return &t
+}

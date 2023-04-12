@@ -9,6 +9,7 @@ import (
 
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
 	"gopkg.in/yaml.v2"
 )
@@ -35,7 +36,11 @@ type RunnerConfig struct {
 func New(c RunnerConfig) *Runner {
 	builders = c.Builders
 	if c.comparer == nil {
-		c.comparer = compare.New(compare.CompareParams{})
+		c.comparer = compare.New(compare.CompareParams{
+			IgnoreArraysOrdering: tools.To(true),
+			DisallowExtraFields:  tools.To(false),
+			AllowArrayExtraItems: tools.To(true),
+		})
 	}
 	return &Runner{
 		config: c,
@@ -154,13 +159,6 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 				if !v.Poll.pollContinue(testResult.Response) {
 					break
 				}
-				// rx, err := regexp.Compile(v.Poll.ResponseRegexp)
-				// if err != nil {
-				// 	break
-				// }
-				// if testResult.Response == nil || !rx.MatchString(*testResult.Response) {
-				// 	break
-				// }
 			}
 			r.output.Log(contract.Message{
 				Name:    v.Name,
@@ -182,6 +180,7 @@ func (r *Runner) runOne(
 	polling bool,
 ) (*Result, error) {
 	var body *string
+	var firstErrResult *Result
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
 		conf.Name = currentVars.Apply(conf.Name)
@@ -250,7 +249,17 @@ func (r *Runner) runOne(
 				})
 			}
 			testResult, err := r.runOne(v, lvl+1, fileName, polling)
+			if testResult.Err != nil && polling {
+				firstErrResult = testResult
+				if testResult.Response != nil {
+					results = append(results, *testResult.Response)
+				} else {
+					results = append(results, "")
+				}
+				continue
+			}
 			if testResult.Err != nil {
+				r.afterTestStep(fileName, &conf, *testResult, polling)
 				return testResult, nil
 			}
 			if testResult.Response != nil {
@@ -300,6 +309,11 @@ func (r *Runner) runOne(
 				currentVars.Set(k, v)
 			}
 		}
+	}
+	if firstErrResult != nil {
+		firstErrResult.Response = body
+		r.afterTestStep(fileName, &conf, *firstErrResult, polling)
+		return firstErrResult, nil
 	}
 
 	res := &Result{

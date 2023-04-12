@@ -1,4 +1,29 @@
-- name: conactenate steps
+# - name: conactenate steps
+#   steps:
+#     - name: request 1
+#       method: GET
+#       path: /tom
+#       responseStatus: 200
+#       response: |
+#         {"age": 28,"name":"Tom", "items":[1, 2, 3, 4]}
+#       comparisonParams:
+#         ignoreArraysOrdering: true
+#     - name: request 2
+#       method: GET
+#       path: /tom
+#       responseStatus: 200
+#       response: |
+#         {"age": 28,"name":"Tom", "items":[1, 2, 3]}
+#       comparisonParams:
+#         ignoreArraysOrdering: true
+#         allowArrayExtraItems: true
+#   variables_to_set:
+#     body: '0.name'
+
+# - name: check body
+#   echo_message: '{{$body}}'
+
+- name: conactenate steps and poll with response
   steps:
     - name: request 1
       method: GET
@@ -10,16 +35,15 @@
         ignoreArraysOrdering: true
     - name: request 2
       method: GET
-      path: /tom
+      path: /poll
       responseStatus: 200
       response: |
-        {"age": 28,"name":"Tom", "items":[1, 2, 3]}
+        {"age": 28,"name":"Tommy", "items":[1, 2, 3]}
       comparisonParams:
         ignoreArraysOrdering: true
         allowArrayExtraItems: true
-  variables_to_set:
-    body: '0.name'
-
-- name: check body
-  echo_message: '{{$body}}'
-
+  poll:
+    response: | 
+      [{"name":"Zen"}, {}]
+    duration: 100ms
+    interval: 10ms
