@@ -9,9 +9,11 @@
 - name: check request 2
   method: GET
   path: /{{$path}}
-  responseStatus: 200
   response: |
-    {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}
+    {
+      "body": {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}, 
+      "status": 200
+    }
   comparisonParams:
     ignoreArraysOrdering: true
     allowArrayExtraItems: true
@@ -21,18 +23,22 @@
   - name: check request nested1
     method: GET
     path: /{{$path}}
-    responseStatus: 200
     response: |
-      {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}
+      {
+        "body": {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}, 
+        "status": 200
+      }
     comparisonParams:
       ignoreArraysOrdering: true
 
   - name: check request nested2
     method: GET
     path: /{{$path}}
-    responseStatus: 200
     response: |
-      {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}
+      {
+        "status": 200, 
+        "body": {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}
+      }
     comparisonParams:
       ignoreArraysOrdering: true
       allowArrayExtraItems: true

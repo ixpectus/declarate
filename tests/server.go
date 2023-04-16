@@ -36,6 +36,7 @@ var pollPerson *person = &person{
 }
 
 func tomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Date", defaultDate)
 	switch r.Method {
 	case "GET":
 		// Just send out the JSON version of 'tom'
@@ -56,7 +57,10 @@ func tomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+const defaultDate = "Sun, 16 Apr 2023 08:42:05 GMT"
+
 func pollHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Date", defaultDate)
 	switch r.Method {
 	case "GET":
 		// Just send out the JSON version of 'tom'

@@ -3,7 +3,9 @@
   path: /tom
   responseStatus: 200
   response: |
-    {"age": 28,"name":"Tom", "items":[1, 3, 4]}
+    {
+      "body": {"age": 28,"name":"Tom", "items":[1, 3, 4]}
+    }
   comparisonParams:
     ignoreArraysOrdering: true
 

@@ -2,14 +2,15 @@ package request
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 )
 
 type Request struct {
@@ -133,13 +134,14 @@ func (e *Request) Do() error {
 			return err
 		}
 		body, err := ioutil.ReadAll(resp.Body)
-		e.responseStatus = resp.StatusCode
 		_ = resp.Body.Close()
 		if err != nil {
 			return err
 		}
 		s := string(body)
-		e.responseBody = &s
+		ss, _ := json.Marshal(resp.Header)
+		r := fmt.Sprintf(`{"body":%v, "status":%v, "header": %s}`, s, resp.StatusCode, ss)
+		e.responseBody = tools.To(r)
 	}
 
 	return nil
@@ -180,20 +182,6 @@ func (e *Request) Check() error {
 			}
 			if err != nil {
 				return fmt.Errorf("compare json failed: %w", err)
-			}
-		}
-	}
-	if e != nil && e.Config.ResponseStatus != nil {
-		if *e.Config.ResponseStatus != e.responseStatus {
-			return &contract.TestError{
-				Title: "response status differs",
-				Message: fmt.Sprintf(
-					"status expected %v, got %v",
-					color.GreenString("%v", *e.Config.ResponseStatus),
-					color.RedString("%v", e.responseStatus),
-				),
-
-				OriginalError: fmt.Errorf("response status differs"),
 			}
 		}
 	}

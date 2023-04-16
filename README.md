@@ -5,3 +5,11 @@
 - Currently declarate in the early stages of development
 - Inspired by [gonkey](https://github.com/lamoda/gonkey)
 
+## Concepts 
+- tests consists of different actions
+- every action do something and has json(or plain text) response
+- real response can be compared with expected response using
+  - comparisonParams
+  - regexp
+
+## Default actions 
