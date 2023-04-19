@@ -194,11 +194,11 @@ func compareDbResponseLength(expected, actual []string, query interface{}) error
 }
 
 func execQuery(dbQuery string, db *sql.DB) error {
-	if idx := strings.IndexByte(dbQuery, ';'); idx >= 0 {
-		dbQuery = dbQuery[:idx]
-	}
-	if _, err := db.Exec(dbQuery); err != nil {
-		return err
+	queries := strings.Split(dbQuery, ";")
+	for _, q := range queries {
+		if _, err := db.Exec(q); err != nil {
+			return err
+		}
 	}
 
 	return nil

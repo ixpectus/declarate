@@ -78,7 +78,7 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 }
 
 func (s *Suite) Run() error {
-	allTests, err := s.allTests(s.Directory)
+	allTests, err := s.AllTests(s.Directory)
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
 	}
@@ -165,7 +165,7 @@ func (r *Suite) filterTestsByTags(tests []string) ([]string, error) {
 	return res, nil
 }
 
-func (r *Suite) allTests(testPath string) ([]string, error) {
+func (r *Suite) AllTests(testPath string) ([]string, error) {
 	stat, err := os.Stat(testPath)
 	if err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ func (r *Suite) allTests(testPath string) ([]string, error) {
 			continue
 		}
 		if v.IsDir() {
-			nested, err := r.allTests(testPath + "/" + v.Name())
+			nested, err := r.AllTests(testPath + "/" + v.Name())
 			if err != nil {
 				return nil, err
 			}

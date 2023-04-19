@@ -2,6 +2,7 @@ package output
 
 import (
 	"log"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/contract"
@@ -42,7 +43,7 @@ func (o *Output) Log(message contract.Message) {
 			log.Println(prefix + logText)
 		}
 	}
-	if message.Type == contract.MessageTypeNotify {
+	if message.Type == contract.MessageTypeNotify && !strings.Contains(message.Message, "start") {
 		logText := colorNotify.Sprint(message.Message)
 		log.Println(prefix + logText)
 	}

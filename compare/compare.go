@@ -10,10 +10,10 @@ import (
 )
 
 type CompareParams struct {
-	IgnoreValues         *bool `json:"ignoreValues" yaml:"ignoreValues"`
-	IgnoreArraysOrdering *bool `json:"ignoreArraysOrdering" yaml:"ignoreArraysOrdering"`
-	DisallowExtraFields  *bool `json:"disallowExtraFields" yaml:"disallowExtraFields"`
-	AllowArrayExtraItems *bool `json:"allowArrayExtraItems" yaml:"allowArrayExtraItems"`
+	IgnoreValues         *bool `json:"ignoreValues,omitempty" yaml:"ignoreValues,omitempty"`
+	IgnoreArraysOrdering *bool `json:"ignoreArraysOrdering,omitempty" yaml:"ignoreArraysOrdering,omitempty"`
+	DisallowExtraFields  *bool `json:"disallowExtraFields,omitempty" yaml:"disallowExtraFields,omitempty"`
+	AllowArrayExtraItems *bool `json:"allowArrayExtraItems,omitempty" yaml:"allowArrayExtraItems,omitempty"`
 	failFast             bool  // End compare operation after first error
 }
 

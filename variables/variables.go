@@ -46,6 +46,7 @@ func (v *Variables) Get(k string) string {
 	if v, ok := v.data[k]; ok {
 		return v
 	}
+
 	return os.Getenv(k)
 }
 
