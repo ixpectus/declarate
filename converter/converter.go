@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/ixpectus/declarate/suite"
 	"gopkg.in/yaml.v2"
@@ -128,6 +129,15 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 			}
 			if v.Poll.Interval > 0 {
 				converted.Poll.Interval = v.Poll.Interval
+			}
+		}
+		if len(v.PollInterval) > 0 {
+			duration := time.Duration(0)
+			for _, v := range v.PollInterval {
+				duration = duration + v
+			}
+			converted.Poll = &Poll{
+				Duration: duration,
 			}
 		}
 		res = append(res, converted)
