@@ -102,6 +102,17 @@ func (e *Echo) ResponseBody() *string {
 	return nil
 }
 
+func (e *Echo) ExpectedResponse() string {
+	if !e.Config.isEmpty() {
+		return e.Config.Message
+	}
+	return ""
+}
+
+func (e *Echo) IsValid() error {
+	return nil
+}
+
 func (e *Echo) VariablesToSet() map[string]string {
 	if e != nil && e.Config != nil {
 		return e.Config.VariablesToSet

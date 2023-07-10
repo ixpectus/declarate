@@ -95,10 +95,6 @@ func (s *Suite) Run() error {
 		}
 	}
 
-	if s.Config.DryRun {
-		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
-		return nil
-	}
 	runner := run.New(run.RunnerConfig{
 		Variables: s.Config.Variables,
 		Output:    s.Config.Output,
@@ -107,6 +103,17 @@ func (s *Suite) Run() error {
 		T:         s.Config.T,
 	},
 	)
+
+	if s.Config.DryRun {
+		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
+		if err := s.validate(tests, runner); err != nil {
+			return err
+		}
+		return nil
+	}
+	if err := s.validate(tests, runner); err != nil {
+		return err
+	}
 	for _, v := range tests {
 		if s.Config.T != nil {
 			s.Config.T.Run(v, func(t *testing.T) {
@@ -121,6 +128,25 @@ func (s *Suite) Run() error {
 			if err != nil {
 				log.Println(err)
 			}
+		}
+	}
+	return nil
+}
+
+func (s *Suite) validate(tests []string, runner *run.Runner) error {
+	hasInvalid := false
+	for _, v := range tests {
+		err := runner.Validate(v)
+		if err != nil {
+			log.Println(fmt.Sprintf("invalid test `%s` description\n  %v", v, err))
+			hasInvalid = true
+		}
+	}
+	if hasInvalid {
+		if s.Config.T != nil {
+			s.Config.T.FailNow()
+		} else {
+			return fmt.Errorf("tests validation failed")
 		}
 	}
 	return nil

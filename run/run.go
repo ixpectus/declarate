@@ -48,6 +48,27 @@ func New(c RunnerConfig) *Runner {
 	}
 }
 
+func (r *Runner) Validate(fileName string) error {
+	file, err := os.ReadFile(fileName)
+	if err != nil {
+		return fmt.Errorf("file open: %w", err)
+	}
+	currentVars = r.config.Variables
+	configs := []runConfig{}
+	if err := yaml.Unmarshal(file, &configs); err != nil {
+		return fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
+	}
+	for _, v := range configs {
+		for _, c := range v.Commands {
+			if err := c.IsValid(); err != nil {
+				return fmt.Errorf("invalid command, %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
 func (r *Runner) Run(fileName string, t *testing.T) error {
 	file, err := os.ReadFile(fileName)
 	if err != nil {
@@ -68,9 +89,10 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 				testResult, err := r.run(v, fileName)
 				if err != nil {
 					r.output.Log(contract.Message{
-						Name:    v.Name,
-						Message: fmt.Sprintf("run failed for file %s: %s", fileName, err),
-						Type:    contract.MessageTypeError,
+						Name:       v.Name,
+						Message:    fmt.Sprintf("run failed for file %s: %s", fileName, err),
+						Type:       contract.MessageTypeError,
+						PollResult: testResult.PollResult,
 					})
 					t1.FailNow()
 				}
@@ -79,9 +101,10 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 					t1.FailNow()
 				} else {
 					r.output.Log(contract.Message{
-						Name:    v.Name,
-						Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
-						Type:    contract.MessageTypeSuccess,
+						Name:       v.Name,
+						Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),
+						Type:       contract.MessageTypeSuccess,
+						PollResult: testResult.PollResult,
 					})
 				}
 			})
@@ -93,9 +116,10 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
-					Name:    v.Name,
-					Message: fmt.Sprintf("run failed for file %s: %s", fileName, err),
-					Type:    contract.MessageTypeError,
+					Name:       v.Name,
+					Message:    fmt.Sprintf("run failed for file %s: %s", fileName, err),
+					Type:       contract.MessageTypeError,
+					PollResult: testResult.PollResult,
 				})
 			}
 			if testResult.Err != nil {
@@ -103,9 +127,10 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 				continue
 			} else {
 				r.output.Log(contract.Message{
-					Name:    v.Name,
-					Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
-					Type:    contract.MessageTypeSuccess,
+					Name:       v.Name,
+					Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),
+					Type:       contract.MessageTypeSuccess,
+					PollResult: testResult.PollResult,
 				})
 			}
 		}
@@ -145,13 +170,30 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 	var err error
 	var testResult *Result
 	v.Poll.comparer = r.config.comparer
+	start := time.Now()
+	finish := start
+	for _, d := range v.Poll.PollInterval() {
+		finish = finish.Add(d)
+	}
+
+	pollInfo := contract.PollInfo{
+		Start:  start,
+		Finish: finish,
+	}
+	pollResult := contract.PollResult{
+		Start:         start,
+		PlannedFinish: finish,
+	}
 	for i, d := range v.Poll.PollInterval() {
 		isPolling := true
 		if len(v.Poll.PollInterval())-1 == i {
 			isPolling = false
 		}
+		estimated := finish.Sub(time.Now())
 		testResult, err = r.runOne(v, 0, fileName, isPolling)
 		if err != nil {
+			pollResult.Finish = time.Now()
+			testResult.PollResult = &pollResult
 			return nil, err
 		}
 		if testResult.Err != nil {
@@ -161,15 +203,25 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 				}
 			}
 			r.output.Log(contract.Message{
-				Name:    v.Name,
-				Message: fmt.Sprintf("poll %s:%s, wait %v", fileName, v.Name, d),
-				Type:    contract.MessageTypeNotify,
+				Name: v.Name,
+				Poll: &pollInfo,
+				Message: fmt.Sprintf(
+					"poll %s:%s, wait %v, estimated %v",
+					fileName,
+					v.Name,
+					d,
+					estimated.Truncate(time.Second),
+				),
+				Type: contract.MessageTypeNotify,
 			})
 			time.Sleep(d)
 		} else {
 			break
 		}
 	}
+	pollResult.Finish = time.Now()
+	testResult.PollResult = &pollResult
+
 	return testResult, err
 }
 
@@ -271,10 +323,11 @@ func (r *Runner) runOne(
 				return nil, err
 			}
 			r.output.Log(contract.Message{
-				Name:    v.Name,
-				Lvl:     lvl + 1,
-				Message: fmt.Sprintf("passed %v:%v", fileName, v.Name),
-				Type:    contract.MessageTypeSuccess,
+				Name:       v.Name,
+				Lvl:        lvl + 1,
+				Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),
+				Type:       contract.MessageTypeSuccess,
+				PollResult: testResult.PollResult,
 			})
 		}
 		if len(results) > 0 {

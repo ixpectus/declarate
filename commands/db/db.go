@@ -120,6 +120,14 @@ func (e *Db) Do() error {
 	return nil
 }
 
+func (e *Db) IsValid() error {
+	valid := json.Valid([]byte(e.Config.DbResponse))
+	if !valid {
+		return fmt.Errorf("cannot parse db response: `%v`", e.Config.DbResponse)
+	}
+	return nil
+}
+
 func (e *Db) ResponseBody() *string {
 	return e.responseBody
 }

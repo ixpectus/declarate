@@ -1,0 +1,12 @@
+- name: check poll handler
+  method: GET
+  path: /poll
+  response: |
+    {
+      "body": {"age": 31,"name":"Tommy"}, 
+      "status": 200
+    }
+  poll:
+    duration: 50s
+    interval: 10s
+

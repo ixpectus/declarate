@@ -100,6 +100,10 @@ func (e *ShellCmd) GetConfig() interface{} {
 	return e.Config
 }
 
+func (e *ShellCmd) IsValid() error {
+	return nil
+}
+
 func (e *ShellCmd) ResponseBody() *string {
 	return &e.responseBody
 }

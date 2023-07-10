@@ -65,11 +65,12 @@ func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 		}
 		r.config.Wrapper.AfterTest(cfg,
 			contract.Result{
-				Err:      result.Err,
-				Name:     conf.Name,
-				Lvl:      result.Lvl,
-				FileName: file,
-				Response: result.Response,
+				Err:        result.Err,
+				Name:       conf.Name,
+				Lvl:        result.Lvl,
+				FileName:   file,
+				Response:   result.Response,
+				PollResult: result.PollResult,
 			},
 		)
 		conf.Commands = cfg.Commands
@@ -88,10 +89,11 @@ func (r *Runner) outputErr(res Result) {
 				res.Name,
 				errTest.Title,
 			),
-			Expected: errTest.Expected,
-			Actual:   errTest.Actual,
-			Lvl:      res.Lvl,
-			Type:     contract.MessageTypeError,
+			Expected:   errTest.Expected,
+			Actual:     errTest.Actual,
+			Lvl:        res.Lvl,
+			Type:       contract.MessageTypeError,
+			PollResult: res.PollResult,
 		})
 		return
 	}

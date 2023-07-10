@@ -103,6 +103,10 @@ func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
 	return headers
 }
 
+func (e *Request) IsValid() error {
+	return nil
+}
+
 func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)

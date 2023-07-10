@@ -104,6 +104,10 @@ func (e *ScriptCmd) ResponseBody() *string {
 	return &e.responseBody
 }
 
+func (e *ScriptCmd) IsValid() error {
+	return nil
+}
+
 func (e *ScriptCmd) Check() error {
 	if e.Config.Response != nil {
 		linesExpected := strings.Split(*e.Config.Response, "\n")

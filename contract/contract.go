@@ -2,6 +2,7 @@ package contract
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/ixpectus/declarate/compare"
 )
@@ -19,6 +20,7 @@ type CommandBuilder interface {
 type Doer interface {
 	Do() error
 	ResponseBody() *string
+	IsValid() error
 	VariablesToSet() map[string]string
 	GetConfig() interface{}
 	Check() error
@@ -47,17 +49,32 @@ var (
 	MessageTypeSuccess MessageType = "success"
 	MessageTypeError   MessageType = "error"
 	MessageTypeNotify  MessageType = "notify"
+	MessageTypePoll    MessageType = "poll"
 )
 
+type PollInfo struct {
+	Start     time.Time
+	Finish    time.Time
+	Estimated time.Duration
+}
+
+type PollResult struct {
+	Start         time.Time
+	Finish        time.Time
+	PlannedFinish time.Time
+}
+
 type Message struct {
-	Name     string
-	Filename string
-	Message  string
-	Title    string
-	Expected string
-	Actual   string
-	Lvl      int
-	Type     MessageType
+	Name       string
+	Filename   string
+	Message    string
+	Title      string
+	Expected   string
+	Actual     string
+	Lvl        int
+	Type       MessageType
+	Poll       *PollInfo
+	PollResult *PollResult
 }
 
 type Output interface {
@@ -84,11 +101,12 @@ type RunConfig struct {
 }
 
 type Result struct {
-	Err      error
-	Name     string
-	Lvl      int
-	FileName string
-	Response *string
+	Err        error
+	Name       string
+	Lvl        int
+	FileName   string
+	Response   *string
+	PollResult *PollResult
 }
 
 type Comparer interface {

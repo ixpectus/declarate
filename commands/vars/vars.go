@@ -58,6 +58,10 @@ func (e *VarsCmd) Do() error {
 	return nil
 }
 
+func (e *VarsCmd) IsValid() error {
+	return nil
+}
+
 func (e *VarsCmd) ResponseBody() *string {
 	return nil
 }

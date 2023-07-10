@@ -25,9 +25,12 @@ func (p *Poll) PollInterval() []time.Duration {
 		}
 		duration := p.Duration
 		res := []time.Duration{}
-		for duration >= 0 && duration >= interval {
+		for duration > 0 && duration >= interval {
 			res = append(res, interval)
 			duration = duration - interval
+		}
+		if duration > 0 {
+			res = append(res, duration)
 		}
 		return res
 	}

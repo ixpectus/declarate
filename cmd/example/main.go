@@ -38,11 +38,20 @@ var (
 		"",
 		"tags for filter tags, example `-tags tag1,tag2`",
 	)
-
 	flagTests = flag.String(
 		"tests",
 		"",
 		"test files, example `-tests config,db`",
+	)
+	flagWithProgressBar = flag.Bool(
+		"progress_bar",
+		false,
+		"progress bar for poll interval",
+	)
+	flagOutput = flag.String(
+		"output",
+		"print",
+		"test output log or print",
 	)
 )
 
@@ -78,6 +87,7 @@ func main() {
 	vv := variables.New(evaluator)
 	cmp := compare.New(compare.CompareParams{})
 	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
+	// if output
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:         false,
 		Filepathes:     []string{},
@@ -85,7 +95,9 @@ func main() {
 		TestRunWrapper: tests.NewDebugWrapper(),
 		DryRun:         *flagDryRun,
 		Variables:      vv,
-		Output:         &output.OutputPrintln{},
+		Output: &output.OutputPrintln{
+			WithProgressBar: *flagWithProgressBar,
+		},
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			vars.NewUnmarshaller(evaluator),
