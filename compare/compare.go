@@ -218,9 +218,17 @@ func leafMatchType(expected interface{}) leafsMatchType {
 }
 
 func MakeError(path, msg string, expected, actual interface{}) error {
+	if path != "" {
+		return fmt.Errorf(
+			"at path %s %s:\nexpected:\n%s\nactual:\n%s",
+			color.CyanString(path),
+			msg,
+			color.GreenString("%v", expected),
+			color.RedString("%v", actual),
+		)
+	}
 	return fmt.Errorf(
-		"at path %s %s:\n     expected: %s\n       actual: %s",
-		color.CyanString(path),
+		"%s:\n     expected: \n%s\n       actual: \n%s",
 		msg,
 		color.GreenString("%v", expected),
 		color.RedString("%v", actual),

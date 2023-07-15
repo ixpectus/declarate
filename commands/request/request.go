@@ -113,6 +113,7 @@ func (e *Request) Do() error {
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
 		if e.Config.ResponseTmpls != nil {
 			s := e.Vars.Apply(*e.Config.ResponseTmpls)
+			s = strings.TrimSuffix(s, "\n")
 			e.Config.ResponseTmpls = &s
 		}
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)

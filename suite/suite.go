@@ -20,6 +20,7 @@ type SuiteConfig struct {
 
 type RunConfig struct {
 	RunAll         bool
+	FailFast       bool
 	Tags           []string
 	Filepathes     []string
 	SkipFilename   []string
@@ -114,19 +115,29 @@ func (s *Suite) Run() error {
 	if err := s.validate(tests, runner); err != nil {
 		return err
 	}
+	failed := false
 	for _, v := range tests {
 		if s.Config.T != nil {
 			s.Config.T.Run(v, func(t *testing.T) {
-				err := runner.Run(v, t)
+				if s.Config.T.Failed() && !failed {
+					failed = true
+				}
+				if failed && s.Config.FailFast {
+					t.Skip()
+				}
+				failed, err = runner.Run(v, t)
 				if err != nil {
 					log.Println(err)
 					t.Fail()
 				}
 			})
 		} else {
-			err := runner.Run(v, nil)
+			failed, err = runner.Run(v, nil)
 			if err != nil {
 				log.Println(err)
+				if s.Config.FailFast {
+					return err
+				}
 			}
 		}
 	}

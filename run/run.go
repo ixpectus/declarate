@@ -69,15 +69,15 @@ func (r *Runner) Validate(fileName string) error {
 	return nil
 }
 
-func (r *Runner) Run(fileName string, t *testing.T) error {
+func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 	file, err := os.ReadFile(fileName)
 	if err != nil {
-		return fmt.Errorf("file open: %w", err)
+		return true, fmt.Errorf("file open: %w", err)
 	}
 	currentVars = r.config.Variables
 	configs := []runConfig{}
 	if err := yaml.Unmarshal(file, &configs); err != nil {
-		return fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
+		return true, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
 	for _, v := range configs {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
@@ -89,6 +89,7 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 				testResult, err := r.run(v, fileName)
 				if err != nil {
 					r.output.Log(contract.Message{
+						Filename:   fileName,
 						Name:       v.Name,
 						Message:    fmt.Sprintf("run failed for file %s: %s", fileName, err),
 						Type:       contract.MessageTypeError,
@@ -101,6 +102,7 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 					t1.FailNow()
 				} else {
 					r.output.Log(contract.Message{
+						Filename:   fileName,
 						Name:       v.Name,
 						Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),
 						Type:       contract.MessageTypeSuccess,
@@ -111,22 +113,28 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 			if !failed {
 				t.FailNow()
 			}
+			if failed {
+				return true, nil
+			}
 		} else {
 			v.Name = currentVars.Apply(v.Name)
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
+					Filename:   fileName,
 					Name:       v.Name,
 					Message:    fmt.Sprintf("run failed for file %s: %s", fileName, err),
 					Type:       contract.MessageTypeError,
 					PollResult: testResult.PollResult,
 				})
+				return false, nil
 			}
 			if testResult.Err != nil {
 				r.outputErr(*testResult)
-				continue
+				return false, nil
 			} else {
 				r.output.Log(contract.Message{
+					Filename:   fileName,
 					Name:       v.Name,
 					Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),
 					Type:       contract.MessageTypeSuccess,
@@ -135,7 +143,7 @@ func (r *Runner) Run(fileName string, t *testing.T) error {
 			}
 		}
 	}
-	return nil
+	return false, nil
 }
 
 func (r *Runner) run(
@@ -149,9 +157,10 @@ func (r *Runner) run(
 	)
 	if v.Name != "" {
 		r.output.Log(contract.Message{
-			Name:    v.Name,
-			Message: fmt.Sprintf("start  %v:%v", fileName, v.Name),
-			Type:    contract.MessageTypeNotify,
+			Filename: fileName,
+			Name:     v.Name,
+			Message:  fmt.Sprintf("start  %v:%v", fileName, v.Name),
+			Type:     contract.MessageTypeNotify,
 		})
 	}
 	if len(v.Poll.PollInterval()) > 0 {
@@ -203,8 +212,9 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 				}
 			}
 			r.output.Log(contract.Message{
-				Name: v.Name,
-				Poll: &pollInfo,
+				Filename: fileName,
+				Name:     v.Name,
+				Poll:     &pollInfo,
 				Message: fmt.Sprintf(
 					"poll %s:%s, wait %v, estimated %v",
 					fileName,
@@ -294,10 +304,11 @@ func (r *Runner) runOne(
 		for _, v := range conf.Steps {
 			if v.Name != "" {
 				r.output.Log(contract.Message{
-					Name:    v.Name,
-					Message: fmt.Sprintf("start  %v:%v", fileName, v.Name),
-					Lvl:     lvl + 1,
-					Type:    contract.MessageTypeNotify,
+					Filename: fileName,
+					Name:     v.Name,
+					Message:  fmt.Sprintf("start  %v:%v", fileName, v.Name),
+					Lvl:      lvl + 1,
+					Type:     contract.MessageTypeNotify,
 				})
 			}
 			testResult, err := r.runOne(v, lvl+1, fileName, polling)
@@ -323,6 +334,7 @@ func (r *Runner) runOne(
 				return nil, err
 			}
 			r.output.Log(contract.Message{
+				Filename:   fileName,
 				Name:       v.Name,
 				Lvl:        lvl + 1,
 				Message:    fmt.Sprintf("passed %v:%v", fileName, v.Name),

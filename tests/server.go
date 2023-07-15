@@ -3,7 +3,6 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"sync/atomic"
 )
@@ -91,6 +90,5 @@ func pollHandler(w http.ResponseWriter, r *http.Request) {
 func Handle() {
 	http.HandleFunc("/tom", tomHandler)
 	http.HandleFunc("/poll", pollHandler)
-	log.Println("Go!")
 	http.ListenAndServe("127.0.0.1:8181", nil)
 }

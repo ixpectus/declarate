@@ -81,8 +81,9 @@ func (r *Runner) outputErr(res Result) {
 	var errTest *contract.TestError
 	if errors.As(res.Err, &errTest) {
 		r.output.Log(contract.Message{
-			Name:    res.Name,
-			Message: res.Err.Error(),
+			Filename: res.FileName,
+			Name:     res.Name,
+			Message:  res.Err.Error(),
 			Title: fmt.Sprintf(
 				"failed %v:%v\n %v",
 				res.FileName,
@@ -99,10 +100,11 @@ func (r *Runner) outputErr(res Result) {
 	}
 	if res.Err != nil {
 		r.output.Log(contract.Message{
-			Name:    res.Name,
-			Message: fmt.Sprintf("failed %v", res.Err),
-			Lvl:     res.Lvl,
-			Type:    contract.MessageTypeError,
+			Filename: res.FileName,
+			Name:     res.Name,
+			Message:  fmt.Sprintf("failed %v", res.Err),
+			Lvl:      res.Lvl,
+			Type:     contract.MessageTypeError,
 		})
 	}
 }

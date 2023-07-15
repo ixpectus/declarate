@@ -7,6 +7,6 @@
       "status": 200
     }
   poll:
-    duration: 50s
-    interval: 10s
+    duration: 6s
+    interval: 1s
 

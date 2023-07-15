@@ -52,6 +52,7 @@ func (b *Bar) SetCurrent() {
 
 func (b *Bar) Stop() {
 	b.cancel()
+	fmt.Fprint(os.Stderr, "\n")
 }
 
 func progressBarDefault(max int64) *progressbar.ProgressBar {
@@ -63,13 +64,14 @@ func progressBarDefault(max int64) *progressbar.ProgressBar {
 		progressbar.OptionShowElapsedTimeOnFinish(),
 		// progressbar.OptionSetTheme(progressbar.Theme{}),
 		// progressbar.OptionSetPredictTime(false),
+		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowDescriptionAtLineEnd(),
 		progressbar.OptionThrottle(65*time.Millisecond),
 		// progressbar.OptionShowCount(),
 		// progressbar.OptionShowIts(),
-		progressbar.OptionOnCompletion(func() {
-			fmt.Fprint(os.Stderr, "\n\n")
-		}),
+		// progressbar.OptionOnCompletion(func() {
+		// 	fmt.Fprint(os.Stderr, "\n")
+		// }),
 		progressbar.OptionSpinnerType(14),
 		progressbar.OptionFullWidth(),
 		progressbar.OptionSetRenderBlankState(true),

@@ -116,8 +116,8 @@ func (e *ShellCmd) Check() error {
 			res := compare.MakeError(
 				"",
 				fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot)),
-				e.responseBody,
 				*e.Config.Response,
+				e.responseBody,
 			)
 			return res
 		}

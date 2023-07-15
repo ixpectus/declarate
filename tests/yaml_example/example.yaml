@@ -32,11 +32,8 @@
   shell_cmd: | 
     {{$cmd}} -dir ./tests/yaml/req.yaml
   shell_response: |
-    start  ./tests/yaml/req.yaml:set variables
     passed ./tests/yaml/req.yaml:set variables
-    start  ./tests/yaml/req.yaml:check request
     passed ./tests/yaml/req.yaml:check request
-    start  ./tests/yaml/req.yaml:check request
     passed ./tests/yaml/req.yaml:check request
 
 - name: test requests fail, wrong value in map

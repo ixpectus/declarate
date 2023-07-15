@@ -166,9 +166,9 @@ func request(g GonkeyTest) DeclarateTest {
 		}
 	}
 	for _, v := range g.VariablesToSet {
-		res.VariablesToSet = map[string]string{}
+		res.Variables = map[string]string{}
 		for k1, v1 := range v {
-			res.VariablesToSet[k1] = "body." + v1
+			res.Variables[k1] = "body." + v1
 		}
 	}
 	for k, v := range g.ResponseTmpls {
@@ -192,10 +192,10 @@ func db(g GonkeyTest) []DeclarateTest {
 	dbConn := varFix(g.DBConnectionString)
 	if g.DbQueryTmpl != "" {
 		d := DeclarateTest{
-			Name:           g.Name,
-			DbConn:         dbConn,
-			DbQuery:        g.DbQueryTmpl,
-			VariablesToSet: g.DBVariablesToSet,
+			Name:      g.Name,
+			DbConn:    dbConn,
+			DbQuery:   g.DbQueryTmpl,
+			Variables: g.DBVariablesToSet,
 		}
 		if len(g.DbResponseTmpl) > 0 {
 			d.DbResponse = "[" + strings.Join(g.DbResponseTmpl, ",") + "]"
@@ -204,10 +204,10 @@ func db(g GonkeyTest) []DeclarateTest {
 	}
 	for i, v := range g.DatabaseChecks {
 		d := DeclarateTest{
-			Name:           g.Name + fmt.Sprintf("#%v", i),
-			DbConn:         dbConn,
-			DbQuery:        v.DbQueryTmpl,
-			VariablesToSet: v.DBVariablesToSet,
+			Name:      g.Name + fmt.Sprintf("#%v", i),
+			DbConn:    dbConn,
+			DbQuery:   v.DbQueryTmpl,
+			Variables: v.DBVariablesToSet,
 		}
 		if len(v.DbResponseTmpl) > 0 {
 			d.DbResponse = "[" + strings.Join(v.DbResponseTmpl, ",") + "]"
