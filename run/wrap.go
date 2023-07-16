@@ -85,7 +85,7 @@ func (r *Runner) outputErr(res Result) {
 			Name:     res.Name,
 			Message:  res.Err.Error(),
 			Title: fmt.Sprintf(
-				"failed %v:%v\n %v",
+				"failed %v:%v\n%v",
 				res.FileName,
 				res.Name,
 				errTest.Title,

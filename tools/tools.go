@@ -1,5 +1,10 @@
 package tools
 
+import (
+	"bytes"
+	"encoding/json"
+)
+
 func Filter[T any](slice []T, f func(T) bool) []T {
 	var res []T
 	for _, e := range slice {
@@ -34,4 +39,26 @@ func Intersect[T comparable](a, b []T) []T {
 
 func To[T any](t T) *T {
 	return &t
+}
+
+func JSONPrettyPrint(in string) string {
+	var out bytes.Buffer
+	err := json.Indent(&out, []byte(in), "", "\t")
+	if err != nil {
+		return in
+	}
+	return out.String()
+}
+
+func JSONRemarshal(in string) (string, error) {
+	var ifce interface{}
+	err := json.Unmarshal([]byte(in), &ifce)
+	if err != nil {
+		return "", err
+	}
+	res, err := json.Marshal(ifce)
+	if err != nil {
+		return "", err
+	}
+	return string(res), nil
 }

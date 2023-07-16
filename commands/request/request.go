@@ -11,6 +11,7 @@ import (
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
+	"github.com/tidwall/gjson"
 )
 
 type Request struct {
@@ -167,7 +168,16 @@ func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
 		if b != nil && e.Config.ResponseTmpls != nil {
-			errs, err := e.comparer.CompareJsonBody(*e.Config.ResponseTmpls, *b, e.Config.ComparisonParams)
+			body := gjson.Get(*b, "body")
+			expectedBody := gjson.Get(*e.Config.ResponseTmpls, "body")
+			errs, err := e.comparer.CompareJsonBody(expectedBody.String(), body.String(), e.Config.ComparisonParams)
+			r := ""
+			if strings.Contains(*e.Config.ResponseTmpls, "status") {
+				status := gjson.Get(*b, "status")
+				r = fmt.Sprintf(`{"body":%v, "status":%v}`, body, status.String())
+			} else {
+				r = fmt.Sprintf(`{"body":%v}`, body)
+			}
 			if len(errs) > 0 {
 				msg := ""
 				for i, v := range errs {
@@ -177,10 +187,18 @@ func (e *Request) Check() error {
 						msg += v.Error()
 					}
 				}
+				expectedRemarshal, err := tools.JSONRemarshal(expectedBody.String())
+				if err != nil {
+					return err
+				}
+				actualRemarshal, err := tools.JSONRemarshal(r)
+				if err != nil {
+					return err
+				}
 				return &contract.TestError{
 					Title:         "response body differs",
-					Expected:      *e.Config.ResponseTmpls,
-					Actual:        *b,
+					Expected:      expectedRemarshal,
+					Actual:        actualRemarshal,
 					Message:       msg,
 					OriginalError: fmt.Errorf("response body differs: %v", msg),
 				}
@@ -234,4 +252,13 @@ func newCommonRequest(host string, r RequestConfig) (*http.Request, error) {
 	}
 
 	return req, nil
+}
+
+func jsonPrettyPrint(in string) string {
+	var out bytes.Buffer
+	err := json.Indent(&out, []byte(in), "", "\t")
+	if err != nil {
+		return in
+	}
+	return out.String()
 }
