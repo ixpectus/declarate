@@ -226,7 +226,11 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			})
 			time.Sleep(d)
 		} else {
-			break
+			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
+				if !v.Poll.pollContinue(testResult.Response) {
+					break
+				}
+			}
 		}
 	}
 	pollResult.Finish = time.Now()

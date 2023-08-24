@@ -1,8 +1,7 @@
 - name: check request fail map
   method: GET
   path: /tom
-  responseStatus: 200
-  response: |
+  responseFull: |
     {
       "body": {"age": 28,"name":"Tom1", "items":[1, 2, 3, 4]}
     }

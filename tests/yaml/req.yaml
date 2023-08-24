@@ -9,21 +9,18 @@
 - name: check request
   method: GET
   path: /{{$path}}
-  response: |
-    {
-      "body":{"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}, 
-      "status": 200
-    }
+  response:
+    200: | 
+      {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}
   comparisonParams:
     ignoreArraysOrdering: true
 
 - name: check request
   method: GET
   path: /{{$path}}
-  response: |
-    {
-      "body":{"age": 28,"name":"{{$name}}", "items":[1, 2, 3]} 
-    }
+  response:
+    200: | 
+      {"age": 28,"name":"{{$name}}", "items":[1, 2, 3]}
   comparisonParams:
     allowArrayExtraItems: true
     ignoreArraysOrdering: true

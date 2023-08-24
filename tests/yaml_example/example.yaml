@@ -36,21 +36,37 @@
     passed ./tests/yaml/req.yaml:check request
     passed ./tests/yaml/req.yaml:check request
 
+- name: test requests faile with wrong status
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml_failed/req_status.yaml
+  shell_response: |
+    passed ./tests/yaml_failed/req_status.yaml:set variables
+    failed ./tests/yaml_failed/req_status.yaml:check request
+    response differs: 
+    status differs, expected 201, got 200
+
+    expected response: 
+    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":200}
+    actual response: 
+    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":201}
+
+
 - name: test requests fail, wrong value in map
   shell_cmd: | 
     {{$cmd}} -dir ./tests/yaml_failed/req_map.yaml
   shell_response: |
-    start  ./tests/yaml_failed/req_map.yaml:check request fail map
-    expected: {
-      "body": {"age": 28,"name":"Tom1", "items":[1, 2, 3, 4]}
-    }
-
-    got     : {"body":{"name":"Tom","age":28,"items":[1,2,3,4]}, "status":200, "header": {"Content-Length":["41"],"Content-Type":["text/plain; charset=utf-8"],"Date":["Sun, 16 Apr 2023 08:42:05 GMT"]}}
     failed ./tests/yaml_failed/req_map.yaml:check request fail map
-     response body differs: 
-    at path $.body.name values do not match:
-         expected: Tom1
-           actual: Tom
+    response differs: 
+    at path $.name values do not match:
+    expected:
+    Tom1
+    actual:
+    Tom
+
+    expected response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom1"}
+    actual response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom"}
 
 
 
@@ -58,17 +74,19 @@
   shell_cmd: | 
     {{$cmd}} -dir ./tests/yaml_failed/req_array.yaml
   shell_response: |
-    start  ./tests/yaml_failed/req_array.yaml:check request fail map
-    expected: {
-      "body": {"age": 28,"name":"Tom", "items":[1, 3, 4]}
-    }
-
-    got     : {"body":{"name":"Tom","age":28,"items":[1,2,3,4]}, "status":200, "header": {"Content-Length":["41"],"Content-Type":["text/plain; charset=utf-8"],"Date":["Sun, 16 Apr 2023 08:42:05 GMT"]}}
     failed ./tests/yaml_failed/req_array.yaml:check request fail map
-     response body differs: 
-    at path $.body.items array lengths do not match:
-         expected: 3
-           actual: 4
+    response differs: 
+    at path $.items array lengths do not match:
+    expected:
+    3
+    actual:
+    4
+
+    expected response: 
+    {"age":28,"items":[1,3,4],"name":"Tom"}
+    actual response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom"}
+
 
 
 

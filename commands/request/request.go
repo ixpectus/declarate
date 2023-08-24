@@ -76,8 +76,8 @@ type DefaultConfig struct {
 type RequestConfig struct {
 	Method           string                    `json:"method" yaml:"method"`
 	RequestTmpl      string                    `json:"request" yaml:"request"`
-	ResponseTmpls    *string                   `json:"response" yaml:"response"`
-	ResponseStatus   *int                      `json:"responseStatus" yaml:"responseStatus"`
+	Response         map[int]string            `json:"response" yaml:"response"`
+	ResponseFull     *string                   `json:"responseFull" yaml:"responseFull"`
 	ResponseHeaders  map[int]map[string]string `json:"responseHeaders" yaml:"responseHeaders"`
 	HeadersVal       map[string]string         `json:"headers" yaml:"headers"`
 	QueryParams      string                    `json:"query" yaml:"query"`
@@ -105,6 +105,23 @@ func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
 }
 
 func (e *Request) IsValid() error {
+	if e.Config.ResponseFull != nil && e.Config.Response != nil {
+		return fmt.Errorf("only onf of response and responseFull should be set")
+	}
+	if e.Config.ResponseFull != nil {
+		valid := json.Valid([]byte(*e.Config.ResponseFull))
+		if !valid {
+			return fmt.Errorf("cannot parse response_full: `%v`", *e.Config.ResponseFull)
+		}
+	}
+	if e.Config.Response != nil {
+		for _, v := range e.Config.Response {
+			valid := json.Valid([]byte(v))
+			if !valid {
+				return fmt.Errorf("cannot parse response: `%v`", v)
+			}
+		}
+	}
 	return nil
 }
 
@@ -112,10 +129,16 @@ func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
-		if e.Config.ResponseTmpls != nil {
-			s := e.Vars.Apply(*e.Config.ResponseTmpls)
+		if e.Config.Response != nil {
+			for k, v := range e.Config.Response {
+				r := fmt.Sprintf(`{"body":%v, "status":%v}`, v, k)
+				e.Config.ResponseFull = &r
+			}
+		}
+		if e.Config.ResponseFull != nil {
+			s := e.Vars.Apply(*e.Config.ResponseFull)
 			s = strings.TrimSuffix(s, "\n")
-			e.Config.ResponseTmpls = &s
+			e.Config.ResponseFull = &s
 		}
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
 		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
@@ -167,16 +190,20 @@ func (e *Request) VariablesToSet() map[string]string {
 func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
-		if b != nil && e.Config.ResponseTmpls != nil {
+		if b != nil && e.Config.ResponseFull != nil {
 			body := gjson.Get(*b, "body")
-			expectedBody := gjson.Get(*e.Config.ResponseTmpls, "body")
+			gotStatus := gjson.Get(*b, "status")
+			expectedBody := gjson.Get(*e.Config.ResponseFull, "body")
 			errs, err := e.comparer.CompareJsonBody(expectedBody.String(), body.String(), e.Config.ComparisonParams)
-			r := ""
-			if strings.Contains(*e.Config.ResponseTmpls, "status") {
-				status := gjson.Get(*b, "status")
-				r = fmt.Sprintf(`{"body":%v, "status":%v}`, body, status.String())
-			} else {
-				r = fmt.Sprintf(`{"body":%v}`, body)
+			realResponse := body.String()
+			expectedResponse := expectedBody.String()
+			if strings.Contains(*e.Config.ResponseFull, "status") {
+				status := gjson.Get(*e.Config.ResponseFull, "status")
+				if status.String() != gotStatus.String() {
+					realResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, body, status.String())
+					expectedResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, expectedResponse, gotStatus.String())
+					errs = append(errs, fmt.Errorf("status differs, expected %s, got %s", status.String(), gotStatus.String()))
+				}
 			}
 			if len(errs) > 0 {
 				msg := ""
@@ -187,16 +214,16 @@ func (e *Request) Check() error {
 						msg += v.Error()
 					}
 				}
-				expectedRemarshal, err := tools.JSONRemarshal(expectedBody.String())
+				expectedRemarshal, err := tools.JSONRemarshal(expectedResponse)
 				if err != nil {
 					return err
 				}
-				actualRemarshal, err := tools.JSONRemarshal(r)
+				actualRemarshal, err := tools.JSONRemarshal(realResponse)
 				if err != nil {
 					return err
 				}
 				return &contract.TestError{
-					Title:         "response body differs",
+					Title:         "response differs",
 					Expected:      expectedRemarshal,
 					Actual:        actualRemarshal,
 					Message:       msg,

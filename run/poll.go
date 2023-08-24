@@ -41,6 +41,9 @@ func (p *Poll) pollContinue(response *string) bool {
 	if p.ResponseTmpls != nil && response == nil {
 		return false
 	}
+	if p.ResponseRegexp == "" && p.ResponseTmpls != nil {
+		return true
+	}
 	if p.ResponseRegexp != "" {
 		rx, err := regexp.Compile(p.ResponseRegexp)
 		if err != nil {
