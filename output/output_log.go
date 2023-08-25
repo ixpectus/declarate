@@ -42,7 +42,7 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 	if message.Poll != nil {
 		if bar == nil {
 			if message.Type == contract.MessageTypeNotify {
-				fmt.Println(prefix + message.Message)
+				log.Println(prefix + message.Message)
 			}
 			bar = NewBar(message.Poll.Finish)
 			go bar.Start()
