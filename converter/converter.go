@@ -1,8 +1,7 @@
 package converter
 
 import (
-	"bytes"
-	"encoding/json"
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ixpectus/declarate/suite"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Converter struct {
@@ -38,11 +37,12 @@ func (c *Converter) Convert() error {
 		if relatedName == "" {
 			relatedName = path.Base(c.sourceDir)
 		}
-		data, err := os.ReadFile(v)
+		data, err := readLines(v)
 		if err != nil {
 			log.Printf("failed to convert %s, %v", v, err)
 			continue
 		}
+
 		err = yaml.Unmarshal(data, &tests)
 		if err != nil {
 			log.Printf("failed to unmarshall on convert %s, %v", v, err)
@@ -171,13 +171,7 @@ func request(g GonkeyTest) DeclarateTest {
 			res.Variables[k1] = "body." + v1
 		}
 	}
-	for k, v := range g.ResponseTmpls {
-		js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", v, k)
-		var prettyJSON bytes.Buffer
-		_ = json.Indent(&prettyJSON, []byte(js1), "", "  ")
-		res.ResponseTmpls = prettyJSON.String()
-		break
-	}
+	res.ResponseTmpls = g.ResponseTmpls
 	return res
 }
 
@@ -224,4 +218,26 @@ func variables(g GonkeyTest, res DeclarateTest) DeclarateTest {
 		res.Variables[k] = strings.ReplaceAll(v, "$eval", "$")
 	}
 	return res
+}
+
+func readLines(filePath string) ([]byte, error) {
+	readFile, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileLines []string
+
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, strings.TrimRight(fileScanner.Text(), " "))
+	}
+
+	readFile.Close()
+	res := []byte{}
+	for _, line := range fileLines {
+		res = append(res, []byte(line)...)
+		res = append(res, []byte("\n")...)
+	}
+	return res, nil
 }

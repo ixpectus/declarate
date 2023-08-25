@@ -3,22 +3,22 @@ package converter
 import "github.com/ixpectus/declarate/compare"
 
 type DeclarateTest struct {
-	Name             string                `yaml:"name,omitempty"`
-	DbConn           string                `yaml:"db_conn,omitempty"`
-	DbQuery          string                `yaml:"db_query,omitempty"`
-	DbResponse       string                `yaml:"db_response,omitempty"`
-	ComparisonParams compare.CompareParams `yaml:"comparisonParams,omitempty"`
-	ScriptPath       string                `yaml:"script_path,omitempty,omitempty"`
-	ScriptResponse   *string               `yaml:"script_response,omitempty,omitempty"`
-	RequestTmpl      string                `yaml:"request,omitempty,flow"`
-	RequestURL       string                `yaml:"path,omitempty" yaml:"path"`
-	Method           string                `yaml:"method,omitempty"`
-	ResponseTmpls    string                `yaml:"response,omitempty"`
-	Steps            []DeclarateTest       `yaml:"steps,omitempty"`
+	Name             string                `json:"name,omitempty" aml:"name,omitempty"`
+	DbConn           string                `json:"db_conn,omitempty" yaml:"db_conn,omitempty"`
+	DbQuery          string                `json:"db_query,omitempty" yaml:"db_query,omitempty"`
+	DbResponse       string                `json:"db_response,omitempty" yaml:"db_response,omitempty"`
+	ComparisonParams compare.CompareParams `json:"comparisonParams,omitempty" yaml:"comparisonParams,omitempty"`
+	ScriptPath       string                `json:"script_path,omitempty" yaml:"script_path,omitempty"`
+	ScriptResponse   *string               `json:"script_response,omitempty" yaml:"script_response,omitempty"`
+	RequestTmpl      string                `json:"request,omitempty" yaml:"request,omitempty"`
+	RequestURL       string                `json:"path,omitempty" yaml:"path,omitempty" yaml:"path"`
+	Method           string                `json:"method,omitempty" yaml:"method,omitempty"`
+	ResponseTmpls    map[int]string        `json:"response,omitempty" yaml:"response,omitempty"`
+	Steps            []DeclarateTest       `json:"steps,omitempty" yaml:"steps,omitempty"`
 	HeadersVal       map[string]string     `json:"headers,omitempty" yaml:"headers,omitempty"`
-	Variables        map[string]string     `yaml:"variables,omitempty"`
-	Poll             *Poll                 `yaml:"poll,omitempty"`
-	Definition       *Definition           `yaml:"definition,omitempty"`
+	Variables        map[string]string     `json:"variables,omitempty" yaml:"variables,omitempty"`
+	Poll             *Poll                 `json:"poll,omitempty" yaml:"poll,omitempty"`
+	Definition       *Definition           `json:"name,omitempty" yaml:"definition,omitempty"`
 }
 
 type Definition struct {

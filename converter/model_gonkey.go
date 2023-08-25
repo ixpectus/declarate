@@ -17,8 +17,8 @@ type GonkeyTest struct {
 	RequestURL               string                    `json:"path" yaml:"path"`
 	QueryParams              *string                   `json:"query" yaml:"query"`
 	DBConnectionString       string                    `json:"db_conn" yaml:"db_conn"`
-	RequestTmpl              string                    `json:"request" yaml:"request"`
-	ResponseTmpls            map[int]string            `json:"response" yaml:"response"`
+	RequestTmpl              string                    `json:"request" yaml:"request,flow"`
+	ResponseTmpls            map[int]string            `json:"response" yaml:"response,flow"`
 	ResponseHeaders          map[int]map[string]string `json:"responseHeaders" yaml:"responseHeaders"`
 	BeforeScriptParams       *scriptParams             `json:"beforeScript" yaml:"beforeScript"`
 	AfterRequestScriptParams *scriptParams             `json:"afterRequestScript" yaml:"afterRequestScript"`
@@ -46,6 +46,12 @@ type Poll struct {
 	Duration           time.Duration `json:"duration,omitempty" yaml:"duration,omitempty"`
 	Interval           time.Duration `json:"interval,omitempty" yaml:"interval,omitempty"`
 	ResponseBodyRegexp string        `json:"response_body_regexp,omitempty" yaml:"response_body_regexp,omitempty"`
+}
+
+type PollRes struct {
+	Duration           string `json:"duration,omitempty" yaml:"duration,omitempty"`
+	Interval           string `json:"interval,omitempty" yaml:"interval,omitempty"`
+	ResponseBodyRegexp string `json:"response_body_regexp,omitempty" yaml:"response_body_regexp,omitempty"`
 }
 
 type scriptParams struct {
