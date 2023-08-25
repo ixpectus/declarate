@@ -20,15 +20,15 @@ type extendedConfig struct {
 }
 
 type scriptConfig struct {
-	Path           string            `yaml:"path,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
-	Response       *string           `yaml:"response,omitempty"`
+	Path      string            `yaml:"path,omitempty"`
+	Variables map[string]string `yaml:"variables,omitempty"`
+	Response  *string           `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd            string            `yaml:"script_path,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
-	Response       *string           `yaml:"script_response,omitempty"`
+	Cmd       string            `yaml:"script_path,omitempty"`
+	Variables map[string]string `yaml:"variables,omitempty"`
+	Response  *string           `yaml:"script_response,omitempty"`
 }
 
 func (ex *extendedConfig) isEmpty() bool {
@@ -69,9 +69,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &ScriptCmd{
 			comparer: u.comparer,
 			Config: &Config{
-				Cmd:            cfgExtended.Script.Path,
-				VariablesToSet: cfgExtended.Script.VariablesToSet,
-				Response:       cfgExtended.Script.Response,
+				Cmd:       cfgExtended.Script.Path,
+				Variables: cfgExtended.Script.Variables,
+				Response:  cfgExtended.Script.Response,
 			},
 		}, nil
 	}
@@ -135,7 +135,7 @@ func (e *ScriptCmd) Check() error {
 
 func (e *ScriptCmd) VariablesToSet() map[string]string {
 	if e.Config != nil {
-		return e.Config.VariablesToSet
+		return e.Config.Variables
 	}
 	return nil
 }

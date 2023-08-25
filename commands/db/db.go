@@ -77,7 +77,7 @@ type CheckConfig struct {
 	DbQuery          string                `json:"db_query" yaml:"db_query"`
 	DbResponse       string                `json:"db_response" yaml:"db_response"`
 	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
-	VariablesToSet   map[string]string     `yaml:"variables_to_set"`
+	Variables        map[string]string     `yaml:"variables"`
 }
 
 func (d *CheckConfig) isEmpty() bool {
@@ -103,7 +103,7 @@ func (e *Db) Do() error {
 			return err
 		}
 
-		if e.Config.DbResponse != "" || e.Config.VariablesToSet != nil {
+		if e.Config.DbResponse != "" || e.Config.Variables != nil {
 			res, err := makeQuery(e.Config.DbQuery, db)
 			if err != nil {
 				return err
@@ -134,7 +134,7 @@ func (e *Db) ResponseBody() *string {
 
 func (e *Db) VariablesToSet() map[string]string {
 	if e != nil && e.Config != nil {
-		return e.Config.VariablesToSet
+		return e.Config.Variables
 	}
 	return nil
 }

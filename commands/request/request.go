@@ -76,15 +76,14 @@ type DefaultConfig struct {
 type RequestConfig struct {
 	Method           string                    `json:"method" yaml:"method"`
 	RequestTmpl      string                    `json:"request" yaml:"request"`
-	Response         map[int]string            `json:"response" yaml:"response"`
-	ResponseFull     *string                   `json:"responseFull" yaml:"responseFull"`
+	Response         *string                   `json:"response" yaml:"response"`
 	ResponseHeaders  map[int]map[string]string `json:"responseHeaders" yaml:"responseHeaders"`
 	HeadersVal       map[string]string         `json:"headers" yaml:"headers"`
 	QueryParams      string                    `json:"query" yaml:"query"`
 	CookiesVal       map[string]string         `json:"cookies" yaml:"cookies"`
 	ComparisonParams compare.CompareParams     `json:"comparisonParams" yaml:"comparisonParams"`
 	RequestURL       string                    `json:"path" yaml:"path"`
-	VariablesToSet   map[string]string         `yaml:"variables_to_set"`
+	Variables        map[string]string         `yaml:"variables"`
 }
 
 func (e *Request) SetVars(vv contract.Vars) {
@@ -105,23 +104,13 @@ func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
 }
 
 func (e *Request) IsValid() error {
-	if e.Config.ResponseFull != nil && e.Config.Response != nil {
-		return fmt.Errorf("only onf of response and responseFull should be set")
-	}
-	if e.Config.ResponseFull != nil {
-		valid := json.Valid([]byte(*e.Config.ResponseFull))
-		if !valid {
-			return fmt.Errorf("cannot parse response_full: `%v`", *e.Config.ResponseFull)
-		}
-	}
 	if e.Config.Response != nil {
-		for _, v := range e.Config.Response {
-			valid := json.Valid([]byte(v))
-			if !valid {
-				return fmt.Errorf("cannot parse response: `%v`", v)
-			}
+		valid := json.Valid([]byte(*e.Config.Response))
+		if !valid {
+			return fmt.Errorf("cannot parse response: `%v`", *e.Config.Response)
 		}
 	}
+
 	return nil
 }
 
@@ -130,15 +119,9 @@ func (e *Request) Do() error {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
 		if e.Config.Response != nil {
-			for k, v := range e.Config.Response {
-				r := fmt.Sprintf(`{"body":%v, "status":%v}`, v, k)
-				e.Config.ResponseFull = &r
-			}
-		}
-		if e.Config.ResponseFull != nil {
-			s := e.Vars.Apply(*e.Config.ResponseFull)
+			s := e.Vars.Apply(*e.Config.Response)
 			s = strings.TrimSuffix(s, "\n")
-			e.Config.ResponseFull = &s
+			e.Config.Response = &s
 		}
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
 		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
@@ -182,7 +165,7 @@ func (e *Request) ResponseBody() *string {
 
 func (e *Request) VariablesToSet() map[string]string {
 	if e != nil && e.Config != nil {
-		return e.Config.VariablesToSet
+		return e.Config.Variables
 	}
 	return nil
 }
@@ -190,15 +173,15 @@ func (e *Request) VariablesToSet() map[string]string {
 func (e *Request) Check() error {
 	if e != nil && e.Config.Method != "" {
 		b := e.responseBody
-		if b != nil && e.Config.ResponseFull != nil {
+		if b != nil && e.Config.Response != nil {
 			body := gjson.Get(*b, "body")
 			gotStatus := gjson.Get(*b, "status")
-			expectedBody := gjson.Get(*e.Config.ResponseFull, "body")
+			expectedBody := gjson.Get(*e.Config.Response, "body")
 			errs, err := e.comparer.CompareJsonBody(expectedBody.String(), body.String(), e.Config.ComparisonParams)
 			realResponse := body.String()
 			expectedResponse := expectedBody.String()
-			if strings.Contains(*e.Config.ResponseFull, "status") {
-				status := gjson.Get(*e.Config.ResponseFull, "status")
+			if strings.Contains(*e.Config.Response, "status") {
+				status := gjson.Get(*e.Config.Response, "status")
 				if status.String() != gotStatus.String() {
 					realResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, body, status.String())
 					expectedResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, expectedResponse, gotStatus.String())

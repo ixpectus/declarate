@@ -2,6 +2,8 @@ package converter
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -54,11 +56,12 @@ func (c *Converter) Convert() error {
 		}
 		bb, _ := yaml.Marshal(converted)
 		targetFile := c.targetDir + "/" + relatedName
+		res := strings.ReplaceAll(string(bb), "|-", "|")
 
 		if err := os.MkdirAll(path.Dir(targetFile), os.ModePerm); err != nil {
 			log.Printf("failed to mkdir for file %s, %v", targetFile, err)
 		}
-		err = os.WriteFile(targetFile, bb, os.ModePerm)
+		err = os.WriteFile(targetFile, []byte(res), os.ModePerm)
 		if err != nil {
 			log.Printf("failed to write to file %s, %v", targetFile, err)
 			continue
@@ -171,7 +174,13 @@ func request(g GonkeyTest) DeclarateTest {
 			res.Variables[k1] = "body." + v1
 		}
 	}
-	res.ResponseTmpls = g.ResponseTmpls
+	for k, v := range g.ResponseTmpls {
+		js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", v, k)
+		var prettyJSON bytes.Buffer
+		_ = json.Indent(&prettyJSON, []byte(js1), "", "  ")
+		res.ResponseTmpls = prettyJSON.String()
+		break
+	}
 	return res
 }
 

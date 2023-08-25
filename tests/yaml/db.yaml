@@ -22,13 +22,13 @@
     - name: get count
       db_query: >
         select count(*) as cnt from t1;
-      variables_to_set:
+      variables:
         cnt: '0.cnt'
     - name: get count 2
       db:
         db_query: >
           select count(*) as cnt from t1;
-        variables_to_set:
+        variables:
           cnt2: '0.cnt'
 
 - name: check values in table

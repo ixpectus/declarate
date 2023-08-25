@@ -1,7 +1,7 @@
 - name: check poll handler
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200
@@ -13,7 +13,7 @@
 - name: check poll handler with regexp success
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200
@@ -26,7 +26,7 @@
 - name: check poll handler with regexp success with response body
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200
@@ -42,7 +42,7 @@
 - name: check poll handler with regexp fail
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200
@@ -55,7 +55,7 @@
 - name: check poll handler with fail by response body
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}
     }

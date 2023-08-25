@@ -6,5 +6,5 @@
 - name: script check extended fail
   script: 
     path: "./tests/scripts/echo.sh {{$name1}}"
-    variables_to_set:
+    variables:
       res: '*'

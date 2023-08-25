@@ -6,7 +6,7 @@
 - name: script check
   script: 
     path: "./tests/scripts/echo.sh {{$name1}}"
-    variables_to_set:
+    variables:
       res: '*'
 
 - name: check output
@@ -14,7 +14,7 @@
 
 - name: script check extended
   script_path: "./tests/scripts/echo.sh {{$name2}}"
-  variables_to_set:
+  variables:
     res: '*'
 
 - name: check output extended

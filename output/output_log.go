@@ -17,7 +17,9 @@ var (
 )
 
 func New() *Output {
-	return &Output{}
+	return &Output{
+		WithProgressBar: true,
+	}
 }
 
 type Output struct {

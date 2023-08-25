@@ -12,7 +12,7 @@
       echo:
         message: '{"val":23}'
         response: '{"val":23}'
-        variables_to_set:
+        variables:
           name: val
     - name: echo name
       pollInterval: ["10s", "10s"]

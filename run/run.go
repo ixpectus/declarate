@@ -85,7 +85,8 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 		}
 		if t != nil {
 			v.Name = currentVars.Apply(v.Name)
-			failed := t.Run(v.Name, func(t1 *testing.T) {
+
+			success := t.Run(v.Name, func(t1 *testing.T) {
 				testResult, err := r.run(v, fileName)
 				if err != nil {
 					r.output.Log(contract.Message{
@@ -110,10 +111,10 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 					})
 				}
 			})
-			if !failed {
+			if !success {
 				t.FailNow()
 			}
-			if failed {
+			if !success {
 				return true, nil
 			}
 		} else {

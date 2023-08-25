@@ -67,14 +67,14 @@ func (c *Config) isEmpty() bool {
 type config struct {
 	Message        string            `yaml:"echo_message,omitempty"`
 	Response       *string           `yaml:"echo_response,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set"`
+	VariablesToSet map[string]string `yaml:"variables"`
 }
 
 type extendedConfig struct {
 	Echo *struct {
 		Message        string            `yaml:"message,omitempty"`
 		Response       *string           `yaml:"response,omitempty"`
-		VariablesToSet map[string]string `yaml:"variables_to_set"`
+		VariablesToSet map[string]string `yaml:"variables"`
 	} `yaml:"echo,omitempty"`
 }
 

@@ -126,6 +126,7 @@ func (s *Suite) Run() error {
 					t.Skip()
 				}
 				failed, err = runner.Run(v, t)
+
 				if err != nil {
 					log.Println(err)
 					t.Fail()

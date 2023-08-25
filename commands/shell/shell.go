@@ -20,15 +20,15 @@ type extendedConfig struct {
 }
 
 type shellConfig struct {
-	Cmd            string            `yaml:"cmd,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
-	Response       *string           `yaml:"response,omitempty"`
+	Cmd       string            `yaml:"cmd,omitempty"`
+	Variables map[string]string `yaml:"variables,omitempty"`
+	Response  *string           `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd            string            `yaml:"shell_cmd,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables_to_set,omitempty"`
-	Response       *string           `yaml:"shell_response,omitempty"`
+	Cmd       string            `yaml:"shell_cmd,omitempty"`
+	Variables map[string]string `yaml:"variables,omitempty"`
+	Response  *string           `yaml:"shell_response,omitempty"`
 }
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
@@ -69,9 +69,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &ShellCmd{
 			comparer: u.comparer,
 			Config: &Config{
-				Cmd:            cfgExtended.Shell.Cmd,
-				VariablesToSet: cfgExtended.Shell.VariablesToSet,
-				Response:       cfgExtended.Shell.Response,
+				Cmd:       cfgExtended.Shell.Cmd,
+				Variables: cfgExtended.Shell.Variables,
+				Response:  cfgExtended.Shell.Response,
 			},
 		}, nil
 	}
@@ -135,7 +135,7 @@ func (e *ShellCmd) Check() error {
 
 func (e *ShellCmd) VariablesToSet() map[string]string {
 	if e.Config != nil {
-		return e.Config.VariablesToSet
+		return e.Config.Variables
 	}
 	return nil
 }
