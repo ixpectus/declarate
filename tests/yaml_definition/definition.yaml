@@ -1,0 +1,7 @@
+- definition:
+    tags: ["base"]
+    condition: 'notEmpty("{{$HOME}}") && empty("e")'
+
+- name: set variables
+  variables:
+    password: qwerty

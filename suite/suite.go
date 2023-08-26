@@ -117,6 +117,22 @@ func (s *Suite) Run() error {
 	}
 	failed := false
 	for _, v := range tests {
+		definitions, err := s.testsDefinitions([]string{v})
+		if err != nil {
+			log.Println(err)
+			s.Config.T.Fail()
+		}
+		if len(definitions) > 0 {
+			if definitions[0].definition.Definition.Condition != "" {
+				condition := "$(" + definitions[0].definition.Definition.Condition + ")"
+				condition = s.Config.Variables.Apply(condition)
+				if condition == "false" {
+					log.Println(fmt.Sprintf("test %s skipped by condition", v))
+					continue
+				}
+			}
+		}
+
 		if s.Config.T != nil {
 			s.Config.T.Run(v, func(t *testing.T) {
 				if s.Config.T.Failed() && !failed {

@@ -18,7 +18,7 @@ type DeclarateTest struct {
 	HeadersVal       map[string]string     `json:"headers,omitempty" yaml:"headers,omitempty"`
 	Variables        map[string]string     `json:"variables,omitempty" yaml:"variables,omitempty"`
 	Poll             *Poll                 `json:"poll,omitempty" yaml:"poll,omitempty"`
-	Definition       *Definition           `json:"name,omitempty" yaml:"definition,omitempty"`
+	Definition       *Definition           `json:"definition,omitempty" yaml:"definition,omitempty"`
 }
 
 type Definition struct {
