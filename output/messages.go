@@ -13,9 +13,6 @@ func messages(message contract.Message) []string {
 		prefix += " "
 	}
 	if message.Type == contract.MessageTypeError {
-		// msg := fmt.Sprintf("failed: %v:%v", message.Filename, message.Name)
-		// messages = append(messages, colorFail.Sprint(msg))
-		// pp.Println(messages)
 		messageFormatted := strings.ReplaceAll(message.Message, "failed ", "")
 		if message.Title != "" {
 			messages = append(messages, message.Title+": \n"+messageFormatted)
@@ -32,9 +29,11 @@ func messages(message contract.Message) []string {
 		logText := colorNotify2.Sprint("actual response: \n") + colorNotify.Sprint(message.Actual)
 		messages = append(messages, prefix+logText)
 	}
-	if message.Type == contract.MessageTypeNotify && !strings.Contains(message.Message, "start") {
+
+	showMessage := !strings.Contains(message.Message, "start") || message.HasNestedSteps || message.HasPoll
+	if message.Type == contract.MessageTypeNotify && showMessage {
 		logText := colorNotify.Sprint(message.Message)
-		messages = append(messages, logText)
+		messages = append(messages, prefix+logText)
 	}
 	if message.Type == contract.MessageTypeSuccess {
 		logText := colorSuccess.Sprint(message.Message)

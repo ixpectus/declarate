@@ -1,7 +1,22 @@
 - definition:
     tags: ["base"]
-    condition: 'notEmpty("{{$HOME}}") && empty("e")'
+    condition: 'notEmpty("{{$HOME}}") && empty()'
 
-- name: set variables
+- name: step should be skipped
+  condition: 'notEmpty("{{$HOME}}") && empty("e")'
   variables:
     password: qwerty
+
+- name: step should not be skipped
+  variables:
+    password: qwerty
+
+- name: check steps behaviour
+  steps: 
+    - name: step should be skipped in steps
+      condition: 'notEmpty("{{$HOME}}") && empty("e")'
+      variables:
+        password: qwerty
+    - name: step should not be skipped in steps 
+      variables:
+        password: qwerty

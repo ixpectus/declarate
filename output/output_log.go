@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 )
 
 var (
@@ -66,7 +67,10 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 			log.Println(logText)
 		}
 		if message.Type == contract.MessageTypeError {
-			msg := fmt.Sprintf("failed: %v:%v", message.Filename, message.Name)
+			msg := fmt.Sprintf("failed: %v:%v", tools.FilenameShort(message.Filename), message.Name)
+			if message.PollConditionFailed {
+				msg = fmt.Sprintf("failed, poll condition: %v:%v", tools.FilenameShort(message.Filename), message.Name)
+			}
 			log.Println(colorFail.Sprint(msg))
 			if message.Title != "" {
 				logText := colorFail.Sprint(message.Title) + ": \n" + message.Message

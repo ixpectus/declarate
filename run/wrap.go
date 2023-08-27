@@ -10,10 +10,10 @@ import (
 func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
+			Name:      conf.Name,
+			Vars:      currentVars,
+			Variables: conf.Variables,
+			Commands:  conf.Commands,
 		}
 		r.config.Wrapper.BeforeTestStep(file, cfg, lvl)
 		conf.Commands = cfg.Commands
@@ -23,10 +23,10 @@ func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
 func (r *Runner) afterTestStep(file string, conf *runConfig, result Result, polling bool) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
+			Name:      conf.Name,
+			Vars:      currentVars,
+			Variables: conf.Variables,
+			Commands:  conf.Commands,
 		}
 		r.config.Wrapper.AfterTestStep(cfg,
 			contract.Result{
@@ -45,10 +45,10 @@ func (r *Runner) afterTestStep(file string, conf *runConfig, result Result, poll
 func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
+			Name:      conf.Name,
+			Vars:      currentVars,
+			Variables: conf.Variables,
+			Commands:  conf.Commands,
 		}
 		r.config.Wrapper.BeforeTest(file, cfg, lvl)
 		conf.Commands = cfg.Commands
@@ -58,10 +58,10 @@ func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {
 func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
-			Name:           conf.Name,
-			Vars:           currentVars,
-			VariablesToSet: conf.VariablesToSet,
-			Commands:       conf.Commands,
+			Name:      conf.Name,
+			Vars:      currentVars,
+			Variables: conf.Variables,
+			Commands:  conf.Commands,
 		}
 		r.config.Wrapper.AfterTest(cfg,
 			contract.Result{
@@ -90,21 +90,23 @@ func (r *Runner) outputErr(res Result) {
 				res.Name,
 				errTest.Title,
 			),
-			Expected:   errTest.Expected,
-			Actual:     errTest.Actual,
-			Lvl:        res.Lvl,
-			Type:       contract.MessageTypeError,
-			PollResult: res.PollResult,
+			Expected:            errTest.Expected,
+			Actual:              errTest.Actual,
+			Lvl:                 res.Lvl,
+			Type:                contract.MessageTypeError,
+			PollResult:          res.PollResult,
+			PollConditionFailed: res.PollConditionFailed,
 		})
 		return
 	}
 	if res.Err != nil {
 		r.output.Log(contract.Message{
-			Filename: res.FileName,
-			Name:     res.Name,
-			Message:  fmt.Sprintf("failed %v", res.Err),
-			Lvl:      res.Lvl,
-			Type:     contract.MessageTypeError,
+			Filename:            res.FileName,
+			Name:                res.Name,
+			Message:             fmt.Sprintf("failed %v", res.Err),
+			Lvl:                 res.Lvl,
+			Type:                contract.MessageTypeError,
+			PollConditionFailed: res.PollConditionFailed,
 		})
 	}
 }

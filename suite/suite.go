@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/tools"
@@ -124,9 +125,10 @@ func (s *Suite) Run() error {
 		}
 		if len(definitions) > 0 {
 			if definitions[0].definition.Definition.Condition != "" {
-				condition := "$(" + definitions[0].definition.Definition.Condition + ")"
-				condition = s.Config.Variables.Apply(condition)
-				if condition == "false" {
+				if !condition.IsTrue(
+					s.Config.Variables,
+					definitions[0].definition.Definition.Condition,
+				) {
 					log.Println(fmt.Sprintf("test %s skipped by condition", v))
 					continue
 				}

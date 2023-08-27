@@ -65,16 +65,19 @@ type PollResult struct {
 }
 
 type Message struct {
-	Name       string
-	Filename   string
-	Message    string
-	Title      string
-	Expected   string
-	Actual     string
-	Lvl        int
-	Type       MessageType
-	Poll       *PollInfo
-	PollResult *PollResult
+	Name                string
+	Filename            string
+	Message             string
+	HasNestedSteps      bool
+	HasPoll             bool
+	Title               string
+	Expected            string
+	Actual              string
+	Lvl                 int
+	Type                MessageType
+	Poll                *PollInfo
+	PollResult          *PollResult
+	PollConditionFailed bool
 }
 
 type Output interface {
@@ -93,11 +96,11 @@ type TestWrapper interface {
 }
 
 type RunConfig struct {
-	Name           string      `yaml:"name,omitempty"`
-	Steps          []RunConfig `yaml:"steps,omitempty"`
-	Vars           Vars
-	VariablesToSet map[string]string `yaml:"variables_to_set"`
-	Commands       []Doer
+	Name      string      `yaml:"name,omitempty"`
+	Steps     []RunConfig `yaml:"steps,omitempty"`
+	Vars      Vars
+	Variables map[string]string `yaml:"variables"`
+	Commands  []Doer
 }
 
 type Result struct {

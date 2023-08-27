@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ixpectus/declarate/compare"
+	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
@@ -26,18 +27,26 @@ type Runner struct {
 }
 
 type RunnerConfig struct {
-	Variables contract.Vars
-	Builders  []contract.CommandBuilder
-	Output    contract.Output
-	Wrapper   contract.TestWrapper
-	T         *testing.T
-	comparer  contract.Comparer
+	Variables    contract.Vars
+	Builders     []contract.CommandBuilder
+	Output       contract.Output
+	Wrapper      contract.TestWrapper
+	T            *testing.T
+	comparer     contract.Comparer
+	pollComparer contract.Comparer
 }
 
 func New(c RunnerConfig) *Runner {
 	builders = c.Builders
 	if c.comparer == nil {
 		c.comparer = compare.New(compare.CompareParams{
+			IgnoreArraysOrdering: tools.To(true),
+			DisallowExtraFields:  tools.To(false),
+			AllowArrayExtraItems: tools.To(true),
+		})
+	}
+	if c.pollComparer == nil {
+		c.pollComparer = compare.New(compare.CompareParams{
 			IgnoreArraysOrdering: tools.To(true),
 			DisallowExtraFields:  tools.To(false),
 			AllowArrayExtraItems: tools.To(true),
@@ -71,7 +80,11 @@ func (r *Runner) Validate(fileName string) error {
 }
 
 func (r *Runner) filenameShort(fileName string) string {
-	return path.Base(fileName)
+	parts := strings.Split(fileName, "/")
+	if len(parts) > 4 {
+		return path.Base(fileName)
+	}
+	return fileName
 }
 
 func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
@@ -88,17 +101,27 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
 		}
+		if v.Condition != "" && !condition.IsTrue(r.config.Variables, v.Condition) {
+			r.output.Log(contract.Message{
+				Filename: fileName,
+				Name:     v.Name,
+				Message:  fmt.Sprintf("skipped for file %s: %s", r.filenameShort(fileName), v.Name),
+				Type:     contract.MessageTypeNotify,
+			})
+			continue
+		}
 		if t != nil {
 			v.Name = currentVars.Apply(v.Name)
 
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
-					Filename:   fileName,
-					Name:       v.Name,
-					Message:    fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
-					Type:       contract.MessageTypeError,
-					PollResult: testResult.PollResult,
+					Filename:            fileName,
+					Name:                v.Name,
+					Message:             fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
+					Type:                contract.MessageTypeError,
+					PollResult:          testResult.PollResult,
+					PollConditionFailed: testResult.PollConditionFailed,
 				})
 				t.FailNow()
 				return false, nil
@@ -109,11 +132,12 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 				return false, nil
 			} else {
 				r.output.Log(contract.Message{
-					Filename:   fileName,
-					Name:       v.Name,
-					Message:    fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
-					Type:       contract.MessageTypeSuccess,
-					PollResult: testResult.PollResult,
+					Filename:            fileName,
+					Name:                v.Name,
+					Message:             fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
+					Type:                contract.MessageTypeSuccess,
+					PollResult:          testResult.PollResult,
+					PollConditionFailed: testResult.PollConditionFailed,
 				})
 			}
 		} else {
@@ -121,11 +145,12 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
-					Filename:   fileName,
-					Name:       v.Name,
-					Message:    fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
-					Type:       contract.MessageTypeError,
-					PollResult: testResult.PollResult,
+					Filename:            fileName,
+					Name:                v.Name,
+					Message:             fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
+					Type:                contract.MessageTypeError,
+					PollResult:          testResult.PollResult,
+					PollConditionFailed: testResult.PollConditionFailed,
 				})
 				return false, nil
 			}
@@ -134,11 +159,12 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 				return false, nil
 			} else {
 				r.output.Log(contract.Message{
-					Filename:   fileName,
-					Name:       v.Name,
-					Message:    fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
-					Type:       contract.MessageTypeSuccess,
-					PollResult: testResult.PollResult,
+					Filename:            fileName,
+					Name:                v.Name,
+					Message:             fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
+					Type:                contract.MessageTypeSuccess,
+					PollResult:          testResult.PollResult,
+					PollConditionFailed: testResult.PollConditionFailed,
 				})
 			}
 		}
@@ -165,12 +191,15 @@ func (r *Runner) run(
 		err        error
 		testResult *Result
 	)
+
 	if v.Name != "" {
 		r.output.Log(contract.Message{
-			Filename: fileName,
-			Name:     v.Name,
-			Message:  fmt.Sprintf("start  %v:%v", fileName, v.Name),
-			Type:     contract.MessageTypeNotify,
+			Filename:       fileName,
+			Name:           v.Name,
+			HasNestedSteps: len(v.Steps) > 0,
+			HasPoll:        len(v.Poll.PollInterval()) > 0,
+			Message:        fmt.Sprintf("start %v:%v", fileName, v.Name),
+			Type:           contract.MessageTypeNotify,
 		})
 	}
 	if len(v.Poll.PollInterval()) > 0 {
@@ -188,7 +217,7 @@ func (r *Runner) run(
 func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, error) {
 	var err error
 	var testResult *Result
-	v.Poll.comparer = r.config.comparer
+	v.Poll.comparer = r.config.pollComparer
 	start := time.Now()
 	finish := start
 	for _, d := range v.Poll.PollInterval() {
@@ -217,7 +246,12 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 		}
 		if testResult.Err != nil {
 			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
-				if !v.Poll.pollContinue(testResult.Response) {
+				res, errs, _ := v.Poll.pollContinue(testResult.Response)
+				if !res {
+					if len(errs) > 0 {
+						testResult.PollConditionFailed = true
+						testResult.Err = errs[0]
+					}
 					break
 				}
 			}
@@ -237,7 +271,12 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			time.Sleep(d)
 		} else {
 			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
-				if !v.Poll.pollContinue(testResult.Response) {
+				res, errs, _ := v.Poll.pollContinue(testResult.Response)
+				if !res {
+					if len(errs) > 0 {
+						testResult.PollConditionFailed = true
+						testResult.Err = errs[0]
+					}
 					break
 				}
 			}
@@ -316,13 +355,24 @@ func (r *Runner) runOne(
 	if len(conf.Steps) > 0 {
 		results := []string{}
 		for _, v := range conf.Steps {
-			if v.Name != "" {
+			if v.Condition != "" && !condition.IsTrue(r.config.Variables, v.Condition) {
 				r.output.Log(contract.Message{
 					Filename: fileName,
 					Name:     v.Name,
-					Message:  fmt.Sprintf("start  %v:%v", fileName, v.Name),
+					Message:  fmt.Sprintf("skipped %s: %s", r.filenameShort(fileName), v.Name),
 					Lvl:      lvl + 1,
 					Type:     contract.MessageTypeNotify,
+				})
+				continue
+			}
+			if v.Name != "" {
+				r.output.Log(contract.Message{
+					Filename:       fileName,
+					Name:           v.Name,
+					Message:        fmt.Sprintf("start %v:%v", fileName, v.Name),
+					HasNestedSteps: len(v.Steps) > 0,
+					Lvl:            lvl + 1,
+					Type:           contract.MessageTypeNotify,
 				})
 			}
 			testResult, err := r.runOne(v, lvl+1, fileName, polling)
@@ -362,8 +412,8 @@ func (r *Runner) runOne(
 		}
 	}
 
-	if conf.VariablesToSet != nil {
-		varsToSet := conf.VariablesToSet
+	if conf.Variables != nil {
+		varsToSet := conf.Variables
 		jsonVars := map[string]string{}
 		for k, v := range varsToSet {
 			if v == "*" {
@@ -372,7 +422,7 @@ func (r *Runner) runOne(
 				jsonVars[k] = v
 			}
 		}
-		if len(jsonVars) > 0 {
+		if len(jsonVars) > 0 && body != nil {
 			vars, err := variables.FromJSON(jsonVars, *body)
 			if err != nil {
 				res := &Result{

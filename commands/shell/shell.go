@@ -112,22 +112,35 @@ func (e *ShellCmd) Check() error {
 	if e.Config.Response != nil {
 		linesExpected := strings.Split(*e.Config.Response, "\n")
 		linesGot := strings.Split(e.responseBody, "\n")
+
 		if len(linesExpected) != len(linesGot) {
+			errMsg := fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot))
+			for k := range linesExpected {
+				if len(linesGot) >= k {
+					if linesExpected[k] != linesGot[k] {
+						errMsg += fmt.Sprintf("\nlines different at line %v, expected %v, got %v", k, linesExpected[k], linesExpected[k])
+					}
+				}
+			}
 			res := compare.MakeError(
 				"",
-				fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot)),
+				errMsg,
 				*e.Config.Response,
 				e.responseBody,
 			)
 			return res
 		}
-		errors := e.comparer.Compare(
-			*e.Config.Response,
-			e.responseBody,
-			compare.CompareParams{},
-		)
-		if len(errors) > 0 {
-			return errors[0]
+		errMsg := ""
+		for k := range linesExpected {
+			if len(linesGot) >= k {
+				if strings.Trim(linesExpected[k], " ") != strings.Trim(linesGot[k], " ") {
+					errMsg = fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
+					break
+				}
+			}
+		}
+		if errMsg != "" {
+			return fmt.Errorf(errMsg)
 		}
 	}
 	return nil

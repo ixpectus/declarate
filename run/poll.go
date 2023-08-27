@@ -37,28 +37,29 @@ func (p *Poll) PollInterval() []time.Duration {
 	return []time.Duration{}
 }
 
-func (p *Poll) pollContinue(response *string) bool {
-	if p.ResponseTmpls != nil && response == nil {
-		return false
+func (p *Poll) pollContinue(response *string) (bool, []error, error) {
+	if p.ResponseRegexp == "" && p.ResponseTmpls == nil {
+		return false, nil, nil
 	}
-	if p.ResponseRegexp == "" && p.ResponseTmpls != nil {
-		return true
+	if (p.ResponseTmpls != nil || p.ResponseRegexp != "") && response == nil {
+		return false, nil, nil
 	}
+
 	if p.ResponseRegexp != "" {
 		rx, err := regexp.Compile(p.ResponseRegexp)
 		if err != nil {
-			return false
+			return false, nil, nil
 		}
 		if response == nil || !rx.MatchString(*response) {
-			return false
+			return false, nil, nil
 		}
-		return true
+		return true, nil, nil
 	}
 	if p.ResponseTmpls != nil && p.comparer != nil {
 		errs, err := p.comparer.CompareJsonBody(*p.ResponseTmpls, *response, p.ComparisonParams)
 		if len(errs) > 0 || err != nil {
-			return false
+			return false, errs, err
 		}
 	}
-	return true
+	return true, nil, nil
 }

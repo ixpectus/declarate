@@ -3,6 +3,8 @@ package tools
 import (
 	"bytes"
 	"encoding/json"
+	"path"
+	"strings"
 )
 
 func Filter[T any](slice []T, f func(T) bool) []T {
@@ -61,4 +63,12 @@ func JSONRemarshal(in string) (string, error) {
 		return "", err
 	}
 	return string(res), nil
+}
+
+func FilenameShort(fileName string) string {
+	parts := strings.Split(fileName, "/")
+	if len(parts) > 4 {
+		return path.Base(fileName)
+	}
+	return fileName
 }
