@@ -11,7 +11,8 @@ type VarsCmd struct {
 }
 
 type Config struct {
-	Data map[string]string `yaml:"variables,omitempty"`
+	Data           map[string]string `yaml:"variables,omitempty"`
+	DataPersistent map[string]string `yaml:"variables_persistent,omitempty"`
 }
 
 func (e *VarsCmd) SetVars(vv contract.Vars) {
@@ -36,7 +37,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if cfg == nil {
 		return nil, nil
 	}
-	if cfg.Data == nil {
+	if cfg.Data == nil && cfg.DataPersistent == nil {
 		return nil, nil
 	}
 	return &VarsCmd{
@@ -52,6 +53,11 @@ func (e *VarsCmd) Do() error {
 	if e.Config != nil {
 		for k, v := range e.Config.Data {
 			e.Vars.Set(k, v)
+		}
+		for k, v := range e.Config.DataPersistent {
+			if err := e.Vars.SetPersistent(k, v); err != nil {
+				panic(err)
+			}
 		}
 	}
 

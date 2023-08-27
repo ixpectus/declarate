@@ -1,0 +1,4 @@
+- name: get persistent variable
+  echo:
+    message: '{{$password}}'
+

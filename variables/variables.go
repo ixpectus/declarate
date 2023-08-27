@@ -15,16 +15,21 @@ import (
 var variableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
 
 type Variables struct {
-	data      map[string]string
-	eval      contract.Evaluator
-	functions map[string]goval.ExpressionFunction
+	data       map[string]string
+	eval       contract.Evaluator
+	functions  map[string]goval.ExpressionFunction
+	persistent persistent
 }
 
-func New(evaluator contract.Evaluator) *Variables {
+func New(
+	evaluator contract.Evaluator,
+	persistent persistent,
+) *Variables {
 	gofakeit.Seed(0)
 	vv := &Variables{
-		data: map[string]string{},
-		eval: evaluator,
+		data:       map[string]string{},
+		eval:       evaluator,
+		persistent: persistent,
 	}
 	return vv
 }
@@ -38,6 +43,12 @@ func (v *Variables) Set(k, val string) {
 	v.data[k] = val
 }
 
+func (v *Variables) SetPersistent(k, val string) error {
+	val = v.Apply(val)
+	val = v.eval.Evaluate(val)
+	return v.persistent.Set(k, val)
+}
+
 func (v *Variables) Reset() {
 	v.data = map[string]string{}
 }
@@ -45,6 +56,15 @@ func (v *Variables) Reset() {
 func (v *Variables) Get(k string) string {
 	if v, ok := v.data[k]; ok {
 		return v
+	}
+	if v.persistent != nil {
+		res, err := v.persistent.Get(k)
+		if err != nil {
+			panic(err)
+		}
+		if res != "" {
+			return res
+		}
 	}
 
 	return os.Getenv(k)

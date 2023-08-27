@@ -11,6 +11,7 @@ type Vars interface {
 	Set(k, val string)
 	Get(k string) string
 	Apply(text string) string
+	SetPersistent(k, val string) error
 }
 
 type CommandBuilder interface {

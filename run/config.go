@@ -7,14 +7,15 @@ import (
 )
 
 type runConfig struct {
-	Name      string      `yaml:"name,omitempty"`
-	Steps     []runConfig `yaml:"steps,omitempty"`
-	Vars      contract.Vars
-	Variables map[string]string `yaml:"variables"`
-	Commands  []contract.Doer
-	Builders  []contract.CommandBuilder
-	Poll      *Poll  `yaml:"poll,omitempty"`
-	Condition string `yaml:"condition,omitempty"`
+	Name                string      `yaml:"name,omitempty"`
+	Steps               []runConfig `yaml:"steps,omitempty"`
+	Vars                contract.Vars
+	Variables           map[string]string `yaml:"variables"`
+	VariablesPersistent map[string]string `yaml:"variables_persistent"`
+	Commands            []contract.Doer
+	Builders            []contract.CommandBuilder
+	Poll                *Poll  `yaml:"poll,omitempty"`
+	Condition           string `yaml:"condition,omitempty"`
 }
 
 func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {

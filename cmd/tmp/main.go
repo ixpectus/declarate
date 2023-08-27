@@ -2,16 +2,21 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"log"
 
-	"github.com/ixpectus/declarate/output"
+	"github.com/recoilme/pudge"
 )
 
 func main() {
-	bar := output.NewBar(time.Now().Add(10 * time.Second))
-	go bar.Start()
-	time.Sleep(2 * time.Second)
-	bar.Stop()
-	time.Sleep(2 * time.Second)
-	fmt.Printf("\n>>> %v <<< debug\n", "finish")
+	cfg := pudge.DefaultConfig
+	cfg.SyncInterval = 0 // disable every second fsync
+	db, err := pudge.Open("./db", cfg)
+	if err != nil {
+		log.Panic(err)
+	}
+	// s := "1"
+	var res string
+	db.Get("key", &res)
+	fmt.Printf("\n>>> %v <<< debug\n", res)
+	// db.Set("key", s)
 }

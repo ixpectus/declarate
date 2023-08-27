@@ -97,6 +97,7 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 	if err := yaml.Unmarshal(file, &configs); err != nil {
 		return true, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
+	// pp.Println(configs)
 	for _, v := range configs {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
@@ -433,6 +434,33 @@ func (r *Runner) runOne(
 			}
 			for k, v := range vars {
 				currentVars.Set(k, v)
+			}
+		}
+	}
+	if conf.VariablesPersistent != nil {
+		varsToSet := conf.VariablesPersistent
+		jsonVars := map[string]string{}
+		for k, v := range varsToSet {
+			if v == "*" {
+				currentVars.SetPersistent(k, *body)
+			} else {
+				jsonVars[k] = v
+			}
+		}
+		if len(jsonVars) > 0 && body != nil {
+			vars, err := variables.FromJSON(jsonVars, *body)
+			if err != nil {
+				res := &Result{
+					Err:      err,
+					Name:     conf.Name,
+					Lvl:      lvl,
+					FileName: fileName,
+				}
+				r.afterTestStep(fileName, &conf, *res, polling)
+				return res, nil
+			}
+			for k, v := range vars {
+				currentVars.SetPersistent(k, v)
 			}
 		}
 	}
