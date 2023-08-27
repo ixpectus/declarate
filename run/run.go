@@ -174,10 +174,7 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 
 func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 	if t != nil {
-		res := t.Run(fileName, func(t *testing.T) {
-			r.runFile(fileName, t)
-		})
-		return res, nil
+		return r.runFile(fileName, t)
 	}
 	return r.runFile(fileName, t)
 }
