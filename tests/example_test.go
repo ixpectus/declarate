@@ -25,6 +25,7 @@ func TestExample(t *testing.T) {
 	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	runner = run.New(run.RunnerConfig{
 		Variables: vv,
+		T:         t,
 		Output:    &output.Output{},
 		Builders: []contract.CommandBuilder{
 			shell.NewUnmarshaller(cmp),
@@ -35,8 +36,9 @@ func TestExample(t *testing.T) {
 			db.NewUnmarshaller(connLoader, cmp),
 		},
 	})
-	_, err := runner.Run("./tests/yaml_example/example.yaml", nil)
+	_, err := runner.Run("./tests/yaml_example/example.yaml", t)
 	if err != nil {
 		fmt.Println(err)
+		t.Fail()
 	}
 }

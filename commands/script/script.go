@@ -133,21 +133,19 @@ func (e *ScriptCmd) Check() error {
 		for k := range linesExpected {
 			if len(linesGot) >= k {
 				if strings.Trim(linesExpected[k], " ") != strings.Trim(linesGot[k], " ") {
-					errMsg = fmt.Sprintf("\nlines diffsserent at line %v, expected %v, got %v", k, linesExpected[k], linesExpected[k])
+					errMsg = fmt.Sprintf("\nlines different at line %v, expected %v, got %v", k, linesExpected[k], linesExpected[k])
 				}
 			}
 		}
 		if errMsg != "" {
-			return fmt.Errorf(errMsg)
+			return &contract.TestError{
+				Title:         "response body differs",
+				Expected:      *e.Config.Response,
+				Actual:        e.responseBody,
+				Message:       errMsg,
+				OriginalError: nil,
+			}
 		}
-		// errors := e.comparer.Compare(
-		// 	*e.Config.Response,
-		// 	e.responseBody,
-		// 	compare.CompareParams{},
-		// )
-		// if len(errors) > 0 {
-		// 	return errors[0]
-		// }
 	}
 	return nil
 }

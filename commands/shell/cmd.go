@@ -48,8 +48,8 @@ func Run(command string) ([]string, error) {
 		cmd.Stdout = &bb
 		cmd.Stderr = &errBB
 		cmd.Env = os.Environ()
-		log.Println(cmd.String())
 		if err := cmd.Run(); err != nil {
+			log.Println(cmd.String())
 			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, string(bb.Bytes()), string(errBB.Bytes()))
 		}
 

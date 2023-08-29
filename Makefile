@@ -12,6 +12,10 @@ test:
 	go build -o build/main cmd/example/main.go
 	go test -v ./tests/... -count=1 -run TestExample	
 
+test-suite:
+	go build -o build/main cmd/example/main.go
+	go test -v ./tests/... -count=1 -run TestSuite
+
 
 test-cover:
 	go build -o build/main cmd/example/main.go

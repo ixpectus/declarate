@@ -97,7 +97,6 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 	if err := yaml.Unmarshal(file, &configs); err != nil {
 		return true, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
-	// pp.Println(configs)
 	for _, v := range configs {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
@@ -113,7 +112,6 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 		}
 		if t != nil {
 			v.Name = currentVars.Apply(v.Name)
-
 			testResult, err := r.run(v, fileName)
 			if err != nil {
 				r.output.Log(contract.Message{
@@ -205,6 +203,7 @@ func (r *Runner) run(
 	} else {
 		testResult, err = r.runOne(v, 0, fileName, false)
 	}
+
 	if err != nil {
 		return testResult, fmt.Errorf("run test for file %s: %w", fileName, err)
 	}

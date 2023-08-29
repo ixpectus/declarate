@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/commands/db"
 	"github.com/ixpectus/declarate/commands/echo"
 	"github.com/ixpectus/declarate/commands/request"
@@ -69,7 +68,6 @@ func (f *stringList) Set(value string) error {
 
 func main() {
 	go tests.Handle()
-	color.NoColor = true
 	if err := waitStartAPI("127.0.0.1", "8181"); err != nil {
 		log.Fatal(err)
 	}
@@ -91,6 +89,7 @@ func main() {
 	// if output
 	s := suite.New(*flagDir, suite.RunConfig{
 		RunAll:         false,
+		NoColor:        true,
 		Filepathes:     []string{},
 		SkipFilename:   coreTestsToSkip,
 		TestRunWrapper: tests.NewDebugWrapper(),

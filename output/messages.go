@@ -15,9 +15,9 @@ func messages(message contract.Message) []string {
 	if message.Type == contract.MessageTypeError {
 		messageFormatted := strings.ReplaceAll(message.Message, "failed ", "")
 		if message.Title != "" {
-			messages = append(messages, message.Title+": \n"+messageFormatted)
+			messages = append(messages, colorFail.Sprint(message.Title)+": \n"+messageFormatted)
 		} else {
-			messages = append(messages, prefix+messageFormatted)
+			messages = append(messages, colorFail.Sprint(prefix)+messageFormatted)
 		}
 		messages = append(messages, "")
 	}

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/run"
@@ -20,6 +21,7 @@ type SuiteConfig struct {
 }
 
 type RunConfig struct {
+	NoColor        bool
 	RunAll         bool
 	FailFast       bool
 	Tags           []string
@@ -80,6 +82,7 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 }
 
 func (s *Suite) Run() error {
+	color.NoColor = s.Config.NoColor
 	allTests, err := s.AllTests(s.Directory)
 	if err != nil {
 		return fmt.Errorf("run: %w", err)

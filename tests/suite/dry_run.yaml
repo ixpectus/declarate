@@ -1,0 +1,27 @@
+- name: test dry run for directory
+  shell_cmd: | 
+    {{$CMD}} -dryRun -dir ./tests/yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    ./tests/yaml/nested/nested.yaml
+    ./tests/yaml/req.yaml
+    ./tests/yaml/shell.yaml
+
+- name: test dry run for single file
+  shell_cmd: | 
+    {{$CMD}} -dryRun -dir ./tests/yaml/req.yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/req.yaml
+
+- name: test dry run for directory with skipped files
+  shell_cmd: | 
+     {{$CMD}} -dryRun -dir ./tests/yaml  -s req.yaml -s db.yaml
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/nested/nested.yaml
+    ./tests/yaml/shell.yaml
+

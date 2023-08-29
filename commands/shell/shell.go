@@ -140,7 +140,13 @@ func (e *ShellCmd) Check() error {
 			}
 		}
 		if errMsg != "" {
-			return fmt.Errorf(errMsg)
+			return &contract.TestError{
+				Title:         "response body differs",
+				Expected:      *e.Config.Response,
+				Actual:        e.responseBody,
+				Message:       errMsg,
+				OriginalError: nil,
+			}
 		}
 	}
 	return nil
