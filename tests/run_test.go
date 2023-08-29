@@ -11,6 +11,7 @@ import (
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/eval"
+	"github.com/ixpectus/declarate/kv"
 	"github.com/ixpectus/declarate/output"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/variables"
@@ -18,7 +19,7 @@ import (
 
 var (
 	evaluator  = eval.NewEval(nil)
-	vv         = variables.New(evaluator)
+	vv         = variables.New(evaluator, kv.New("persistent"))
 	cmp        = compare.New(compare.CompareParams{})
 	connLoader = db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	runner     = run.New(run.RunnerConfig{

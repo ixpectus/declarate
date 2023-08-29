@@ -58,10 +58,7 @@ func (v *Variables) Get(k string) string {
 		return v
 	}
 	if v.persistent != nil {
-		res, err := v.persistent.Get(k)
-		if err != nil {
-			panic(err)
-		}
+		res, _ := v.persistent.Get(k)
 		if res != "" {
 			return res
 		}
