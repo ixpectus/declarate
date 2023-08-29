@@ -216,7 +216,6 @@
     passed ./tests/yaml_script/script_success.yaml:check output extended
 
 
-
 - name: test eval 
   shell_cmd: | 
     {{$cmd}} -dir ./tests -tests yaml_variables

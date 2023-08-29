@@ -1,0 +1,56 @@
+- name: test requests success
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml/req.yaml
+  shell_response: |
+    passed ./tests/yaml/req.yaml:set variables
+    passed ./tests/yaml/req.yaml:check request
+    passed ./tests/yaml/req.yaml:check request
+
+- name: test requests faile with wrong status
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_failed/req_status.yaml
+  shell_response: |
+    passed ./tests/yaml_failed/req_status.yaml:set variables
+    failed ./tests/yaml_failed/req_status.yaml:check request
+    response differs: 
+    status differs, expected 201, got 200
+
+    expected response: 
+    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":200}
+    actual response: 
+    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":201}
+
+- name: test requests fail, wrong value in map
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_failed/req_map.yaml
+  shell_response: |
+    failed ./tests/yaml_failed/req_map.yaml:check request fail map
+    response differs: 
+    at path $.name values do not match:
+    expected:
+    Tom1
+    actual:
+    Tom
+
+    expected response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom1"}
+    actual response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom"}
+
+- name: test requests fail, wrong value in array
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_failed/req_array.yaml
+  shell_response: |
+    failed ./tests/yaml_failed/req_array.yaml:check request fail map
+    response differs: 
+    at path $.items array lengths do not match:
+    expected:
+    3
+    actual:
+    4
+
+    expected response: 
+    {"age":28,"items":[1,3,4],"name":"Tom"}
+    actual response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom"}
+

@@ -1,0 +1,35 @@
+- name: test poll success
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_poll/poll.yaml
+  shell_response: |
+    start ./tests/yaml_poll/poll.yaml:check poll handler
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
+    passed ./tests/yaml_poll/poll.yaml:check poll handler
+    start ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
+    passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
+    start ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
+    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
+    at path $.body.name values do not match:
+    expected:
+    Tom
+    actual:
+    Tommy
+     

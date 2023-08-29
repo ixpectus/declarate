@@ -1,0 +1,26 @@
+- name: test eval 
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests -tests yaml_variables
+  shell_response: |
+    passed ./tests/yaml_variables/1_persistent_set.yaml:set variables
+
+    echo bor 
+    passed ./tests/yaml_variables/1_persistent_set.yaml:check echo variables
+
+    echo Donny 
+    passed ./tests/yaml_variables/1_persistent_set.yaml:check echo persistent variable
+
+    echo qwerty 
+    passed ./tests/yaml_variables/1_persistent_set.yaml:check echo persistent variable
+
+    echo qwerty 
+    passed ./tests/yaml_variables/2_persistent_get.yaml:get persistent variable
+    passed ./tests/yaml_variables/eval.yaml:set variables
+
+    echo Donny 
+    passed ./tests/yaml_variables/eval.yaml:check echo
+
+    echo 2 
+    passed ./tests/yaml_variables/eval.yaml:check eval direct call
+
+

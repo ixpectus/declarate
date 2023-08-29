@@ -1,0 +1,13 @@
+- name: check conditions
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_definition/definition.yaml
+  shell_response: |
+    skipped for file ./tests/yaml_definition/definition.yaml: step should be skipped
+    passed ./tests/yaml_definition/definition.yaml:step should not be skipped
+    start ./tests/yaml_definition/definition.yaml:check steps behaviour
+     skipped ./tests/yaml_definition/definition.yaml: step should be skipped in steps
+     passed ./tests/yaml_definition/definition.yaml:step should not be skipped in steps
+    passed ./tests/yaml_definition/definition.yaml:check steps behaviour
+
+
+

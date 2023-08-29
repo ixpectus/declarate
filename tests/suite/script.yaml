@@ -1,0 +1,16 @@
+- name: test script, success
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests -tests yaml_script/script_success
+  shell_response: |
+    passed ./tests/yaml_script/script_success.yaml:set variables
+    passed ./tests/yaml_script/script_success.yaml:script check
+
+    echo reddy
+     
+    passed ./tests/yaml_script/script_success.yaml:check output
+    passed ./tests/yaml_script/script_success.yaml:script check extended
+
+    echo bobby
+     
+    passed ./tests/yaml_script/script_success.yaml:check output extended
+

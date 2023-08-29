@@ -1,0 +1,42 @@
+- name: test tags, pass one tag
+  shell_cmd: |
+    {{$CMD}} -dir ./tests/yaml -tags "base" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+
+- name: test tags, tests should be ordered by tags
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml -tags "advanced,base" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/req.yaml
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    
+- name: test tags, nested directories
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml -tags "tiny" -dryRun
+  shell_response: |
+    tests to run
+    ./tests/yaml/nested/nested.yaml
+
+- name: test pathes, pathes and tags
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml -tags "base" -dryRun -tests req,nested
+  shell_response: |
+    tests to run
+    ./tests/yaml/config.yaml
+    ./tests/yaml/db.yaml
+    ./tests/yaml/req.yaml
+    ./tests/yaml/nested/nested.yaml
+
+- name: test pathes, only pathes
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml -dryRun -tests req,nested
+  shell_response: |
+    tests to run
+    ./tests/yaml/req.yaml
+    ./tests/yaml/nested/nested.yaml
+
