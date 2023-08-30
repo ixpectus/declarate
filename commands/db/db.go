@@ -73,11 +73,12 @@ func (d *DbCheck) isEmpty() bool {
 }
 
 type CheckConfig struct {
-	DbConn           string                `json:"db_conn" yaml:"db_conn"`
-	DbQuery          string                `json:"db_query" yaml:"db_query"`
-	DbResponse       string                `json:"db_response" yaml:"db_response"`
-	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
-	Variables        map[string]string     `yaml:"variables"`
+	DbConn              string                `json:"db_conn" yaml:"db_conn"`
+	DbQuery             string                `json:"db_query" yaml:"db_query"`
+	DbResponse          string                `json:"db_response" yaml:"db_response"`
+	ComparisonParams    compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
+	Variables           map[string]string     `yaml:"variables"`
+	VariablesPersistent map[string]string     `yaml:"variables_persistent"`
 }
 
 func (d *CheckConfig) isEmpty() bool {
@@ -103,7 +104,7 @@ func (e *Db) Do() error {
 			return err
 		}
 
-		if e.Config.DbResponse != "" || e.Config.Variables != nil {
+		if e.Config.DbResponse != "" || e.Config.Variables != nil || e.Config.VariablesPersistent != nil {
 			res, err := makeQuery(e.Config.DbQuery, db)
 			if err != nil {
 				return err

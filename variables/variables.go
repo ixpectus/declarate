@@ -46,6 +46,7 @@ func (v *Variables) Set(k, val string) {
 func (v *Variables) SetPersistent(k, val string) error {
 	val = v.Apply(val)
 	val = v.eval.Evaluate(val)
+
 	return v.persistent.Set(k, val)
 }
 
