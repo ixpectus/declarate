@@ -1,26 +1,29 @@
 package compare
 
+import "github.com/ixpectus/declarate/contract"
+
 type Comparer struct {
-	defaultComparisonParams CompareParams
+	defaultComparisonParams contract.CompareParams
+	vars                    contract.Vars
 }
 
-func New(c CompareParams) *Comparer {
-	return &Comparer{defaultComparisonParams: c}
+func New(c contract.CompareParams, vars contract.Vars) *Comparer {
+	return &Comparer{defaultComparisonParams: c, vars: vars}
 }
 
-func (c *Comparer) Compare(expected, actual interface{}, params CompareParams) []error {
-	return compare(expected, actual, c.merge(params))
+func (c *Comparer) Compare(expected, actual interface{}, params contract.CompareParams) []error {
+	return c.compare(expected, actual, c.merge(params))
 }
 
 func (c *Comparer) CompareJsonBody(
 	expectedBody string,
 	realBody string,
-	params CompareParams,
+	params contract.CompareParams,
 ) ([]error, error) {
-	return compareJsonBody(expectedBody, realBody, c.merge(params))
+	return c.compareJsonBody(expectedBody, realBody, c.merge(params))
 }
 
-func (c *Comparer) merge(params CompareParams) CompareParams {
+func (c *Comparer) merge(params contract.CompareParams) contract.CompareParams {
 	mergedParams := c.defaultComparisonParams
 	if params.AllowArrayExtraItems != nil {
 		mergedParams.AllowArrayExtraItems = params.AllowArrayExtraItems

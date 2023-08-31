@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/tidwall/gjson"
@@ -53,7 +52,7 @@ func NewUnmarshaller(
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfg := &RequestConfig{}
 	if err := unmarshal(cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshall request: %w", err)
 	}
 
 	if cfg == nil {
@@ -81,7 +80,7 @@ type RequestConfig struct {
 	HeadersVal       map[string]string         `json:"headers" yaml:"headers"`
 	QueryParams      string                    `json:"query" yaml:"query"`
 	CookiesVal       map[string]string         `json:"cookies" yaml:"cookies"`
-	ComparisonParams compare.CompareParams     `json:"comparisonParams" yaml:"comparisonParams"`
+	ComparisonParams contract.CompareParams    `json:"comparisonParams" yaml:"comparisonParams"`
 	RequestURL       string                    `json:"path" yaml:"path"`
 	Variables        map[string]string         `yaml:"variables"`
 }
@@ -179,15 +178,23 @@ func (e *Request) Check() error {
 			expectedBody := gjson.Get(*e.Config.Response, "body")
 			errs, err := e.comparer.CompareJsonBody(expectedBody.String(), body.String(), e.Config.ComparisonParams)
 			realResponse := body.String()
+
 			expectedResponse := expectedBody.String()
 			if strings.Contains(*e.Config.Response, "status") {
 				status := gjson.Get(*e.Config.Response, "status")
-				if status.String() != gotStatus.String() {
-					realResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, body, status.String())
-					expectedResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, expectedResponse, gotStatus.String())
+				compareErrs := e.comparer.Compare(status.Value(), gotStatus.Value(), contract.CompareParams{})
+
+				if len(compareErrs) > 0 {
+					realResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, body, gotStatus.String())
+					if status.Int() > 0 {
+						expectedResponse = fmt.Sprintf(`{"body":%v, "status":%v}`, expectedResponse, status.String())
+					} else {
+						expectedResponse = fmt.Sprintf(`{"body":%v, "status":"%v"}`, expectedResponse, status.String())
+					}
 					errs = append(errs, fmt.Errorf("status differs, expected %s, got %s", status.String(), gotStatus.String()))
 				}
 			}
+
 			if len(errs) > 0 {
 				msg := ""
 				for i, v := range errs {
@@ -197,13 +204,15 @@ func (e *Request) Check() error {
 						msg += v.Error()
 					}
 				}
+
 				expectedRemarshal, err := tools.JSONRemarshal(expectedResponse)
 				if err != nil {
-					return err
+					return fmt.Errorf("remarshall expected response: %w", err)
 				}
+
 				actualRemarshal, err := tools.JSONRemarshal(realResponse)
 				if err != nil {
-					return err
+					return fmt.Errorf("remarshall real response %v: %w", realResponse, err)
 				}
 				return &contract.TestError{
 					Title:         "response differs",
@@ -228,7 +237,7 @@ func request(r RequestConfig, b *bytes.Buffer, host string) (*http.Request, erro
 		b,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("make request: %w", err)
 	}
 
 	for k, v := range r.HeadersVal {

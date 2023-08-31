@@ -12,7 +12,10 @@ type Eval struct {
 	functions map[string]goval.ExpressionFunction
 }
 
-var evalRe = regexp.MustCompile(`\$\((.+)\)`)
+var (
+	evalRe         = regexp.MustCompile(`\$\((.+)\)`)
+	evalReResponse = regexp.MustCompile(`\$(.+)`)
+)
 
 func NewEval(functions map[string]goval.ExpressionFunction) *Eval {
 	e := &Eval{}
@@ -42,4 +45,14 @@ func usedEval(str string) (res []string) {
 		res = append(res, match[1])
 	}
 	return res
+}
+
+func HasEval(str string) bool {
+	matches := evalRe.FindAllStringSubmatch(str, -1)
+	return len(matches) > 0
+}
+
+func HasEvalResponse(str string) bool {
+	matches := evalReResponse.FindAllStringSubmatch(str, -1)
+	return len(matches) > 0
 }

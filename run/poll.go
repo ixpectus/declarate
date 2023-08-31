@@ -4,16 +4,15 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 )
 
 type Poll struct {
-	Duration         time.Duration         `json:"duration,omitempty" yaml:"duration"`
-	Interval         time.Duration         `json:"interval,omitempty" yaml:"interval"`
-	ResponseRegexp   string                `json:"response_regexp,omitempty" yaml:"response_regexp"`
-	ComparisonParams compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
-	ResponseTmpls    *string               `json:"response" yaml:"response"`
+	Duration         time.Duration          `json:"duration,omitempty" yaml:"duration"`
+	Interval         time.Duration          `json:"interval,omitempty" yaml:"interval"`
+	ResponseRegexp   string                 `json:"response_regexp,omitempty" yaml:"response_regexp"`
+	ComparisonParams contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
+	ResponseTmpls    *string                `json:"response" yaml:"response"`
 	comparer         contract.Comparer
 }
 

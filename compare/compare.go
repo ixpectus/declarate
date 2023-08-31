@@ -5,23 +5,21 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/fatih/color"
+	conditionRule "github.com/ixpectus/declarate/condition"
+	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/eval"
+	"github.com/ixpectus/declarate/tools"
 )
-
-type CompareParams struct {
-	IgnoreValues         *bool `json:"ignoreValues,omitempty" yaml:"ignoreValues,omitempty"`
-	IgnoreArraysOrdering *bool `json:"ignoreArraysOrdering,omitempty" yaml:"ignoreArraysOrdering,omitempty"`
-	DisallowExtraFields  *bool `json:"disallowExtraFields,omitempty" yaml:"disallowExtraFields,omitempty"`
-	AllowArrayExtraItems *bool `json:"allowArrayExtraItems,omitempty" yaml:"allowArrayExtraItems,omitempty"`
-	failFast             bool  // End compare operation after first error
-}
 
 type leafsMatchType int
 
 const (
 	pure leafsMatchType = iota
 	regex
+	condition
 )
 
 type ErrorSlice []error
@@ -40,30 +38,30 @@ var regexExprRx = regexp.MustCompile(`^\$matchRegexp\((.+)\)$`)
 //   - Pure values: should be equal
 //   - Regex: try to compile 'expected' as regex and match 'actual' with it
 //     It activates on following syntax: $matchRegexp(%EXPECTED_VALUE%)
-func compare(expected, actual interface{}, params CompareParams) []error {
-	errors := compareBranch("$", expected, actual, &params)
+func (c *Comparer) compare(expected, actual interface{}, params contract.CompareParams) []error {
+	errors := c.compareBranch("$", expected, actual, &params)
 	sort.Sort(ErrorSlice(errors))
 	return errors
 }
 
-func compareBranch(
+func (c *Comparer) compareBranch(
 	path string,
 	expected, actual interface{},
-	params *CompareParams,
+	params *contract.CompareParams,
 ) []error {
 	expectedType := getType(expected)
 	actualType := getType(actual)
 	var errors []error
 
 	// compare types
-	if leafMatchType(expected) != regex && expectedType != actualType {
+	if leafMatchType(expected) != regex && leafMatchType(expected) != condition && expectedType != actualType {
 		errors = append(errors, MakeError(path, "types do not match", expectedType, actualType))
 		return errors
 	}
 
 	// compare scalars
 	if isScalarType(actualType) && (params == nil || params.IgnoreValues == nil || !*params.IgnoreValues) {
-		return compareLeafs(path, expected, actual)
+		return c.compareLeafs(path, expected, actual)
 	}
 
 	// compare arrays
@@ -78,15 +76,15 @@ func compareBranch(
 
 		if (params.IgnoreArraysOrdering != nil && *params.IgnoreArraysOrdering) ||
 			(params.AllowArrayExtraItems != nil && *params.AllowArrayExtraItems) {
-			expectedArray, actualArray = getUnmatchedArrays(expectedArray, actualArray, params)
+			expectedArray, actualArray = c.getUnmatchedArrays(expectedArray, actualArray, params)
 		}
 
 		// iterate over children
 		for i, item := range expectedArray {
 			subPath := fmt.Sprintf("%s[%d]", path, i)
-			res := compareBranch(subPath, item, actualArray[i], params)
+			res := c.compareBranch(subPath, item, actualArray[i], params)
 			errors = append(errors, res...)
-			if params.failFast && len(errors) != 0 {
+			if params.FailFast && len(errors) != 0 {
 				return errors
 			}
 		}
@@ -106,7 +104,7 @@ func compareBranch(
 			// check keys presence
 			if ok := actualRef.MapIndex(key); !ok.IsValid() {
 				errors = append(errors, MakeError(path, "key is missing", key.String(), "<missing>"))
-				if params.failFast {
+				if params.FailFast {
 					return errors
 				}
 				continue
@@ -114,14 +112,14 @@ func compareBranch(
 
 			// check values
 			subPath := fmt.Sprintf("%s.%s", path, key.String())
-			res := compareBranch(
+			res := c.compareBranch(
 				subPath,
 				expectedRef.MapIndex(key).Interface(),
 				actualRef.MapIndex(key).Interface(),
 				params,
 			)
 			errors = append(errors, res...)
-			if params.failFast && len(errors) != 0 {
+			if params.FailFast && len(errors) != 0 {
 				return errors
 			}
 		}
@@ -148,7 +146,7 @@ func isScalarType(t string) bool {
 	return !(t == "array" || t == "map")
 }
 
-func compareLeafs(path string, expected, actual interface{}) []error {
+func (c *Comparer) compareLeafs(path string, expected, actual interface{}) []error {
 	var errors []error
 
 	switch leafMatchType(expected) {
@@ -158,8 +156,46 @@ func compareLeafs(path string, expected, actual interface{}) []error {
 	case regex:
 		errors = append(errors, compareRegex(path, expected, actual)...)
 
+	case condition:
+		errors = append(errors, c.compareCondition(path, expected, actual)...)
+
 	default:
 		panic("unknown compare type")
+	}
+
+	return errors
+}
+
+func (c *Comparer) compareCondition(path string, expected, actual interface{}) (errors []error) {
+	expr, ok := expected.(string)
+	if !ok {
+		errors = append(errors, MakeError(path, "type mismatch", "string", reflect.TypeOf(expected)))
+		return errors
+	}
+	expr = fmt.Sprintf("$(%s)", strings.TrimLeft(expr, "$"))
+
+	if strings.Contains(expr, "()") {
+		if tools.IsNumber(actual) {
+			expr = strings.ReplaceAll(expr, "()", fmt.Sprintf("(%v)", actual))
+		} else {
+			expr = strings.ReplaceAll(expr, "()", fmt.Sprintf("(\"%v\")", actual))
+		}
+	} else if strings.Contains(expr, "))") {
+		if tools.IsNumber(actual) {
+			expr = strings.Replace(expr, "))", fmt.Sprintf(", %v))", actual), 1)
+		} else {
+			expr = strings.Replace(expr, "))", fmt.Sprintf(", \"%v\"))", actual), 1)
+		}
+	} else {
+		if tools.IsNumber(actual) {
+			expr = strings.Replace(expr, ")", fmt.Sprintf("(%v))", actual), 1)
+		} else {
+			expr = strings.Replace(expr, ")", fmt.Sprintf("(\"%v\"))", actual), 1)
+		}
+	}
+
+	if !conditionRule.IsTrueNoWrap(c.vars, expr) {
+		errors = append(errors, MakeError(path, "values do not match by condition", expected, actual))
 	}
 
 	return errors
@@ -214,6 +250,10 @@ func leafMatchType(expected interface{}) leafsMatchType {
 		return regex
 	}
 
+	if eval.HasEvalResponse(val) {
+		return condition
+	}
+
 	return pure
 }
 
@@ -246,16 +286,16 @@ func convertToArray(array interface{}) []interface{} {
 }
 
 // For every elem in "expected" try to find elem in "actual". Returns arrays without matching.
-func getUnmatchedArrays(expected, actual []interface{}, params *CompareParams) ([]interface{}, []interface{}) {
+func (c *Comparer) getUnmatchedArrays(expected, actual []interface{}, params *contract.CompareParams) ([]interface{}, []interface{}) {
 	expectedError := make([]interface{}, 0)
 
 	failfastParams := *params
-	failfastParams.failFast = true
+	failfastParams.FailFast = true
 
 	for _, expectedElem := range expected {
 		found := false
 		for i, actualElem := range actual {
-			if len(compareBranch("", expectedElem, actualElem, &failfastParams)) == 0 {
+			if len(c.compareBranch("", expectedElem, actualElem, &failfastParams)) == 0 {
 				// expectedElem match actualElem
 				found = true
 				// remove actualElem from  actual
@@ -268,7 +308,7 @@ func getUnmatchedArrays(expected, actual []interface{}, params *CompareParams) (
 		}
 		if !found {
 			expectedError = append(expectedError, expectedElem)
-			if params.failFast {
+			if params.FailFast {
 				return expectedError, actual[0:1]
 			}
 		}

@@ -20,11 +20,12 @@ import (
 func TestSuite(t *testing.T) {
 	os.Chdir("../")
 	evaluator := eval.NewEval(nil)
-	cmp := compare.New(compare.CompareParams{})
+	vv := variables.New(evaluator, kv.New("persistent"))
+	cmp := compare.New(contract.CompareParams{}, vv)
 	// if output
 	s := suite.New("./tests/suite", suite.RunConfig{
 		TestRunWrapper: NewDebugWrapper(),
-		Variables:      variables.New(evaluator, kv.New("persistent")),
+		Variables:      vv,
 		Output: &output.Output{
 			WithProgressBar: true,
 		},

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"path"
+	"reflect"
 	"strings"
 )
 
@@ -71,4 +72,17 @@ func FilenameShort(fileName string) string {
 		return path.Base(fileName)
 	}
 	return fileName
+}
+
+func IsNumber(val interface{}) bool {
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return true
+	case reflect.Float32, reflect.Float64:
+		return true
+	}
+	return false
 }

@@ -21,7 +21,7 @@ import (
 func TestExample(t *testing.T) {
 	os.Chdir("../")
 	color.NoColor = false
-	cmp := compare.New(compare.CompareParams{})
+	cmp := compare.New(contract.CompareParams{}, vv)
 	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	runner = run.New(run.RunnerConfig{
 		Variables: vv,

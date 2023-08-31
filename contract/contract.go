@@ -3,8 +3,6 @@ package contract
 import (
 	"database/sql"
 	"time"
-
-	"github.com/ixpectus/declarate/compare"
 )
 
 type Vars interface {
@@ -114,14 +112,22 @@ type Result struct {
 }
 
 type Comparer interface {
-	Compare(expected, actual interface{}, params compare.CompareParams) []error
+	Compare(expected, actual interface{}, params CompareParams) []error
 	CompareJsonBody(
 		expectedBody string,
 		realBody string,
-		params compare.CompareParams,
+		params CompareParams,
 	) ([]error, error)
 }
 
 type DBConnectLoader interface {
 	Get(string) (*sql.DB, error)
+}
+
+type CompareParams struct {
+	IgnoreValues         *bool `json:"ignoreValues,omitempty" yaml:"ignoreValues,omitempty"`
+	IgnoreArraysOrdering *bool `json:"ignoreArraysOrdering,omitempty" yaml:"ignoreArraysOrdering,omitempty"`
+	DisallowExtraFields  *bool `json:"disallowExtraFields,omitempty" yaml:"disallowExtraFields,omitempty"`
+	AllowArrayExtraItems *bool `json:"allowArrayExtraItems,omitempty" yaml:"allowArrayExtraItems,omitempty"`
+	FailFast             bool  // End compare operation after first error
 }

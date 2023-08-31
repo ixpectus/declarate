@@ -39,18 +39,18 @@ type RunnerConfig struct {
 func New(c RunnerConfig) *Runner {
 	builders = c.Builders
 	if c.comparer == nil {
-		c.comparer = compare.New(compare.CompareParams{
+		c.comparer = compare.New(contract.CompareParams{
 			IgnoreArraysOrdering: tools.To(true),
 			DisallowExtraFields:  tools.To(false),
 			AllowArrayExtraItems: tools.To(true),
-		})
+		}, c.Variables)
 	}
 	if c.pollComparer == nil {
-		c.pollComparer = compare.New(compare.CompareParams{
+		c.pollComparer = compare.New(contract.CompareParams{
 			IgnoreArraysOrdering: tools.To(true),
 			DisallowExtraFields:  tools.To(false),
 			AllowArrayExtraItems: tools.To(true),
-		})
+		}, c.Variables)
 	}
 	return &Runner{
 		config: c,

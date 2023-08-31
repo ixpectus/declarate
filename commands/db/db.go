@@ -9,7 +9,6 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/fatih/color"
-	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 
 	"github.com/kylelemons/godebug/pretty"
@@ -73,12 +72,12 @@ func (d *DbCheck) isEmpty() bool {
 }
 
 type CheckConfig struct {
-	DbConn              string                `json:"db_conn" yaml:"db_conn"`
-	DbQuery             string                `json:"db_query" yaml:"db_query"`
-	DbResponse          string                `json:"db_response" yaml:"db_response"`
-	ComparisonParams    compare.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
-	Variables           map[string]string     `yaml:"variables"`
-	VariablesPersistent map[string]string     `yaml:"variables_persistent"`
+	DbConn              string                 `json:"db_conn" yaml:"db_conn"`
+	DbQuery             string                 `json:"db_query" yaml:"db_query"`
+	DbResponse          string                 `json:"db_response" yaml:"db_response"`
+	ComparisonParams    contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
+	Variables           map[string]string      `yaml:"variables"`
+	VariablesPersistent map[string]string      `yaml:"variables_persistent"`
 }
 
 func (d *CheckConfig) isEmpty() bool {

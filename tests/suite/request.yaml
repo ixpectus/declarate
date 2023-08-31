@@ -16,9 +16,9 @@
     status differs, expected 201, got 200
 
     expected response: 
-    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":200}
-    actual response: 
     {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":201}
+    actual response: 
+    {"body":{"age":28,"items":[1,2,3,4],"name":"Tom"},"status":200}
 
 - name: test requests fail, wrong value in map
   shell_cmd: | 
@@ -53,4 +53,13 @@
     {"age":28,"items":[1,3,4],"name":"Tom"}
     actual response: 
     {"age":28,"items":[1,2,3,4],"name":"Tom"}
+
+
+- name: test requests with compare modificators
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_compare/compare.yaml
+  shell_response: |
+    passed ./tests/yaml_compare/compare.yaml:set variables
+    passed ./tests/yaml_compare/compare.yaml:check request
+    passed ./tests/yaml_compare/compare.yaml:check request with variable
 

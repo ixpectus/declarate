@@ -1,0 +1,28 @@
+- name: set variables
+  variables:
+    name: Tom
+    path: tom
+
+- name: check request
+  method: GET
+  path: /{{$path}}
+  response: |
+    {
+      "body":{"age": "$num","name":"$any", "items":[1, 2, 3, 4]}, 
+      "status": "$oneOf(300, 200)"
+    }
+  comparisonParams:
+    ignoreArraysOrdering: true
+
+
+- name: check request with variable
+  method: GET
+  path: /{{$path}}
+  response: |
+    {
+      "body":{"age": "$num","name":"{{$name}}", "items":[1, 2, 3, 4]}, 
+      "status": "$oneOf(300, 200)"
+    }
+  comparisonParams:
+    ignoreArraysOrdering: true
+

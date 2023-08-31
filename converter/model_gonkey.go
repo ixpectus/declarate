@@ -3,7 +3,7 @@ package converter
 import (
 	"time"
 
-	"github.com/ixpectus/declarate/compare"
+	"github.com/ixpectus/declarate/contract"
 )
 
 type GonkeyTest struct {
@@ -24,7 +24,7 @@ type GonkeyTest struct {
 	AfterRequestScriptParams *scriptParams             `json:"afterRequestScript" yaml:"afterRequestScript"`
 	HeadersVal               map[string]string         `json:"headers" yaml:"headers"`
 	CookiesVal               map[string]string         `json:"cookies" yaml:"cookies"`
-	ComparisonParams         compare.CompareParams     `json:"comparisonParams" yaml:"comparisonParams"`
+	ComparisonParams         contract.CompareParams    `json:"comparisonParams" yaml:"comparisonParams"`
 	FixtureFiles             []string                  `json:"fixtures" yaml:"fixtures"`
 	Tags                     []string                  `json:"tags" yaml:"tags"`
 	MocksDefinition          map[string]interface{}    `json:"mocks" yaml:"mocks"`

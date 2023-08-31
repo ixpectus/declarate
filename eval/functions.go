@@ -3,6 +3,7 @@ package eval
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/maja42/goval"
@@ -45,6 +46,26 @@ var defaultFunctions = map[string]goval.ExpressionFunction{
 
 		return true, nil
 	},
+	"any": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return false, nil
+		}
+		for _, v := range args {
+			if empty(v) {
+				return false, nil
+			}
+		}
+
+		return true, nil
+	},
+	"num": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return false, nil
+		}
+		v := fmt.Sprintf("%v", args[0])
+		_, err := strconv.ParseFloat(v, 64)
+		return err == nil, nil
+	},
 	"empty": func(args ...interface{}) (interface{}, error) {
 		if len(args) == 0 {
 			return true, nil
@@ -56,6 +77,23 @@ var defaultFunctions = map[string]goval.ExpressionFunction{
 		}
 
 		return true, nil
+	},
+	"oneOf": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return false, nil
+		}
+		if len(args) == 1 {
+			return false, nil
+		}
+		val := args[len(args)-1]
+		items := args[:len(args)-1]
+		for _, v := range items {
+			if v == val {
+				return true, nil
+			}
+		}
+
+		return false, nil
 	},
 }
 

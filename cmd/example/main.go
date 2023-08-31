@@ -84,7 +84,7 @@ func main() {
 	flag.Parse()
 	evaluator := eval.NewEval(nil)
 	vv := variables.New(evaluator, kv.New("persistent"))
-	cmp := compare.New(compare.CompareParams{})
+	cmp := compare.New(contract.CompareParams{}, vv)
 	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	// if output
 	s := suite.New(*flagDir, suite.RunConfig{
