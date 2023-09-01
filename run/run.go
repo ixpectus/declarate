@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
@@ -97,6 +98,7 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 	if err := yaml.Unmarshal(file, &configs); err != nil {
 		return true, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
+
 	for _, v := range configs {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
 			continue
@@ -112,32 +114,42 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 		}
 		if t != nil {
 			v.Name = currentVars.Apply(v.Name)
-			testResult, err := r.run(v, fileName)
-			if err != nil {
-				r.output.Log(contract.Message{
-					Filename:            fileName,
-					Name:                v.Name,
-					Message:             fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
-					Type:                contract.MessageTypeError,
-					PollResult:          testResult.PollResult,
-					PollConditionFailed: testResult.PollConditionFailed,
-				})
-				t.FailNow()
+			var testResult *Result
+			res := true
+			var err error
+			action := allure.Action(func() {
+				testResult, err = r.run(v, fileName)
+				if err != nil {
+					r.output.Log(contract.Message{
+						Filename:            fileName,
+						Name:                v.Name,
+						Message:             fmt.Sprintf("run failed for file %s: %s", r.filenameShort(fileName), err),
+						Type:                contract.MessageTypeError,
+						PollResult:          testResult.PollResult,
+						PollConditionFailed: testResult.PollConditionFailed,
+					})
+					t.FailNow()
+					res = false
+				}
+				if testResult.Err != nil {
+					r.outputErr(*testResult)
+					t.FailNow()
+					res = false
+				} else {
+					r.output.Log(contract.Message{
+						Filename:            fileName,
+						Name:                v.Name,
+						Message:             fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
+						Type:                contract.MessageTypeSuccess,
+						PollResult:          testResult.PollResult,
+						PollConditionFailed: testResult.PollConditionFailed,
+					})
+				}
+			})
+
+			allure.Step(allure.Description("step "+v.Name), action)
+			if !res {
 				return false, nil
-			}
-			if testResult.Err != nil {
-				r.outputErr(*testResult)
-				t.FailNow()
-				return false, nil
-			} else {
-				r.output.Log(contract.Message{
-					Filename:            fileName,
-					Name:                v.Name,
-					Message:             fmt.Sprintf("passed %v:%v", r.filenameShort(fileName), v.Name),
-					Type:                contract.MessageTypeSuccess,
-					PollResult:          testResult.PollResult,
-					PollConditionFailed: testResult.PollConditionFailed,
-				})
 			}
 		} else {
 			v.Name = currentVars.Apply(v.Name)

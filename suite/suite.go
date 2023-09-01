@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
@@ -146,12 +147,14 @@ func (s *Suite) Run() error {
 				if failed && s.Config.FailFast {
 					t.Skip()
 				}
-				failed, err = runner.Run(v, t)
 
-				if err != nil {
-					log.Println(err)
-					t.Fail()
-				}
+				allure.Test(t, allure.Description("e2e"), allure.Action(func() {
+					failed, err = runner.Run(v, t)
+					if err != nil {
+						log.Println(err)
+						t.Fail()
+					}
+				}))
 			})
 		} else {
 			failed, err = runner.Run(v, nil)

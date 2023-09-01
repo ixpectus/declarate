@@ -2,26 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"net"
 	"strings"
-	"time"
 
-	"github.com/ixpectus/declarate/commands/db"
-	"github.com/ixpectus/declarate/commands/echo"
-	"github.com/ixpectus/declarate/commands/request"
-	"github.com/ixpectus/declarate/commands/script"
-	"github.com/ixpectus/declarate/commands/shell"
-	"github.com/ixpectus/declarate/commands/vars"
-	"github.com/ixpectus/declarate/compare"
-	"github.com/ixpectus/declarate/contract"
-	"github.com/ixpectus/declarate/eval"
-	"github.com/ixpectus/declarate/kv"
-	"github.com/ixpectus/declarate/output"
-	"github.com/ixpectus/declarate/suite"
+	"github.com/ixpectus/declarate/defaults"
 	"github.com/ixpectus/declarate/tests"
-	"github.com/ixpectus/declarate/variables"
+	"github.com/ixpectus/declarate/tools"
 )
 
 var (
@@ -53,6 +39,12 @@ var (
 		"print",
 		"test output log or print",
 	)
+
+	flagClearPersistent = flag.Bool(
+		"clear",
+		false,
+		"clear persistent",
+	)
 )
 
 type stringList []string
@@ -68,7 +60,7 @@ func (f *stringList) Set(value string) error {
 
 func main() {
 	go tests.Handle()
-	if err := waitStartAPI("127.0.0.1", "8181"); err != nil {
+	if err := tools.WaitStartAPI("127.0.0.1", "8181"); err != nil {
 		log.Fatal(err)
 	}
 	flag.Var(
@@ -82,63 +74,28 @@ func main() {
 		"test to skip",
 	)
 	flag.Parse()
-	evaluator := eval.NewEval(nil)
-	vv := variables.New(evaluator, kv.New("persistent"))
-	cmp := compare.New(contract.CompareParams{}, vv)
-	connLoader := db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
-	// if output
-	s := suite.New(*flagDir, suite.RunConfig{
-		RunAll:         false,
-		NoColor:        true,
-		Filepathes:     []string{},
-		SkipFilename:   coreTestsToSkip,
-		TestRunWrapper: tests.NewDebugWrapper(),
-		DryRun:         *flagDryRun,
-		Variables:      vv,
-		Output: &output.OutputPrintln{
-			WithProgressBar: *flagWithProgressBar,
-		},
-		Builders: []contract.CommandBuilder{
-			&echo.Unmarshaller{},
-			vars.NewUnmarshaller(evaluator),
-			shell.NewUnmarshaller(cmp),
-			script.NewUnmarshaller(cmp),
-			request.NewUnmarshaller("http://localhost:8181/", cmp),
-			db.NewUnmarshaller(connLoader, cmp),
-		},
-	})
 
+	tags := []string{}
+	filePathes := []string{}
 	if *flagTags != "" {
-		s.Config.Tags = strings.Split(*flagTags, ",")
+		tags = strings.Split(*flagTags, ",")
 	}
 	if *flagTests != "" {
-		s.Config.Filepathes = strings.Split(*flagTests, ",")
+		filePathes = strings.Split(*flagTests, ",")
 	}
+	s := defaults.NewDefaultSuite(defaults.SuiteConfig{
+		Dir:             *flagDir,
+		DefaultDBConn:   "postgres://postgres@127.0.0.1:5440/?sslmode=disable",
+		SkipTests:       coreTestsToSkip,
+		ClearPersistent: *flagClearPersistent,
+		DryRun:          *flagDryRun,
+		WithProgresBar:  *flagWithProgressBar,
+		DefaultHost:     "http://127.0.0.1:8181/",
+		Wrapper:         tests.NewDebugWrapper(),
+		Tags:            tags,
+		Filepathes:      filePathes,
+	})
 	if err := s.Run(); err != nil {
 		log.Println(err)
 	}
-}
-
-func waitStartAPI(host string, port string) error {
-	connected := false
-	for i := 0; i < 5; i++ {
-		connected = checkConnect(host, port)
-		if connected {
-			return nil
-		}
-		time.Sleep(5 * time.Millisecond)
-	}
-	return fmt.Errorf("server not running")
-}
-
-func checkConnect(host string, port string) bool {
-	conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
-	if err != nil {
-		return false
-	}
-	if conn != nil {
-		defer conn.Close()
-		return true
-	}
-	return false
 }

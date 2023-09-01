@@ -3,9 +3,12 @@ package tools
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"net"
 	"path"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func Filter[T any](slice []T, f func(T) bool) []T {
@@ -82,6 +85,30 @@ func IsNumber(val interface{}) bool {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return true
 	case reflect.Float32, reflect.Float64:
+		return true
+	}
+	return false
+}
+
+func WaitStartAPI(host string, port string) error {
+	connected := false
+	for i := 0; i < 5; i++ {
+		connected = CheckConnect(host, port)
+		if connected {
+			return nil
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	return fmt.Errorf("server not running")
+}
+
+func CheckConnect(host string, port string) bool {
+	conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
+	if err != nil {
+		return false
+	}
+	if conn != nil {
+		defer conn.Close()
 		return true
 	}
 	return false

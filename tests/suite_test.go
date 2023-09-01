@@ -20,7 +20,7 @@ import (
 func TestSuite(t *testing.T) {
 	os.Chdir("../")
 	evaluator := eval.NewEval(nil)
-	vv := variables.New(evaluator, kv.New("persistent"))
+	vv := variables.New(evaluator, kv.New("persistent", false))
 	cmp := compare.New(contract.CompareParams{}, vv)
 	// if output
 	s := suite.New("./tests/suite", suite.RunConfig{

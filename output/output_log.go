@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
@@ -79,6 +80,9 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 				logText := colorFail.Sprint(message.Message)
 				log.Println(prefix + logText)
 			}
+			allure.Fail(errWrap(msg))
+			allure.AddAttachment("error details", allure.TextPlain, []byte(o.errMsgs(prefix, message)))
+
 		}
 		if message.Type == contract.MessageTypeNotify && !strings.Contains(message.Message, "start") {
 			logText := colorNotify.Sprint(message.Message)
@@ -89,6 +93,33 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 			log.Println(prefix + logText)
 		}
 	}
+}
+
+func (o *Output) errMsgs(prefix string, message contract.Message) string {
+	res := []string{}
+	if message.Type == contract.MessageTypeError {
+		logText := message.Message
+		res = append(res, prefix+logText)
+	}
+	if message.Expected != "" {
+		res = append(res, "expected: \n"+message.Expected)
+	}
+	if message.Actual != "" {
+		res = append(res, "got     : \n"+message.Actual)
+	}
+	return strings.Join(res, "\n")
+}
+
+type errString struct {
+	v string
+}
+
+func (e errString) Error() string {
+	return e.v
+}
+
+func errWrap(s string) error {
+	return errString{v: s}
 }
 
 func (o *Output) log(message contract.Message) {
