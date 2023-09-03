@@ -389,7 +389,13 @@ func (r *Runner) runOne(
 					Type:           contract.MessageTypeNotify,
 				})
 			}
-			testResult, err := r.runOne(v, lvl+1, fileName, polling)
+			var testResult *Result
+			var err error
+			action := func() {
+				testResult, err = r.runOne(v, lvl+1, fileName, polling)
+			}
+			r.config.Report.Step(report.ReportOptions{Description: v.Name}, action)
+
 			if testResult.Err != nil && polling {
 				firstErrResult = testResult
 				if testResult.Response != nil {

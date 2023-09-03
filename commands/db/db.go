@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dailymotion/allure-go"
 	_ "github.com/lib/pq"
 
 	"github.com/fatih/color"
@@ -101,6 +102,12 @@ func (e *Db) Do() error {
 	if e.Config != nil {
 		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
 		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
+		if e.Report != nil {
+			e.Report.AddAttachment("query", allure.TextPlain, []byte(e.Config.DbQuery))
+			if e.Config.DbConn != "" {
+				e.Report.AddAttachment("conn", allure.TextPlain, []byte(e.Config.DbConn))
+			}
+		}
 		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
 		db, err := e.connectLoader.Get(e.Config.DbConn)
 		defer db.Close()
@@ -114,7 +121,7 @@ func (e *Db) Do() error {
 				return err
 			}
 			e.responseBody = &res
-
+			e.Report.AddAttachment("response", allure.TextPlain, []byte(res))
 			return nil
 		}
 		if err := execQuery(e.Config.DbQuery, db); err != nil {
