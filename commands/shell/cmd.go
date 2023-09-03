@@ -61,7 +61,9 @@ func (e *ShellCmd) run(command string) ([]string, error) {
 			log.Println(cmd.String())
 			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, string(bb.Bytes()), string(errBB.Bytes()))
 		}
-		e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
+		if e.report != nil {
+			e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
+		}
 		res = append(res, bb.String())
 	}
 

@@ -93,7 +93,7 @@ func (e *ScriptCmd) GetConfig() interface{} {
 func (e *ScriptCmd) Do() error {
 	if e.Config != nil && e.Config.Cmd != "" {
 		e.Config.Cmd = e.Vars.Apply(e.Config.Cmd)
-		res, err := Run(e.Config.Cmd)
+		res, err := e.run(e.Config.Cmd)
 		if err != nil {
 			return err
 		}
