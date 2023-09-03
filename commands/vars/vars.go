@@ -8,6 +8,7 @@ type VarsCmd struct {
 	Config *Config
 	Vars   contract.Vars
 	eval   contract.Evaluator
+	report contract.ReportAttachement
 }
 
 type Config struct {
@@ -17,6 +18,10 @@ type Config struct {
 
 func (e *VarsCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
+}
+
+func (e *VarsCmd) SetReport(r contract.ReportAttachement) {
+	e.report = r
 }
 
 type Unmarshaller struct {

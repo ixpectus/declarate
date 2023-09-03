@@ -9,6 +9,7 @@ import (
 type Echo struct {
 	Config *Config
 	Vars   contract.Vars
+	Report contract.ReportAttachement
 }
 
 func (ex *extendedConfig) isEmpty() bool {
@@ -80,6 +81,10 @@ type extendedConfig struct {
 
 func (e *Echo) SetVars(vv contract.Vars) {
 	e.Vars = vv
+}
+
+func (e *Echo) SetReport(r contract.ReportAttachement) {
+	e.Report = r
 }
 
 func (e *Echo) Do() error {

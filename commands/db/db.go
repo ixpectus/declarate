@@ -17,6 +17,7 @@ import (
 type Db struct {
 	Config        *CheckConfig
 	Vars          contract.Vars
+	Report        contract.ReportAttachement
 	Comparer      contract.Comparer
 	connectLoader contract.DBConnectLoader
 	responseBody  *string
@@ -86,6 +87,10 @@ func (d *CheckConfig) isEmpty() bool {
 
 func (e *Db) SetVars(vv contract.Vars) {
 	e.Vars = vv
+}
+
+func (e *Db) SetReport(r contract.ReportAttachement) {
+	e.Report = r
 }
 
 func (e *Db) GetConfig() interface{} {

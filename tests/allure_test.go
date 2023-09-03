@@ -9,6 +9,7 @@ import (
 
 	"github.com/ixpectus/declarate/defaults"
 	"github.com/ixpectus/declarate/output"
+	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/tools"
 )
 
@@ -40,6 +41,7 @@ func TestAllure(t *testing.T) {
 	}
 	s := defaults.NewDefaultSuite(defaults.SuiteConfig{
 		Dir:             *flagDir,
+		Report:          report.NewAllureReport(),
 		DefaultDBConn:   "postgres://postgres@127.0.0.1:5440/?sslmode=disable",
 		ClearPersistent: *flagClearPersistent,
 		WithProgresBar:  true,

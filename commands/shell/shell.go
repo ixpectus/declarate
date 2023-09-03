@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 )
@@ -11,6 +12,7 @@ import (
 type ShellCmd struct {
 	Config       *Config
 	Vars         contract.Vars
+	report       contract.ReportAttachement
 	responseBody string
 	comparer     contract.Comparer
 }
@@ -33,6 +35,10 @@ type Config struct {
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
+}
+
+func (e *ShellCmd) SetReport(r contract.ReportAttachement) {
+	e.report = r
 }
 
 func NewUnmarshaller(comparer contract.Comparer) *Unmarshaller {
@@ -84,11 +90,14 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 func (e *ShellCmd) Do() error {
 	if e.Config != nil && e.Config.Cmd != "" {
 		e.Config.Cmd = e.Vars.Apply(e.Config.Cmd)
-		res, err := Run(e.Config.Cmd)
+		res, err := e.run(e.Config.Cmd)
 		if err != nil {
 			return err
 		}
 		e.responseBody = strings.Join(res, "\n")
+		if e.report != nil {
+			e.report.AddAttachment("response", allure.TextPlain, []byte(e.responseBody))
+		}
 
 		return nil
 	}

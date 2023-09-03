@@ -13,6 +13,7 @@ import (
 	"github.com/ixpectus/declarate/eval"
 	"github.com/ixpectus/declarate/kv"
 	"github.com/ixpectus/declarate/output"
+	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/suite"
 	"github.com/ixpectus/declarate/variables"
 )
@@ -25,7 +26,9 @@ func TestSuite(t *testing.T) {
 	// if output
 	s := suite.New("./tests/suite", suite.RunConfig{
 		TestRunWrapper: NewDebugWrapper(),
+		Report:         report.NewAllureReport(),
 		Variables:      vv,
+		NoColor:        true,
 		Output: &output.Output{
 			WithProgressBar: true,
 		},

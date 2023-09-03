@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/dailymotion/allure-go"
 )
 
 func CmdGet(scriptPath string) *exec.Cmd {
@@ -34,7 +36,7 @@ func CmdGetWithBash(scriptPath string) *exec.Cmd {
 	return exec.Command("bash", "-c", scriptPath)
 }
 
-func Run(command string) ([]string, error) {
+func (e *ShellCmd) run(command string) ([]string, error) {
 	commands := strings.Split(command, "\n")
 	res := []string{}
 	for _, v := range commands {
@@ -48,11 +50,18 @@ func Run(command string) ([]string, error) {
 		cmd.Stdout = &bb
 		cmd.Stderr = &errBB
 		cmd.Env = os.Environ()
+		if e.report != nil {
+			e.report.AddAttachment("command", allure.TextPlain, []byte(cmd.String()))
+		}
 		if err := cmd.Run(); err != nil {
+			if e.report != nil {
+				e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
+				e.report.AddAttachment("stderr", allure.TextPlain, errBB.Bytes())
+			}
 			log.Println(cmd.String())
 			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, string(bb.Bytes()), string(errBB.Bytes()))
 		}
-
+		e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
 		res = append(res, bb.String())
 	}
 

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dailymotion/allure-go"
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/tools"
 	"gopkg.in/yaml.v2"
@@ -29,6 +29,7 @@ type RunConfig struct {
 	Filepathes     []string
 	SkipFilename   []string
 	DryRun         bool
+	Report         contract.Report
 	Variables      contract.Vars
 	Builders       []contract.CommandBuilder
 	Output         contract.Output
@@ -42,6 +43,10 @@ type Suite struct {
 }
 
 func New(directory string, cfg RunConfig) *Suite {
+	if cfg.Report == nil {
+		cfg.Report = report.NewEmptyReport()
+		cfg.Output.SetReport(cfg.Report)
+	}
 	return &Suite{
 		Directory: directory,
 		Config:    cfg,
@@ -105,6 +110,7 @@ func (s *Suite) Run() error {
 		Variables: s.Config.Variables,
 		Output:    s.Config.Output,
 		Builders:  s.Config.Builders,
+		Report:    s.Config.Report,
 		Wrapper:   s.Config.TestRunWrapper,
 		T:         s.Config.T,
 	},
@@ -147,14 +153,14 @@ func (s *Suite) Run() error {
 				if failed && s.Config.FailFast {
 					t.Skip()
 				}
-
-				allure.Test(t, allure.Description("e2e"), allure.Action(func() {
+				action := func() {
 					failed, err = runner.Run(v, t)
 					if err != nil {
 						log.Println(err)
 						t.Fail()
 					}
-				}))
+				}
+				s.Config.Report.Test(t, action, report.ReportOptions{Description: "Important test"})
 			})
 		} else {
 			failed, err = runner.Run(v, nil)

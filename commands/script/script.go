@@ -11,6 +11,7 @@ import (
 type ScriptCmd struct {
 	Config       *Config
 	Vars         contract.Vars
+	report       contract.ReportAttachement
 	responseBody string
 	comparer     contract.Comparer
 }
@@ -41,6 +42,10 @@ func (c *Config) isEmpty() bool {
 
 func (e *ScriptCmd) SetVars(vv contract.Vars) {
 	e.Vars = vv
+}
+
+func (e *ScriptCmd) SetReport(r contract.ReportAttachement) {
+	e.report = r
 }
 
 func NewUnmarshaller(comparer contract.Comparer) *Unmarshaller {

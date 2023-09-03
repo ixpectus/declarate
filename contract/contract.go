@@ -24,6 +24,7 @@ type Doer interface {
 	GetConfig() interface{}
 	Check() error
 	SetVars(vv Vars)
+	SetReport(r ReportAttachement)
 }
 
 type TestError struct {
@@ -81,6 +82,7 @@ type Message struct {
 
 type Output interface {
 	Log(message Message)
+	SetReport(r Report)
 }
 
 type Evaluator interface {

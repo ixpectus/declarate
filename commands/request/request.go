@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/tidwall/gjson"
+	"moul.io/http2curl"
 )
 
 type Request struct {
@@ -21,6 +23,7 @@ type Request struct {
 	responseBody   *string
 	responseStatus int
 	comparer       contract.Comparer
+	report         contract.ReportAttachement
 }
 
 type Unmarshaller struct {
@@ -89,6 +92,10 @@ func (e *Request) SetVars(vv contract.Vars) {
 	e.Vars = vv
 }
 
+func (e *Request) SetReport(r contract.ReportAttachement) {
+	e.report = r
+}
+
 func (e *Request) GetConfig() interface{} {
 	return e.Config
 }
@@ -138,8 +145,10 @@ func (e *Request) Do() error {
 			return err
 		}
 		client := &http.Client{}
-		// curlReq, _ := http2curl.GetCurlCommand(req)
-		// pp.Println(curlReq)
+		curlReq, _ := http2curl.GetCurlCommand(req)
+		if e.report != nil {
+			e.report.AddAttachment("request", allure.TextPlain, []byte(curlReq.String()))
+		}
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
@@ -152,6 +161,9 @@ func (e *Request) Do() error {
 		s := string(body)
 		ss, _ := json.Marshal(resp.Header)
 		r := fmt.Sprintf(`{"body":%v, "status":%v, "header": %s}`, s, resp.StatusCode, ss)
+		if e.report != nil {
+			e.report.AddAttachment("response", allure.TextPlain, []byte(tools.JSONPrettyPrint(r)))
+		}
 		e.responseBody = tools.To(r)
 	}
 

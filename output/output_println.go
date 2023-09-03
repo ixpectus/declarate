@@ -3,13 +3,20 @@ package output
 import (
 	"fmt"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 )
 
 var bar *Bar
 
 type OutputPrintln struct {
 	WithProgressBar bool
+	report          contract.Report
+}
+
+func (o *OutputPrintln) SetReport(r contract.Report) {
+	o.report = r
 }
 
 func (o *OutputPrintln) Log(message contract.Message) {
@@ -17,6 +24,10 @@ func (o *OutputPrintln) Log(message contract.Message) {
 		o.logWithProgressBar(message)
 	} else {
 		o.log(message)
+	}
+	if o.report != nil && message.Type == contract.MessageTypeError {
+		o.report.Fail(errWrap(fmt.Sprintf("failed: %v:%v", tools.FilenameShort(message.Filename), message.Name)))
+		o.report.AddAttachment("error details", allure.TextPlain, []byte(errMsgs("", message)))
 	}
 }
 

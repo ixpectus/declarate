@@ -26,6 +26,11 @@ func New() *Output {
 
 type Output struct {
 	WithProgressBar bool
+	report          contract.Report
+}
+
+func (o *Output) SetReport(r contract.Report) {
+	o.report = r
 }
 
 func (o *Output) Log(message contract.Message) {
@@ -33,6 +38,10 @@ func (o *Output) Log(message contract.Message) {
 		o.logWithProgressBar(message)
 	} else {
 		o.log(message)
+	}
+	if o.report != nil && message.Type == contract.MessageTypeError {
+		o.report.Fail(errWrap(fmt.Sprintf("failed: %v:%v", tools.FilenameShort(message.Filename), message.Name)))
+		o.report.AddAttachment("error details", allure.TextPlain, []byte(errMsgs("", message)))
 	}
 }
 
@@ -80,8 +89,6 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 				logText := colorFail.Sprint(message.Message)
 				log.Println(prefix + logText)
 			}
-			allure.Fail(errWrap(msg))
-			allure.AddAttachment("error details", allure.TextPlain, []byte(o.errMsgs(prefix, message)))
 
 		}
 		if message.Type == contract.MessageTypeNotify && !strings.Contains(message.Message, "start") {
@@ -95,7 +102,7 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 	}
 }
 
-func (o *Output) errMsgs(prefix string, message contract.Message) string {
+func errMsgs(prefix string, message contract.Message) string {
 	res := []string{}
 	if message.Type == contract.MessageTypeError {
 		logText := message.Message
@@ -107,7 +114,7 @@ func (o *Output) errMsgs(prefix string, message contract.Message) string {
 	if message.Actual != "" {
 		res = append(res, "got     : \n"+message.Actual)
 	}
-	return strings.Join(res, "\n")
+	return stripAnsi(strings.Join(res, "\n"))
 }
 
 type errString struct {

@@ -85,6 +85,7 @@ func main() {
 	}
 	s := defaults.NewDefaultSuite(defaults.SuiteConfig{
 		Dir:             *flagDir,
+		NoColor:         true,
 		DefaultDBConn:   "postgres://postgres@127.0.0.1:5440/?sslmode=disable",
 		SkipTests:       coreTestsToSkip,
 		ClearPersistent: *flagClearPersistent,

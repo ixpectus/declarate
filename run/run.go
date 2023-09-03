@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
 	"gopkg.in/yaml.v2"
@@ -35,6 +35,7 @@ type RunnerConfig struct {
 	T            *testing.T
 	comparer     contract.Comparer
 	pollComparer contract.Comparer
+	Report       contract.Report
 }
 
 func New(c RunnerConfig) *Runner {
@@ -53,6 +54,10 @@ func New(c RunnerConfig) *Runner {
 			AllowArrayExtraItems: tools.To(true),
 		}, c.Variables)
 	}
+	if c.Report == nil {
+		c.Report = report.NewEmptyReport()
+	}
+	c.Output.SetReport(c.Report)
 	return &Runner{
 		config: c,
 		output: c.Output,
@@ -117,7 +122,7 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 			var testResult *Result
 			res := true
 			var err error
-			action := allure.Action(func() {
+			action := func() {
 				testResult, err = r.run(v, fileName)
 				if err != nil {
 					r.output.Log(contract.Message{
@@ -145,9 +150,8 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 						PollConditionFailed: testResult.PollConditionFailed,
 					})
 				}
-			})
-
-			allure.Step(allure.Description("step "+v.Name), action)
+			}
+			r.config.Report.Step(report.ReportOptions{Description: v.Name}, action)
 			if !res {
 				return false, nil
 			}
@@ -307,6 +311,7 @@ func (r *Runner) runOne(
 	var firstErrResult *Result
 	for _, c := range conf.Commands {
 		c.SetVars(currentVars)
+		c.SetReport(r.config.Report)
 		conf.Name = currentVars.Apply(conf.Name)
 		r.beforeTestStep(fileName, &conf, lvl)
 		if err := c.Do(); err != nil {
