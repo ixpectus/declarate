@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/ixpectus/declarate/defaults"
+	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/tests"
 	"github.com/ixpectus/declarate/tools"
 )
@@ -93,6 +94,7 @@ func main() {
 		WithProgresBar:  *flagWithProgressBar,
 		DefaultHost:     "http://127.0.0.1:8181/",
 		Wrapper:         tests.NewDebugWrapper(),
+		Report:          report.NewAllureReport(),
 		Tags:            tags,
 		Filepathes:      filePathes,
 	})

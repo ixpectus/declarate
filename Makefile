@@ -1,6 +1,8 @@
-.PHONY: test
 run-postgres:
 	docker run --name pg -d -e POSTGRES_HOST_AUTH_METHOD=trust -p 5440:5432 postgres:10.21
+
+allure-results:
+	mkdir allure-results
 
 start-postgres:
 	docker start pg
@@ -8,13 +10,13 @@ start-postgres:
 stop-postgres:
 	docker stop pg
 
-test:
+test: allure-results
 	go build -o build/main cmd/example/main.go
-	go test -v ./tests/... -count=1 -run TestExample	
+	ALLURE_RESULTS_PATH=./allure-results go test -v ./tests/... -count=1 -run TestExample	
 
-test-suite:
+test-suite: allure-results
 	go build -o build/main cmd/example/main.go
-	go test -v ./tests/... -count=1 -run TestSuite
+	ALLURE_RESULTS_PATH=./allure-results go test -v ./tests/... -count=1 -run TestSuite
 
 
 test-cover:
