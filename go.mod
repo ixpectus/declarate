@@ -6,6 +6,7 @@ require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/dailymotion/allure-go v0.7.0
 	github.com/fatih/color v1.15.0
+	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/kylelemons/godebug v1.1.0
 	github.com/lib/pq v1.10.7
 	github.com/maja42/goval v1.3.1
@@ -21,6 +22,7 @@ require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
+	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect

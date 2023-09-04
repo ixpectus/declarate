@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/dailymotion/allure-go"
-	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/contract"
 )
 
@@ -117,44 +116,64 @@ func (e *ShellCmd) ResponseBody() *string {
 	return &e.responseBody
 }
 
+// func (e *ShellCmd) Check() error {
+// 	if e.Config.Response != nil {
+// 		linesExpected := strings.Split(*e.Config.Response, "\n")
+// 		linesGot := strings.Split(e.responseBody, "\n")
+
+// 		if len(linesExpected) != len(linesGot) {
+// 			errMsg := fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot))
+// 			for k := range linesExpected {
+// 				if len(linesGot) > k {
+// 					if linesExpected[k] != linesGot[k] {
+// 						errMsg += fmt.Sprintf("\nlines different at line %v, expected %v, got %v", k, linesExpected[k], linesExpected[k])
+// 					}
+// 				}
+// 			}
+// 			res := compare.MakeError(
+// 				"",
+// 				errMsg,
+// 				*e.Config.Response,
+// 				e.responseBody,
+// 			)
+// 			return res
+// 		}
+// 		errMsg := ""
+// 		for k := range linesExpected {
+// 			if len(linesGot) >= k {
+// 				if strings.Trim(linesExpected[k], " ") != strings.Trim(linesGot[k], " ") {
+// 					errMsg = fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
+// 					break
+// 				}
+// 			}
+// 		}
+// 		if errMsg != "" {
+// 			return &contract.TestError{
+// 				Title:         "response body differs",
+// 				Expected:      *e.Config.Response,
+// 				Actual:        e.responseBody,
+// 				Message:       errMsg,
+// 				OriginalError: nil,
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
+
 func (e *ShellCmd) Check() error {
 	if e.Config.Response != nil {
-		linesExpected := strings.Split(*e.Config.Response, "\n")
-		linesGot := strings.Split(e.responseBody, "\n")
-
-		if len(linesExpected) != len(linesGot) {
-			errMsg := fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot))
-			for k := range linesExpected {
-				if len(linesGot) > k {
-					if linesExpected[k] != linesGot[k] {
-						errMsg += fmt.Sprintf("\nlines different at line %v, expected %v, got %v", k, linesExpected[k], linesExpected[k])
-					}
-				}
+		errs := e.comparer.Compare(*e.Config.Response, e.responseBody, contract.CompareParams{})
+		if len(errs) > 0 {
+			msg := ""
+			for _, v := range errs {
+				msg += v.Error() + "\n"
 			}
-			res := compare.MakeError(
-				"",
-				errMsg,
-				*e.Config.Response,
-				e.responseBody,
-			)
-			return res
-		}
-		errMsg := ""
-		for k := range linesExpected {
-			if len(linesGot) >= k {
-				if strings.Trim(linesExpected[k], " ") != strings.Trim(linesGot[k], " ") {
-					errMsg = fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
-					break
-				}
-			}
-		}
-		if errMsg != "" {
 			return &contract.TestError{
 				Title:         "response body differs",
 				Expected:      *e.Config.Response,
 				Actual:        e.responseBody,
-				Message:       errMsg,
-				OriginalError: nil,
+				Message:       msg,
+				OriginalError: fmt.Errorf("response body differs: %v", msg),
 			}
 		}
 	}

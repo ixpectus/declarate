@@ -114,6 +114,7 @@ func errMsgs(prefix string, message contract.Message) string {
 	if message.Actual != "" {
 		res = append(res, "got     : \n"+message.Actual)
 	}
+
 	return stripAnsi(strings.Join(res, "\n"))
 }
 

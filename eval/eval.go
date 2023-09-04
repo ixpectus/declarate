@@ -14,7 +14,7 @@ type Eval struct {
 
 var (
 	evalRe         = regexp.MustCompile(`\$\((.+)\)`)
-	evalReResponse = regexp.MustCompile(`\$(.+)`)
+	evalReResponse = regexp.MustCompile(`\$([^.]+)`)
 )
 
 func NewEval(functions map[string]goval.ExpressionFunction) *Eval {

@@ -97,7 +97,7 @@ func main() {
 		WithProgresBar:  *flagWithProgressBar,
 		DefaultHost:     "http://127.0.0.1:8181/",
 		Wrapper:         tests.NewDebugWrapper(),
-		Report:          report.NewAllureReport("./allure-results"),
+		Report:          report.NewEmptyReport(),
 		Tags:            tags,
 		Filepathes:      filePathes,
 	})

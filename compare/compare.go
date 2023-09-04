@@ -50,7 +50,9 @@ func (c *Comparer) compareBranch(
 	params *contract.CompareParams,
 ) []error {
 	expectedType := getType(expected)
+
 	actualType := getType(actual)
+
 	var errors []error
 
 	// compare types
@@ -151,7 +153,7 @@ func (c *Comparer) compareLeafs(path string, expected, actual interface{}) []err
 
 	switch leafMatchType(expected) {
 	case pure:
-		errors = append(errors, comparePure(path, expected, actual)...)
+		errors = append(errors, c.comparePure(path, expected, actual)...)
 
 	case regex:
 		errors = append(errors, compareRegex(path, expected, actual)...)
@@ -201,8 +203,42 @@ func (c *Comparer) compareCondition(path string, expected, actual interface{}) (
 	return errors
 }
 
-func comparePure(path string, expected, actual interface{}) (errors []error) {
-	if expected != actual {
+func (c *Comparer) comparePure(path string, expected, actual interface{}) (errors []error) {
+	expectedStr, expectedIsString := expected.(string)
+	actualStr, actualIsString := actual.(string)
+
+	tryLineByLine := expectedIsString && actualIsString && (c.defaultComparisonParams.LineByLine == nil || *c.defaultComparisonParams.LineByLine)
+	linesExpected := strings.Split(expectedStr, "\n")
+	linesGot := strings.Split(actualStr, "\n")
+
+	if tryLineByLine && len(linesExpected) > 1 && len(linesGot) > 1 {
+		if len(linesExpected) != len(linesGot) {
+			errMsg := fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot))
+			for k := range linesExpected {
+				if len(linesGot) >= k {
+					if linesExpected[k] != linesGot[k] {
+						errMsg += fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
+					}
+				}
+			}
+			res := MakeError(
+				path,
+				errMsg,
+				expectedStr,
+				actualStr,
+			)
+			return []error{res}
+		}
+		for k := range linesExpected {
+			if len(linesGot) >= k {
+				if strings.Trim(linesExpected[k], " ") != strings.Trim(linesGot[k], " ") {
+					errMsg := fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
+					return []error{MakeError(path, errMsg, expected, actual)}
+				}
+			}
+		}
+		return nil
+	} else if expected != actual {
 		errors = append(errors, MakeError(path, "values do not match", expected, actual))
 	}
 

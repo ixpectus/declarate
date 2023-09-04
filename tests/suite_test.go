@@ -28,6 +28,7 @@ func TestSuite(t *testing.T) {
 		TestRunWrapper: NewDebugWrapper(),
 		Report:         report.NewAllureReport("./allure-results"),
 		Variables:      vv,
+		FailFast:       true,
 		NoColor:        true,
 		Output: &output.Output{
 			WithProgressBar: true,
