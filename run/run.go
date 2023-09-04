@@ -348,7 +348,7 @@ func (r *Runner) runOne(
 					}
 				}
 				if len(jsonVars) > 0 {
-					vars, err := variables.FromJSON(jsonVars, *body)
+					vars, err := variables.FromJSON(jsonVars, *body, currentVars)
 					if err != nil {
 						res := &Result{
 							Err:      err,
@@ -443,7 +443,7 @@ func (r *Runner) runOne(
 			}
 		}
 		if len(jsonVars) > 0 && body != nil {
-			vars, err := variables.FromJSON(jsonVars, *body)
+			vars, err := variables.FromJSON(jsonVars, *body, currentVars)
 			if err != nil {
 				res := &Result{
 					Err:      err,
@@ -470,7 +470,7 @@ func (r *Runner) runOne(
 			}
 		}
 		if len(jsonVars) > 0 && body != nil {
-			vars, err := variables.FromJSON(jsonVars, *body)
+			vars, err := variables.FromJSON(jsonVars, *body, currentVars)
 			if err != nil {
 				res := &Result{
 					Err:      err,

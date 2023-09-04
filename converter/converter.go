@@ -175,7 +175,7 @@ func request(g GonkeyTest) DeclarateTest {
 		}
 	}
 	for k, v := range g.ResponseTmpls {
-		js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", v, k)
+		js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", varFix(v), k)
 		var prettyJSON bytes.Buffer
 		_ = json.Indent(&prettyJSON, []byte(js1), "", "  ")
 		res.ResponseTmpls = prettyJSON.String()

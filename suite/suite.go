@@ -45,7 +45,9 @@ type Suite struct {
 func New(directory string, cfg RunConfig) *Suite {
 	if cfg.Report == nil {
 		cfg.Report = report.NewEmptyReport()
-		cfg.Output.SetReport(cfg.Report)
+		if cfg.Output != nil {
+			cfg.Output.SetReport(cfg.Report)
+		}
 	}
 	return &Suite{
 		Directory: directory,

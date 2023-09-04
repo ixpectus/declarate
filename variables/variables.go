@@ -85,12 +85,12 @@ func usedVariables(str string) (res []string) {
 	return res
 }
 
-func FromJSON(vv map[string]string, body string) (map[string]string, error) {
+func FromJSON(vv map[string]string, body string, existedVars contract.Vars) (map[string]string, error) {
 	names := make([]string, 0, len(vv))
 	paths := make([]string, 0, len(vv))
 	for k, v := range vv {
-		names = append(names, k)
-		paths = append(paths, v)
+		names = append(names, existedVars.Apply(k))
+		paths = append(paths, existedVars.Apply(v))
 	}
 	vars := map[string]string{}
 	results := gjson.GetMany(body, paths...)
