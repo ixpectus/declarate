@@ -41,7 +41,7 @@ func TestAllure(t *testing.T) {
 	}
 	s := defaults.NewDefaultSuite(defaults.SuiteConfig{
 		Dir:             *flagDir,
-		Report:          report.NewAllureReport(),
+		Report:          report.NewAllureReport("./allure-results"),
 		DefaultDBConn:   "postgres://postgres@127.0.0.1:5440/?sslmode=disable",
 		ClearPersistent: *flagClearPersistent,
 		WithProgresBar:  true,

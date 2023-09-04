@@ -12,11 +12,11 @@ stop-postgres:
 
 test: allure-results
 	go build -o build/main cmd/example/main.go
-	ALLURE_RESULTS_PATH=./allure-results go test -v ./tests/... -count=1 -run TestExample	
+	go test -v ./tests/... -count=1 -run TestExample	
 
 test-suite: allure-results
 	go build -o build/main cmd/example/main.go
-	ALLURE_RESULTS_PATH=./allure-results go test -v ./tests/... -count=1 -run TestSuite
+	go test -v ./tests/... -count=1 -run TestSuite
 
 
 test-cover:

@@ -26,7 +26,7 @@ func TestSuite(t *testing.T) {
 	// if output
 	s := suite.New("./tests/suite", suite.RunConfig{
 		TestRunWrapper: NewDebugWrapper(),
-		Report:         report.NewAllureReport(),
+		Report:         report.NewAllureReport("./allure-results"),
 		Variables:      vv,
 		NoColor:        true,
 		Output: &output.Output{

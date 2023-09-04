@@ -20,6 +20,9 @@ var (
 	flagDryRun = flag.Bool(
 		"dryRun", false, "show tests for run, don't run them",
 	)
+	flagFailFast = flag.Bool(
+		"failFast", false, "fail after first fail test",
+	)
 	flagTags = flag.String(
 		"tags",
 		"",
@@ -94,7 +97,7 @@ func main() {
 		WithProgresBar:  *flagWithProgressBar,
 		DefaultHost:     "http://127.0.0.1:8181/",
 		Wrapper:         tests.NewDebugWrapper(),
-		Report:          report.NewAllureReport(),
+		Report:          report.NewAllureReport("./allure-results"),
 		Tags:            tags,
 		Filepathes:      filePathes,
 	})

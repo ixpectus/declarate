@@ -33,6 +33,7 @@ type SuiteConfig struct {
 	T               *testing.T
 	Output          contract.Output
 	Report          contract.Report
+	FailFast        bool
 }
 
 func NewDefaultSuite(conf SuiteConfig) *suite.Suite {
