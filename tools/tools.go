@@ -77,6 +77,11 @@ func FilenameShort(fileName string) string {
 	return fileName
 }
 
+func FilenameLastN(fileName string, n int) string {
+	parts := strings.Split(fileName, "/")
+	return strings.Join(parts[len(parts)-n:], "/")
+}
+
 func IsNumber(val interface{}) bool {
 	v := reflect.ValueOf(val)
 	switch v.Kind() {

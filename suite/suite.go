@@ -148,7 +148,7 @@ func (s *Suite) Run() error {
 		}
 
 		if s.Config.T != nil {
-			s.Config.T.Run(v, func(t *testing.T) {
+			s.Config.T.Run(tools.FilenameLastN(v, 2), func(t *testing.T) {
 				if s.Config.T.Failed() && !failed {
 					failed = true
 				}
