@@ -34,6 +34,10 @@ func (c *Converter) Convert() error {
 		return err
 	}
 	for _, v := range tt {
+		if !strings.Contains(v, ".yaml") {
+			continue
+		}
+
 		tests := []GonkeyTest{}
 		relatedName := strings.ReplaceAll(v, c.sourceDir, "")
 		if relatedName == "" {

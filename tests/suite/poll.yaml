@@ -7,10 +7,6 @@
     poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler, wait 10ms, estimated 0s
     passed ./tests/yaml_poll/poll.yaml:check poll handler
     start ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s

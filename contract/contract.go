@@ -43,7 +43,10 @@ func (e *TestError) Unwrap() error {
 	return e.OriginalError
 }
 
-type MessageType string
+type (
+	MessageType string
+	ActionType  string
+)
 
 var (
 	MessageTypeSuccess MessageType = "success"
@@ -68,6 +71,7 @@ type Message struct {
 	Name                string
 	Filename            string
 	Message             string
+	ActionType          string
 	HasNestedSteps      bool
 	HasPoll             bool
 	Title               string

@@ -215,7 +215,7 @@ func (c *Comparer) comparePure(path string, expected, actual interface{}) (error
 		if len(linesExpected) != len(linesGot) {
 			errMsg := fmt.Sprintf("lines count differs, expected %v, got %v", len(linesExpected), len(linesGot))
 			for k := range linesExpected {
-				if len(linesGot) >= k {
+				if len(linesGot) > k {
 					if linesExpected[k] != linesGot[k] {
 						errMsg += fmt.Sprintf("\nlines different at line %v, expected `%v`, got `%v`", k, linesExpected[k], linesGot[k])
 					}

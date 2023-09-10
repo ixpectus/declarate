@@ -1,9 +1,6 @@
 package run
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/ixpectus/declarate/contract"
 )
 
@@ -74,39 +71,5 @@ func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 			},
 		)
 		conf.Commands = cfg.Commands
-	}
-}
-
-func (r *Runner) outputErr(res Result) {
-	var errTest *contract.TestError
-	if errors.As(res.Err, &errTest) {
-		r.output.Log(contract.Message{
-			Filename: res.FileName,
-			Name:     res.Name,
-			Message:  res.Err.Error(),
-			Title: fmt.Sprintf(
-				"failed %v:%v\n%v",
-				res.FileName,
-				res.Name,
-				errTest.Title,
-			),
-			Expected:            errTest.Expected,
-			Actual:              errTest.Actual,
-			Lvl:                 res.Lvl,
-			Type:                contract.MessageTypeError,
-			PollResult:          res.PollResult,
-			PollConditionFailed: res.PollConditionFailed,
-		})
-		return
-	}
-	if res.Err != nil {
-		r.output.Log(contract.Message{
-			Filename:            res.FileName,
-			Name:                res.Name,
-			Message:             fmt.Sprintf("failed %v", res.Err),
-			Lvl:                 res.Lvl,
-			Type:                contract.MessageTypeError,
-			PollConditionFailed: res.PollConditionFailed,
-		})
 	}
 }

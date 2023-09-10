@@ -101,12 +101,13 @@ func (e *Request) GetConfig() interface{} {
 }
 
 func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
+	res := map[string]string{}
 	for k, v := range headers {
 		k = e.Vars.Apply(k)
 		v = e.Vars.Apply(v)
-		headers[k] = v
+		res[k] = v
 	}
-	return headers
+	return res
 }
 
 func (e *Request) IsValid() error {
@@ -124,12 +125,14 @@ func (e *Request) Do() error {
 	if e.Config.Method != "" {
 		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
 		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
+
 		if e.Config.Response != nil {
 			s := e.Vars.Apply(*e.Config.Response)
 			s = strings.TrimSuffix(s, "\n")
 			e.Config.Response = &s
 		}
 		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
+
 		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
 		if defaultHeaders == nil {
 			defaultHeaders = map[string]string{}

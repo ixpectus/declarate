@@ -92,7 +92,7 @@ func (o *OutputT) logWithProgressBar(message contract.Message) {
 			log.Println(prefix + logText)
 		}
 		if message.Type == contract.MessageTypeSuccess && message.Name != "" {
-			logText := colorSuccess.Sprint("passed: `" + message.Name + "`")
+			logText := colorSuccess.Sprint("passed: ") + colorNotify.Sprint("`"+message.Name+"`")
 			log.Println(prefix + logText)
 		}
 	}
