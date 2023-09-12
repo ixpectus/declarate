@@ -13,19 +13,29 @@
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
-    poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success, wait 10ms, estimated 0s
     passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success
     start ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
     poll ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body, wait 10ms, estimated 0s
-    at path $.body.name values do not match:
+    passed ./tests/yaml_poll/poll.yaml:check poll handler with regexp success with response body
+    start ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
+    failed ./tests/yaml_poll/poll.yaml:check poll handler with regexp fail
+    response differs: 
+    at path $.age values do not match:
     expected:
-    Tom
+    31
     actual:
+    28
+    at path $.name values do not match:
+    expected:
     Tommy
-     
+    actual:
+    Tom
+
+    expected response: 
+    {"age":31,"name":"Tommy"}
+    actual response: 
+    {"age":28,"items":[1,2,3,4],"name":"Tom"}
+

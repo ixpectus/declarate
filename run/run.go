@@ -185,18 +185,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			r.logPoll(fileName, v, pollInfo, d, estimated)
 			time.Sleep(d)
 		} else {
-			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
-				res, errs, _ := v.Poll.pollContinue(testResult.Response)
-				if !res {
-					if len(errs) > 0 {
-						testResult.PollConditionFailed = true
-						testResult.Err = errs[0]
-					}
-					break
-				}
-			} else {
-				break
-			}
+			break
 		}
 	}
 	pollResult.Finish = time.Now()
