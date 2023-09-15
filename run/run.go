@@ -63,7 +63,7 @@ func New(c RunnerConfig) *Runner {
 	}
 }
 
-func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
+func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 	file, err := os.ReadFile(fileName)
 	if err != nil {
 		return true, fmt.Errorf("file open: %w", err)
@@ -111,10 +111,6 @@ func (r *Runner) runFile(fileName string, t *testing.T) (bool, error) {
 
 	}
 	return false, nil
-}
-
-func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
-	return r.runFile(fileName, t)
 }
 
 func (r *Runner) run(
@@ -185,7 +181,9 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			r.logPoll(fileName, v, pollInfo, d, estimated)
 			time.Sleep(d)
 		} else {
-			break
+			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
+				break
+			}
 		}
 	}
 	pollResult.Finish = time.Now()
@@ -266,7 +264,7 @@ func (r *Runner) runOne(
 				r.logSkip(v.Name, fileName, lvl+1)
 				continue
 			}
-			if v.Name != "" {
+			if v.Name != "" && !polling {
 				r.logStart(fileName, v, lvl+1)
 			}
 			var testResult *Result
@@ -297,7 +295,9 @@ func (r *Runner) runOne(
 			if err != nil {
 				return nil, err
 			}
-			r.logPass(v.Name, fileName, testResult, lvl+1)
+			if !polling {
+				r.logPass(v.Name, fileName, testResult, lvl+1)
+			}
 		}
 		if len(results) > 0 {
 			s := "[" + strings.Join(results, ", ") + "]"
