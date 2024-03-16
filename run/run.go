@@ -162,6 +162,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 		}
 		estimated := finish.Sub(time.Now())
 		testResult, err = r.runOne(v, 0, fileName, isPolling)
+
 		if err != nil {
 			pollResult.Finish = time.Now()
 			testResult.PollResult = &pollResult
@@ -181,9 +182,10 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			r.logPoll(fileName, v, pollInfo, d, estimated)
 			time.Sleep(d)
 		} else {
-			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
-				break
-			}
+			break
+			// if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
+			// 	break
+			// }
 		}
 	}
 	pollResult.Finish = time.Now()
