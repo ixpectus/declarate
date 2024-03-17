@@ -85,7 +85,6 @@ type RequestConfig struct {
 	CookiesVal       map[string]string         `json:"cookies" yaml:"cookies"`
 	ComparisonParams contract.CompareParams    `json:"comparisonParams" yaml:"comparisonParams"`
 	RequestURL       string                    `json:"path" yaml:"path"`
-	Variables        map[string]string         `yaml:"variables"`
 }
 
 func (e *Request) SetVars(vv contract.Vars) {
@@ -175,13 +174,6 @@ func (e *Request) Do() error {
 
 func (e *Request) ResponseBody() *string {
 	return e.responseBody
-}
-
-func (e *Request) Variables() map[string]string {
-	if e != nil && e.Config != nil {
-		return e.Config.Variables
-	}
-	return nil
 }
 
 func (e *Request) Check() error {

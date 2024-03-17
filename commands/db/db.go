@@ -75,12 +75,10 @@ func (d *DbCheck) isEmpty() bool {
 }
 
 type CheckConfig struct {
-	DbConn              string                 `json:"db_conn" yaml:"db_conn"`
-	DbQuery             string                 `json:"db_query" yaml:"db_query"`
-	DbResponse          string                 `json:"db_response" yaml:"db_response"`
-	ComparisonParams    contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
-	Variables           map[string]string      `yaml:"variables"`
-	VariablesPersistent map[string]string      `yaml:"variables_persistent"`
+	DbConn           string                 `json:"db_conn" yaml:"db_conn"`
+	DbQuery          string                 `json:"db_query" yaml:"db_query"`
+	DbResponse       string                 `json:"db_response" yaml:"db_response"`
+	ComparisonParams contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
 }
 
 func (d *CheckConfig) isEmpty() bool {
@@ -149,13 +147,6 @@ func (e *Db) IsValid() error {
 
 func (e *Db) ResponseBody() *string {
 	return e.responseBody
-}
-
-func (e *Db) Variables() map[string]string {
-	if e != nil && e.Config != nil {
-		return e.Config.Variables
-	}
-	return nil
 }
 
 func (e *Db) Check() error {

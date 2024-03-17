@@ -21,15 +21,13 @@ type extendedConfig struct {
 }
 
 type shellConfig struct {
-	Cmd       string            `yaml:"cmd,omitempty"`
-	Variables map[string]string `yaml:"variables,omitempty"`
-	Response  *string           `yaml:"response,omitempty"`
+	Cmd      string  `yaml:"cmd,omitempty"`
+	Response *string `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd       string            `yaml:"shell_cmd,omitempty"`
-	Variables map[string]string `yaml:"variables,omitempty"`
-	Response  *string           `yaml:"shell_response,omitempty"`
+	Cmd      string  `yaml:"shell_cmd,omitempty"`
+	Response *string `yaml:"shell_response,omitempty"`
 }
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
@@ -74,9 +72,8 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &ShellCmd{
 			comparer: u.comparer,
 			Config: &Config{
-				Cmd:       cfgExtended.Shell.Cmd,
-				Variables: cfgExtended.Shell.Variables,
-				Response:  cfgExtended.Shell.Response,
+				Cmd:      cfgExtended.Shell.Cmd,
+				Response: cfgExtended.Shell.Response,
 			},
 		}, nil
 	}
@@ -176,13 +173,6 @@ func (e *ShellCmd) Check() error {
 				OriginalError: fmt.Errorf("response body differs: %v", msg),
 			}
 		}
-	}
-	return nil
-}
-
-func (e *ShellCmd) Variables() map[string]string {
-	if e.Config != nil {
-		return e.Config.Variables
 	}
 	return nil
 }

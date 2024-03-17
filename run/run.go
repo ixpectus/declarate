@@ -284,13 +284,6 @@ func (r *Runner) runCommand(cmd contract.Doer) (*string, error) {
 	if err := cmd.Check(); err != nil {
 		return responseBody, err
 	}
-	// fmt.Printf("\n>>> cmd variables %v <<< debug\n", cmd.Variables())
-	// if err := r.fillVariablesByResponse(
-	// 	responseBody,
-	// 	cmd.Variables(),
-	// ); err != nil {
-	// 	return responseBody, err
-	// }
 	return responseBody, nil
 }
 
@@ -300,11 +293,11 @@ func (r *Runner) runOne(
 	fileName string,
 	isPolling bool,
 ) (*Result, error) {
-	var commandResponseBody *string
-	var firstErrResult *Result
+	var (
+		commandResponseBody *string
+		firstErrResult      *Result
+	)
 	conf.Name = r.currentVars.Apply(conf.Name)
-	// fmt.Printf("\n>>> conf %v <<< debug\n", conf.Variables)
-	// fmt.Printf("\n>>> %v <<< debug\n", len(conf.Commands))
 
 	for _, command := range conf.Commands {
 		r.beforeTestStep(fileName, &conf, lvl)
@@ -322,7 +315,6 @@ func (r *Runner) runOne(
 			return res, nil
 		}
 	}
-	// fmt.Printf("\n>>> %v <<< debug\n", commandResponseBody)
 
 	if len(conf.Steps) > 0 {
 		results := []string{}
@@ -372,9 +364,9 @@ func (r *Runner) runOne(
 		}
 	}
 
-	if err := r.fillVariablesByResponse(
+	if err := r.fillAllVariables(
 		commandResponseBody,
-		conf.Variables,
+		conf,
 	); err != nil {
 		res := &Result{
 			Err:      err,
@@ -385,16 +377,7 @@ func (r *Runner) runOne(
 		r.afterTestStep(fileName, &conf, *res, isPolling)
 		return res, nil
 	}
-	if err := r.fillPersistentVariablesByResponse(commandResponseBody, conf.VariablesPersistent); err != nil {
-		res := &Result{
-			Err:      err,
-			Name:     conf.Name,
-			Lvl:      lvl,
-			FileName: fileName,
-		}
-		r.afterTestStep(fileName, &conf, *res, isPolling)
-		return res, nil
-	}
+
 	if firstErrResult != nil {
 		firstErrResult.Response = commandResponseBody
 		r.afterTestStep(fileName, &conf, *firstErrResult, isPolling)
@@ -409,4 +392,23 @@ func (r *Runner) runOne(
 
 	r.afterTestStep(fileName, &conf, *res, isPolling)
 	return res, nil
+}
+
+func (r *Runner) fillAllVariables(
+	commandResponseBody *string,
+	conf runConfig,
+) error {
+	if err := r.fillVariablesByResponse(
+		commandResponseBody,
+		conf.Variables,
+	); err != nil {
+		return err
+	}
+	if err := r.fillPersistentVariablesByResponse(
+		commandResponseBody,
+		conf.VariablesPersistent,
+	); err != nil {
+		return err
+	}
+	return nil
 }

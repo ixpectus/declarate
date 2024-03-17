@@ -80,7 +80,3 @@ func (e *VarsCmd) ResponseBody() *string {
 func (e *VarsCmd) Check() error {
 	return nil
 }
-
-func (e *VarsCmd) Variables() map[string]string {
-	return nil
-}

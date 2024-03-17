@@ -39,26 +39,23 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if !cfgExtended.isEmpty() {
 		return &Echo{
 			Config: &Config{
-				Message:        cfgExtended.Echo.Message,
-				Response:       cfgExtended.Echo.Response,
-				VariablesToSet: cfgExtended.Echo.VariablesToSet,
+				Message:  cfgExtended.Echo.Message,
+				Response: cfgExtended.Echo.Response,
 			},
 		}, nil
 	}
 
 	return &Echo{
 		Config: &Config{
-			Message:        cfgShort.Message,
-			Response:       cfgShort.Response,
-			VariablesToSet: cfgShort.VariablesToSet,
+			Message:  cfgShort.Message,
+			Response: cfgShort.Response,
 		},
 	}, nil
 }
 
 type Config struct {
-	Message        string
-	Response       *string
-	VariablesToSet map[string]string
+	Message  string
+	Response *string
 }
 
 func (c *Config) isEmpty() bool {
@@ -66,16 +63,14 @@ func (c *Config) isEmpty() bool {
 }
 
 type config struct {
-	Message        string            `yaml:"echo_message,omitempty"`
-	Response       *string           `yaml:"echo_response,omitempty"`
-	VariablesToSet map[string]string `yaml:"variables"`
+	Message  string  `yaml:"echo_message,omitempty"`
+	Response *string `yaml:"echo_response,omitempty"`
 }
 
 type extendedConfig struct {
 	Echo *struct {
-		Message        string            `yaml:"message,omitempty"`
-		Response       *string           `yaml:"response,omitempty"`
-		VariablesToSet map[string]string `yaml:"variables"`
+		Message  string  `yaml:"message,omitempty"`
+		Response *string `yaml:"response,omitempty"`
 	} `yaml:"echo,omitempty"`
 }
 
@@ -115,13 +110,6 @@ func (e *Echo) ExpectedResponse() string {
 }
 
 func (e *Echo) IsValid() error {
-	return nil
-}
-
-func (e *Echo) Variables() map[string]string {
-	if e != nil && e.Config != nil {
-		return e.Config.VariablesToSet
-	}
 	return nil
 }
 

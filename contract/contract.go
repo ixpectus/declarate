@@ -20,7 +20,6 @@ type Doer interface {
 	Do() error
 	ResponseBody() *string
 	IsValid() error
-	Variables() map[string]string
 	GetConfig() interface{}
 	Check() error
 	SetVars(vv Vars)

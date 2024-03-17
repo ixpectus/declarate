@@ -19,15 +19,13 @@ type extendedConfig struct {
 }
 
 type scriptConfig struct {
-	Path      string            `yaml:"path,omitempty"`
-	Variables map[string]string `yaml:"variables,omitempty"`
-	Response  *string           `yaml:"response,omitempty"`
+	Path     string  `yaml:"path,omitempty"`
+	Response *string `yaml:"response,omitempty"`
 }
 
 type Config struct {
-	Cmd       string            `yaml:"script_path,omitempty"`
-	Variables map[string]string `yaml:"variables,omitempty"`
-	Response  *string           `yaml:"script_response,omitempty"`
+	Cmd      string  `yaml:"script_path,omitempty"`
+	Response *string `yaml:"script_response,omitempty"`
 }
 
 func (ex *extendedConfig) isEmpty() bool {
@@ -72,9 +70,8 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &ScriptCmd{
 			comparer: u.comparer,
 			Config: &Config{
-				Cmd:       cfgExtended.Script.Path,
-				Variables: cfgExtended.Script.Variables,
-				Response:  cfgExtended.Script.Response,
+				Cmd:      cfgExtended.Script.Path,
+				Response: cfgExtended.Script.Response,
 			},
 		}, nil
 	}
@@ -127,13 +124,6 @@ func (e *ScriptCmd) Check() error {
 				OriginalError: fmt.Errorf("response body differs: %v", msg),
 			}
 		}
-	}
-	return nil
-}
-
-func (e *ScriptCmd) Variables() map[string]string {
-	if e.Config != nil {
-		return e.Config.Variables
 	}
 	return nil
 }
