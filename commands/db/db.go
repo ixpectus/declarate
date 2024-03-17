@@ -8,6 +8,7 @@ import (
 
 	"github.com/dailymotion/allure-go"
 	_ "github.com/lib/pq"
+	"github.com/xwb1989/sqlparser"
 
 	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/contract"
@@ -115,7 +116,11 @@ func (e *Db) Do() error {
 			return err
 		}
 
-		if e.Config.DbResponse != "" || e.Config.Variables != nil || e.Config.VariablesPersistent != nil {
+		isSelect, err := isSelectStatement(e.Config.DbQuery)
+		if err != nil {
+			return err
+		}
+		if isSelect {
 			res, err := makeQuery(e.Config.DbQuery, db)
 			if err != nil {
 				return err
@@ -146,7 +151,7 @@ func (e *Db) ResponseBody() *string {
 	return e.responseBody
 }
 
-func (e *Db) VariablesToSet() map[string]string {
+func (e *Db) Variables() map[string]string {
 	if e != nil && e.Config != nil {
 		return e.Config.Variables
 	}
@@ -254,4 +259,19 @@ func makeQuery(dbQuery string, db *sql.DB) (string, error) {
 	result := "[" + strings.Join(dbResponse, ", ") + "]"
 
 	return result, nil
+}
+
+func isSelectStatement(dbQuery string) (bool, error) {
+	queries := strings.Split(dbQuery, ";")
+	stmt, err := sqlparser.Parse(queries[0])
+	if err != nil {
+		return false, err
+	}
+
+	switch stmt.(type) {
+	case *sqlparser.Select:
+		return true, nil
+	default:
+		return false, nil
+	}
 }

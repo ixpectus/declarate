@@ -81,6 +81,6 @@ func (e *VarsCmd) Check() error {
 	return nil
 }
 
-func (e *VarsCmd) VariablesToSet() map[string]string {
+func (e *VarsCmd) Variables() map[string]string {
 	return nil
 }

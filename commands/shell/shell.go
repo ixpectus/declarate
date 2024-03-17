@@ -180,7 +180,7 @@ func (e *ShellCmd) Check() error {
 	return nil
 }
 
-func (e *ShellCmd) VariablesToSet() map[string]string {
+func (e *ShellCmd) Variables() map[string]string {
 	if e.Config != nil {
 		return e.Config.Variables
 	}

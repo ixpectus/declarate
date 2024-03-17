@@ -118,7 +118,7 @@ func (e *Echo) IsValid() error {
 	return nil
 }
 
-func (e *Echo) VariablesToSet() map[string]string {
+func (e *Echo) Variables() map[string]string {
 	if e != nil && e.Config != nil {
 		return e.Config.VariablesToSet
 	}

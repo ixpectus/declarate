@@ -16,14 +16,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	builders    []contract.CommandBuilder
-	currentVars contract.Vars
-)
+// эта штука глобальная переменная, так как используется в run/config::UnmarshalYAML
+var builders []contract.CommandBuilder // почему как глобальные переменные а не часть структуры
+// потому что метод run вызывается из сьютов и там нужно сохранить переменные между вызовами различных частей сьюта
+// но они ведь перетираются польностью
 
 type Runner struct {
-	config RunnerConfig
-	output contract.Output
+	config      RunnerConfig
+	output      contract.Output
+	currentVars contract.Vars
 }
 
 type RunnerConfig struct {
@@ -63,25 +64,35 @@ func New(c RunnerConfig) *Runner {
 	}
 }
 
-func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
+func (r *Runner) buildRunConfigs(fileName string) ([]runConfig, error) {
 	file, err := os.ReadFile(fileName)
 	if err != nil {
-		return true, fmt.Errorf("file open: %w", err)
+		return nil, fmt.Errorf("file open: %w", err)
 	}
-	currentVars = r.config.Variables
+	r.currentVars = r.config.Variables
 	configs := []runConfig{}
 	if err := yaml.Unmarshal(file, &configs); err != nil {
+		return nil, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
+	}
+
+	return configs, nil
+}
+
+func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
+	configs, err := r.buildRunConfigs(fileName)
+	if err != nil {
 		return true, fmt.Errorf("unmarshall failed for file %s: %w", fileName, err)
 	}
 	for _, v := range configs {
 		if len(v.Commands) == 0 && len(v.Steps) == 0 {
+			// nothing to do
 			continue
 		}
-		if v.Condition != "" && !condition.IsTrue(currentVars, v.Condition) {
+		if v.Condition != "" && !condition.IsTrue(r.currentVars, v.Condition) {
 			r.logSkip(v.Name, fileName, 0)
 			continue
 		}
-		v.Name = currentVars.Apply(v.Name)
+		v.Name = r.currentVars.Apply(v.Name)
 		var testResult *Result
 		res := true
 		var err error
@@ -147,6 +158,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 	for _, d := range v.Poll.PollInterval() {
 		finish = finish.Add(d)
 	}
+	// stores poll information, used for logs and reports
 	pollInfo := contract.PollInfo{
 		Start:  start,
 		Finish: finish,
@@ -157,17 +169,24 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 	}
 	for i, d := range v.Poll.PollInterval() {
 		isPolling := true
-		if len(v.Poll.PollInterval())-1 == i {
+		if len(v.Poll.PollInterval())-1 == i { // last poll step
 			isPolling = false
 		}
 		estimated := finish.Sub(time.Now())
-		testResult, err = r.runOne(v, 0, fileName, isPolling)
+		testResult, err = r.runOne(
+			v,
+			0,
+			fileName,
+			isPolling,
+		)
 
+		// unexpected test error run
 		if err != nil {
 			pollResult.Finish = time.Now()
 			testResult.PollResult = &pollResult
 			return nil, err
 		}
+		// test not passed
 		if testResult.Err != nil {
 			if v.Poll.ResponseRegexp != "" || v.Poll.ResponseTmpls != nil {
 				res, errs, _ := v.Poll.pollContinue(testResult.Response)
@@ -194,89 +213,135 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 	return testResult, err
 }
 
+func (r *Runner) setupCommand(cmd contract.Doer) contract.Doer {
+	cmd.SetVars(r.currentVars)
+	cmd.SetReport(r.config.Report)
+
+	return cmd
+}
+
+func (r *Runner) fillVariablesByResponse(
+	commandResponseBody *string,
+	variablesToSet map[string]string,
+) error {
+	if commandResponseBody == nil || variablesToSet == nil {
+		return nil
+	}
+	jsonVars := map[string]string{}
+	for k, v := range variablesToSet {
+		if v == "*" {
+			r.currentVars.Set(k, *commandResponseBody)
+		} else {
+			jsonVars[k] = v
+		}
+	}
+	if len(jsonVars) > 0 {
+		vars, err := variables.FromJSON(jsonVars, *commandResponseBody, r.currentVars)
+		if err != nil {
+			return err
+		}
+		for k, v := range vars {
+			r.currentVars.Set(k, v)
+		}
+	}
+
+	return nil
+}
+
+func (r *Runner) fillPersistentVariablesByResponse(
+	commandResponseBody *string,
+	variablesToSet map[string]string,
+) error {
+	if commandResponseBody == nil || variablesToSet == nil {
+		return nil
+	}
+	jsonVars := map[string]string{}
+	for k, v := range variablesToSet {
+		if v == "*" {
+		} else {
+			jsonVars[k] = v
+		}
+	}
+	if len(jsonVars) > 0 {
+		vars, err := variables.FromJSON(jsonVars, *commandResponseBody, r.currentVars)
+		if err != nil {
+			return err
+		}
+		for k, v := range vars {
+			r.currentVars.SetPersistent(k, v)
+		}
+	}
+
+	return nil
+}
+
+func (r *Runner) runCommand(cmd contract.Doer) (*string, error) {
+	cmd = r.setupCommand(cmd)
+	if err := cmd.Do(); err != nil {
+		return nil, err
+	}
+	responseBody := cmd.ResponseBody()
+	if err := cmd.Check(); err != nil {
+		return responseBody, err
+	}
+	// fmt.Printf("\n>>> cmd variables %v <<< debug\n", cmd.Variables())
+	// if err := r.fillVariablesByResponse(
+	// 	responseBody,
+	// 	cmd.Variables(),
+	// ); err != nil {
+	// 	return responseBody, err
+	// }
+	return responseBody, nil
+}
+
 func (r *Runner) runOne(
 	conf runConfig,
 	lvl int,
 	fileName string,
-	polling bool,
+	isPolling bool,
 ) (*Result, error) {
-	var body *string
+	var commandResponseBody *string
 	var firstErrResult *Result
-	for _, c := range conf.Commands {
-		c.SetVars(currentVars)
-		c.SetReport(r.config.Report)
-		conf.Name = currentVars.Apply(conf.Name)
-		r.beforeTestStep(fileName, &conf, lvl)
-		if err := c.Do(); err != nil {
-			return &Result{
-				Err:      err,
-				Name:     conf.Name,
-				Lvl:      lvl,
-				FileName: fileName,
-			}, nil
-		}
+	conf.Name = r.currentVars.Apply(conf.Name)
+	// fmt.Printf("\n>>> conf %v <<< debug\n", conf.Variables)
+	// fmt.Printf("\n>>> %v <<< debug\n", len(conf.Commands))
 
-		body = c.ResponseBody()
-		if err := c.Check(); err != nil {
+	for _, command := range conf.Commands {
+		r.beforeTestStep(fileName, &conf, lvl)
+		var err error
+		commandResponseBody, err = r.runCommand(command)
+		if err != nil {
 			res := &Result{
 				Err:      err,
 				Name:     conf.Name,
 				Lvl:      lvl,
 				FileName: fileName,
-				Response: body,
+				Response: commandResponseBody,
 			}
-			r.afterTestStep(fileName, &conf, *res, polling)
+			r.afterTestStep(fileName, &conf, *res, isPolling)
 			return res, nil
 		}
-
-		if body != nil {
-			if c.VariablesToSet() != nil {
-				varsToSet := c.VariablesToSet()
-				jsonVars := map[string]string{}
-				for k, v := range varsToSet {
-					if v == "*" {
-						currentVars.Set(k, *body)
-					} else {
-						jsonVars[k] = v
-					}
-				}
-				if len(jsonVars) > 0 {
-					vars, err := variables.FromJSON(jsonVars, *body, currentVars)
-					if err != nil {
-						res := &Result{
-							Err:      err,
-							Name:     conf.Name,
-							Lvl:      lvl,
-							FileName: fileName,
-						}
-						r.afterTestStep(fileName, &conf, *res, polling)
-						return res, nil
-					}
-					for k, v := range vars {
-						currentVars.Set(k, v)
-					}
-				}
-			}
-		}
 	}
+	// fmt.Printf("\n>>> %v <<< debug\n", commandResponseBody)
+
 	if len(conf.Steps) > 0 {
 		results := []string{}
-		for _, v := range conf.Steps {
-			if v.Condition != "" && !condition.IsTrue(r.config.Variables, v.Condition) {
-				r.logSkip(v.Name, fileName, lvl+1)
+		for _, stepRunConfig := range conf.Steps {
+			if stepRunConfig.Condition != "" && !condition.IsTrue(r.config.Variables, stepRunConfig.Condition) {
+				r.logSkip(stepRunConfig.Name, fileName, lvl+1)
 				continue
 			}
-			if v.Name != "" && !polling {
-				r.logStart(fileName, v, lvl+1)
+			if stepRunConfig.Name != "" && !isPolling {
+				r.logStart(fileName, stepRunConfig, lvl+1)
 			}
 			var testResult *Result
 			var err error
 			action := func() {
-				testResult, err = r.runOne(v, lvl+1, fileName, polling)
+				testResult, err = r.runOne(stepRunConfig, lvl+1, fileName, isPolling)
 			}
-			r.config.Report.Step(report.ReportOptions{Description: v.Name}, action)
+			r.config.Report.Step(report.ReportOptions{Description: stepRunConfig.Name}, action)
 
-			if testResult.Err != nil && polling {
+			if testResult.Err != nil && isPolling {
 				firstErrResult = testResult
 				if testResult.Response != nil {
 					results = append(results, *testResult.Response)
@@ -286,7 +351,7 @@ func (r *Runner) runOne(
 				continue
 			}
 			if testResult.Err != nil {
-				r.afterTestStep(fileName, &conf, *testResult, polling)
+				r.afterTestStep(fileName, &conf, *testResult, isPolling)
 				return testResult, nil
 			}
 			if testResult.Response != nil {
@@ -297,82 +362,51 @@ func (r *Runner) runOne(
 			if err != nil {
 				return nil, err
 			}
-			if !polling {
-				r.logPass(v.Name, fileName, testResult, lvl+1)
+			if !isPolling {
+				r.logPass(stepRunConfig.Name, fileName, testResult, lvl+1)
 			}
 		}
 		if len(results) > 0 {
 			s := "[" + strings.Join(results, ", ") + "]"
-			body = &s
+			commandResponseBody = &s
 		}
 	}
 
-	if conf.Variables != nil {
-		varsToSet := conf.Variables
-		jsonVars := map[string]string{}
-		for k, v := range varsToSet {
-			if v == "*" {
-				currentVars.Set(k, *body)
-			} else {
-				jsonVars[k] = v
-			}
+	if err := r.fillVariablesByResponse(
+		commandResponseBody,
+		conf.Variables,
+	); err != nil {
+		res := &Result{
+			Err:      err,
+			Name:     conf.Name,
+			Lvl:      lvl,
+			FileName: fileName,
 		}
-		if len(jsonVars) > 0 && body != nil {
-			vars, err := variables.FromJSON(jsonVars, *body, currentVars)
-			if err != nil {
-				res := &Result{
-					Err:      err,
-					Name:     conf.Name,
-					Lvl:      lvl,
-					FileName: fileName,
-				}
-				r.afterTestStep(fileName, &conf, *res, polling)
-				return res, nil
-			}
-			for k, v := range vars {
-				currentVars.Set(k, v)
-			}
-		}
+		r.afterTestStep(fileName, &conf, *res, isPolling)
+		return res, nil
 	}
-	if conf.VariablesPersistent != nil {
-		varsToSet := conf.VariablesPersistent
-		jsonVars := map[string]string{}
-		for k, v := range varsToSet {
-			if v == "*" {
-				currentVars.SetPersistent(k, *body)
-			} else {
-				jsonVars[k] = v
-			}
+	if err := r.fillPersistentVariablesByResponse(commandResponseBody, conf.VariablesPersistent); err != nil {
+		res := &Result{
+			Err:      err,
+			Name:     conf.Name,
+			Lvl:      lvl,
+			FileName: fileName,
 		}
-		if len(jsonVars) > 0 && body != nil {
-			vars, err := variables.FromJSON(jsonVars, *body, currentVars)
-			if err != nil {
-				res := &Result{
-					Err:      err,
-					Name:     conf.Name,
-					Lvl:      lvl,
-					FileName: fileName,
-				}
-				r.afterTestStep(fileName, &conf, *res, polling)
-				return res, nil
-			}
-			for k, v := range vars {
-				currentVars.SetPersistent(k, v)
-			}
-		}
+		r.afterTestStep(fileName, &conf, *res, isPolling)
+		return res, nil
 	}
 	if firstErrResult != nil {
-		firstErrResult.Response = body
-		r.afterTestStep(fileName, &conf, *firstErrResult, polling)
+		firstErrResult.Response = commandResponseBody
+		r.afterTestStep(fileName, &conf, *firstErrResult, isPolling)
 		return firstErrResult, nil
 	}
 
 	res := &Result{
-		Response: body,
+		Response: commandResponseBody,
 		Lvl:      lvl,
 		FileName: fileName,
 	}
 
-	r.afterTestStep(fileName, &conf, *res, polling)
+	r.afterTestStep(fileName, &conf, *res, isPolling)
 	return res, nil
 }

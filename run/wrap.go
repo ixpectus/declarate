@@ -8,7 +8,7 @@ func (r *Runner) beforeTestStep(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
 			Name:      conf.Name,
-			Vars:      currentVars,
+			Vars:      r.currentVars,
 			Variables: conf.Variables,
 			Commands:  conf.Commands,
 		}
@@ -21,7 +21,7 @@ func (r *Runner) afterTestStep(file string, conf *runConfig, result Result, poll
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
 			Name:      conf.Name,
-			Vars:      currentVars,
+			Vars:      r.currentVars,
 			Variables: conf.Variables,
 			Commands:  conf.Commands,
 		}
@@ -43,7 +43,7 @@ func (r *Runner) beforeTest(file string, conf *runConfig, lvl int) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
 			Name:      conf.Name,
-			Vars:      currentVars,
+			Vars:      r.currentVars,
 			Variables: conf.Variables,
 			Commands:  conf.Commands,
 		}
@@ -56,7 +56,7 @@ func (r *Runner) afterTest(file string, conf runConfig, result Result) {
 	if r.config.Wrapper != nil {
 		cfg := &contract.RunConfig{
 			Name:      conf.Name,
-			Vars:      currentVars,
+			Vars:      r.currentVars,
 			Variables: conf.Variables,
 			Commands:  conf.Commands,
 		}

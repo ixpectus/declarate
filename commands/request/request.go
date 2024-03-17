@@ -177,7 +177,7 @@ func (e *Request) ResponseBody() *string {
 	return e.responseBody
 }
 
-func (e *Request) VariablesToSet() map[string]string {
+func (e *Request) Variables() map[string]string {
 	if e != nil && e.Config != nil {
 		return e.Config.Variables
 	}

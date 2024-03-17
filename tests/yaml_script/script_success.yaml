@@ -6,8 +6,8 @@
 - name: script check
   script: 
     path: "./tests/scripts/echo.sh {{$name1}}"
-    variables:
-      res: '*'
+  variables:
+    res: '*'
 
 - name: check output
   echo_message: '{{$res}}'

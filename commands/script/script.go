@@ -131,7 +131,7 @@ func (e *ScriptCmd) Check() error {
 	return nil
 }
 
-func (e *ScriptCmd) VariablesToSet() map[string]string {
+func (e *ScriptCmd) Variables() map[string]string {
 	if e.Config != nil {
 		return e.Config.Variables
 	}

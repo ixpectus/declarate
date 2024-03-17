@@ -28,8 +28,8 @@
       db:
         db_query: >
           select count(*) as cnt from t1;
-        variables:
-          cnt2: '0.cnt'
+      variables:
+        cnt2: '0.cnt'
 
 - name: check values in table
   db_query: select id from t1
