@@ -1,7 +1,7 @@
 - name: check poll handler
   method: GET
   path: /poll
-  responseFull: |
+  response: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200

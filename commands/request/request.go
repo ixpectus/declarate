@@ -121,53 +121,54 @@ func (e *Request) IsValid() error {
 }
 
 func (e *Request) Do() error {
-	if e.Config.Method != "" {
-		e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
-		e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
-
-		if e.Config.Response != nil {
-			s := e.Vars.Apply(*e.Config.Response)
-			s = strings.TrimSuffix(s, "\n")
-			e.Config.Response = &s
-		}
-		e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
-
-		defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
-		if defaultHeaders == nil {
-			defaultHeaders = map[string]string{}
-		}
-		headers := e.applyHeadersVal(e.Config.HeadersVal)
-		for k, v := range headers {
-			defaultHeaders[k] = v
-		}
-		config := *e.Config
-		config.HeadersVal = defaultHeaders
-		req, err := newCommonRequest(e.Host, config)
-		if err != nil {
-			return err
-		}
-		client := &http.Client{}
-		curlReq, _ := http2curl.GetCurlCommand(req)
-		if e.report != nil {
-			e.report.AddAttachment("request", allure.TextPlain, []byte(curlReq.String()))
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return err
-		}
-		body, err := ioutil.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-		if err != nil {
-			return err
-		}
-		s := string(body)
-		ss, _ := json.Marshal(resp.Header)
-		r := fmt.Sprintf(`{"body":%v, "status":%v, "header": %s}`, s, resp.StatusCode, ss)
-		if e.report != nil {
-			e.report.AddAttachment("response", allure.TextPlain, []byte(tools.JSONPrettyPrint(r)))
-		}
-		e.responseBody = tools.To(r)
+	if e.Config.Method == "" {
+		return nil
 	}
+	e.Config.QueryParams = e.Vars.Apply(e.Config.QueryParams)
+	e.Config.RequestTmpl = e.Vars.Apply(e.Config.RequestTmpl)
+
+	if e.Config.Response != nil {
+		s := e.Vars.Apply(*e.Config.Response)
+		s = strings.TrimSuffix(s, "\n")
+		e.Config.Response = &s
+	}
+	e.Config.RequestURL = e.Vars.Apply(e.Config.RequestURL)
+
+	defaultHeaders := e.applyHeadersVal(e.defaultConfig.HeadersVal)
+	if defaultHeaders == nil {
+		defaultHeaders = map[string]string{}
+	}
+	headers := e.applyHeadersVal(e.Config.HeadersVal)
+	for k, v := range headers {
+		defaultHeaders[k] = v
+	}
+	config := *e.Config
+	config.HeadersVal = defaultHeaders
+	req, err := newCommonRequest(e.Host, config)
+	if err != nil {
+		return err
+	}
+	client := &http.Client{}
+	curlReq, _ := http2curl.GetCurlCommand(req)
+	if e.report != nil {
+		e.report.AddAttachment("request", allure.TextPlain, []byte(curlReq.String()))
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+	if err != nil {
+		return err
+	}
+	s := string(body)
+	ss, _ := json.Marshal(resp.Header)
+	r := fmt.Sprintf(`{"body":%v, "status":%v, "header": %s}`, s, resp.StatusCode, ss)
+	if e.report != nil {
+		e.report.AddAttachment("response", allure.TextPlain, []byte(tools.JSONPrettyPrint(r)))
+	}
+	e.responseBody = tools.To(r)
 
 	return nil
 }

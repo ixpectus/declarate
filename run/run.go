@@ -12,14 +12,11 @@ import (
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/tools"
-	"github.com/ixpectus/declarate/variables"
 	"gopkg.in/yaml.v2"
 )
 
-// эта штука глобальная переменная, так как используется в run/config::UnmarshalYAML
-var builders []contract.CommandBuilder // почему как глобальные переменные а не часть структуры
-// потому что метод run вызывается из сьютов и там нужно сохранить переменные между вызовами различных частей сьюта
-// но они ведь перетираются польностью
+// it is global because used in run/config::UnmarshalYAML
+var builders []contract.CommandBuilder
 
 type Runner struct {
 	config      RunnerConfig
@@ -115,7 +112,12 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 				r.logPass(v.Name, fileName, testResult, 0)
 			}
 		}
-		r.config.Report.Step(report.ReportOptions{Description: v.Name}, action)
+		r.config.Report.Step(
+			report.ReportOptions{
+				Description: v.Name,
+			},
+			action,
+		)
 		if !res {
 			return false, nil
 		}
@@ -172,6 +174,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 		if len(v.Poll.PollInterval())-1 == i { // last poll step
 			isPolling = false
 		}
+
 		estimated := finish.Sub(time.Now())
 		testResult, err = r.runOne(
 			v,
@@ -220,67 +223,13 @@ func (r *Runner) setupCommand(cmd contract.Doer) contract.Doer {
 	return cmd
 }
 
-func (r *Runner) fillVariablesByResponse(
-	commandResponseBody *string,
-	variablesToSet map[string]string,
-) error {
-	if commandResponseBody == nil || variablesToSet == nil {
-		return nil
-	}
-	jsonVars := map[string]string{}
-	for k, v := range variablesToSet {
-		if v == "*" {
-			r.currentVars.Set(k, *commandResponseBody)
-		} else {
-			jsonVars[k] = v
-		}
-	}
-	if len(jsonVars) > 0 {
-		vars, err := variables.FromJSON(jsonVars, *commandResponseBody, r.currentVars)
-		if err != nil {
-			return err
-		}
-		for k, v := range vars {
-			r.currentVars.Set(k, v)
-		}
-	}
-
-	return nil
-}
-
-func (r *Runner) fillPersistentVariablesByResponse(
-	commandResponseBody *string,
-	variablesToSet map[string]string,
-) error {
-	if commandResponseBody == nil || variablesToSet == nil {
-		return nil
-	}
-	jsonVars := map[string]string{}
-	for k, v := range variablesToSet {
-		if v == "*" {
-		} else {
-			jsonVars[k] = v
-		}
-	}
-	if len(jsonVars) > 0 {
-		vars, err := variables.FromJSON(jsonVars, *commandResponseBody, r.currentVars)
-		if err != nil {
-			return err
-		}
-		for k, v := range vars {
-			r.currentVars.SetPersistent(k, v)
-		}
-	}
-
-	return nil
-}
-
 func (r *Runner) runCommand(cmd contract.Doer) (*string, error) {
 	cmd = r.setupCommand(cmd)
 	if err := cmd.Do(); err != nil {
 		return nil, err
 	}
 	responseBody := cmd.ResponseBody()
+
 	if err := cmd.Check(); err != nil {
 		return responseBody, err
 	}
@@ -392,23 +341,4 @@ func (r *Runner) runOne(
 
 	r.afterTestStep(fileName, &conf, *res, isPolling)
 	return res, nil
-}
-
-func (r *Runner) fillAllVariables(
-	commandResponseBody *string,
-	conf runConfig,
-) error {
-	if err := r.fillVariablesByResponse(
-		commandResponseBody,
-		conf.Variables,
-	); err != nil {
-		return err
-	}
-	if err := r.fillPersistentVariablesByResponse(
-		commandResponseBody,
-		conf.VariablesPersistent,
-	); err != nil {
-		return err
-	}
-	return nil
 }
