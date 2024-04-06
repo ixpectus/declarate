@@ -2,6 +2,7 @@ package compare
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"sort"
@@ -252,13 +253,24 @@ func compareRegex(path string, expected, actual interface{}) (errors []error) {
 		return errors
 	}
 
-	value := fmt.Sprintf("%v", actual)
-
 	rx, err := regexp.Compile(retrieveRegexStr(regexExpr))
 	if err != nil {
 		errors = append(errors, MakeError(path, "can not compile regex", nil, "error"))
 		return errors
 	}
+
+	f, ok := actual.(float64)
+
+	if ok && math.Mod(f, 1) == 0 {
+		value := fmt.Sprintf("%v", int(f))
+		if !rx.MatchString(value) {
+			errors = append(errors, MakeError(path, "value does not match regex", expected, value))
+			return errors
+		}
+
+		return nil
+	}
+	value := fmt.Sprintf("%v", actual)
 
 	if !rx.MatchString(value) {
 		errors = append(errors, MakeError(path, "value does not match regex", expected, actual))
