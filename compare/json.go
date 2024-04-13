@@ -13,7 +13,8 @@ func (c *Comparer) compareJsonBody(expectedBody string, realBody string, params 
 	var expected interface{}
 	if err := json.Unmarshal([]byte(expectedBody), &expected); err != nil {
 		return nil, fmt.Errorf(
-			"invalid JSON in response for test : %s",
+			"invalid JSON in response for test, json %s err : %s",
+			expectedBody,
 			err.Error(),
 		)
 	}

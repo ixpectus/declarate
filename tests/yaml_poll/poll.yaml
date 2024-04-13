@@ -2,10 +2,8 @@
   method: GET
   path: /poll
   response: |
-    {
-      "body": {"age": 31,"name":"Tommy"}, 
-      "status": 200
-    }
+      {"age": 31,"name":"Tommy"}
+  responseStatus: 200
   poll:
     duration: 100ms
     interval: 10ms
@@ -14,10 +12,8 @@
   method: GET
   path: /poll
   response: |
-    {
-      "body": {"age": 31,"name":"Tommy"}, 
-      "status": 200
-    }
+    {"age": 31,"name":"Tommy"}
+  responseStatus: 200
   poll:
     response_regexp: ".+Tom.+"
     duration: 100ms
@@ -27,22 +23,17 @@
   method: GET
   path: /poll
   response: |
-    {
-      "body": {"age": 31,"name":"Tommy"}, 
-      "status": 200
-    }
+    {"age": 31,"name":"Tommy"}
   poll:
     response: | 
-      {
-        "body": {"name":"Tom"}
-      }
+      {"name":"Tom"} 
     duration: 100ms
     interval: 10ms
 
 - name: check poll handler with regexp fail
   method: GET
   path: /poll
-  response: |
+  fullResponse: |
     {
       "body": {"age": 31,"name":"Tommy"}, 
       "status": 200

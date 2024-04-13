@@ -1,6 +1,9 @@
 package vars
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/ixpectus/declarate/contract"
 )
 
@@ -56,13 +59,36 @@ func (e *VarsCmd) GetConfig() interface{} {
 
 func (e *VarsCmd) Do() error {
 	if e.Config != nil {
-		for k, v := range e.Config.Data {
-			e.Vars.Set(k, v)
+		keys := make([]string, 0, len(e.Config.Data))
+		for k := range e.Config.Data {
+			keys = append(keys, k)
 		}
-		for k, v := range e.Config.DataPersistent {
-			if err := e.Vars.SetPersistent(k, v); err != nil {
-				panic(err)
+		sort.Slice(keys, func(i, j int) bool {
+			iContains := strings.Contains(e.Config.Data[keys[i]], "{{")
+			jContains := strings.Contains(e.Config.Data[keys[j]], "{{")
+			if iContains && !jContains {
+				return false
 			}
+			return true
+		})
+		for k := range keys {
+			e.Vars.Set(keys[k], e.Config.Data[keys[k]])
+		}
+
+		keys = make([]string, 0, len(e.Config.DataPersistent))
+		for k := range e.Config.DataPersistent {
+			keys = append(keys, k)
+		}
+		sort.Slice(keys, func(i, j int) bool {
+			iContains := strings.Contains(e.Config.DataPersistent[keys[i]], "{{")
+			jContains := strings.Contains(e.Config.DataPersistent[keys[j]], "{{")
+			if iContains && !jContains {
+				return false
+			}
+			return true
+		})
+		for k := range keys {
+			e.Vars.Set(keys[k], e.Config.DataPersistent[keys[k]])
 		}
 	}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-var variableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
+var VariableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
 
 type Variables struct {
 	data       map[string]string
@@ -78,7 +78,7 @@ func (v *Variables) Apply(text string) string {
 }
 
 func usedVariables(str string) (res []string) {
-	matches := variableRx.FindAllStringSubmatch(str, -1)
+	matches := VariableRx.FindAllStringSubmatch(str, -1)
 	for _, match := range matches {
 		res = append(res, match[1])
 	}

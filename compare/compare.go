@@ -81,6 +81,10 @@ func (c *Comparer) compareBranch(
 			(params.AllowArrayExtraItems != nil && *params.AllowArrayExtraItems) {
 			expectedArray, actualArray = c.getUnmatchedArrays(expectedArray, actualArray, params)
 		}
+		if len(actualArray) < len(expectedArray) {
+			errors = append(errors, MakeError(path, "array lengths do not match", len(expectedArray), len(actualArray)))
+			return errors
+		}
 
 		// iterate over children
 		for i, item := range expectedArray {
@@ -90,6 +94,9 @@ func (c *Comparer) compareBranch(
 			if params.FailFast && len(errors) != 0 {
 				return errors
 			}
+		}
+		if len(errors) > 0 {
+			return errors
 		}
 	}
 
@@ -290,6 +297,7 @@ func retrieveRegexStr(expr string) string {
 
 func leafMatchType(expected interface{}) leafsMatchType {
 	val, ok := expected.(string)
+
 	if !ok {
 		return pure
 	}

@@ -6,7 +6,7 @@
 - name: check request
   method: GET
   path: /{{$path}}
-  response: |
+  fullResponse: |
     {
       "body": {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}, 
       "status": 201

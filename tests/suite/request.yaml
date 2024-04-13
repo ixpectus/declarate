@@ -5,6 +5,7 @@
     passed ./tests/yaml/req.yaml:set variables
     passed ./tests/yaml/req.yaml:check request
     passed ./tests/yaml/req.yaml:check request
+    passed ./tests/yaml/req.yaml:check request in light mode
 
 - name: test requests faile with wrong status
   shell_cmd: | 
@@ -62,4 +63,5 @@
     passed ./tests/yaml_compare/compare.yaml:set variables
     passed ./tests/yaml_compare/compare.yaml:check request
     passed ./tests/yaml_compare/compare.yaml:check request with variable
+
 

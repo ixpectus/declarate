@@ -135,5 +135,5 @@ type CompareParams struct {
 	DisallowExtraFields  *bool `json:"disallowExtraFields,omitempty" yaml:"disallowExtraFields,omitempty"`
 	AllowArrayExtraItems *bool `json:"allowArrayExtraItems,omitempty" yaml:"allowArrayExtraItems,omitempty"`
 	LineByLine           *bool `json:"lineByLine,omitempty" yaml:"lineByLine,omitempty"`
-	FailFast             bool  // End compare operation after first error
+	FailFast             bool  `json:"failFast,omitempty" yaml:"failFast,omitempty"` // End compare operation after first error
 }

@@ -14,6 +14,7 @@ type DeclarateTest struct {
 	RequestURL       string                 `json:"path,omitempty" yaml:"path,omitempty" yaml:"path"`
 	Method           string                 `json:"method,omitempty" yaml:"method,omitempty"`
 	ResponseTmpls    string                 `json:"response,omitempty" yaml:"response,omitempty"`
+	ResponseStatus   int                    `json:"responseStatus,omitempty" yaml:"responseStatus,omitempty"`
 	Steps            []DeclarateTest        `json:"steps,omitempty" yaml:"steps,omitempty"`
 	HeadersVal       map[string]string      `json:"headers,omitempty" yaml:"headers,omitempty"`
 	Variables        map[string]string      `json:"variables,omitempty" yaml:"variables,omitempty"`

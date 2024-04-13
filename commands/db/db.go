@@ -100,7 +100,9 @@ func (e *Db) GetConfig() interface{} {
 func (e *Db) Do() error {
 	if e.Config != nil {
 		e.Config.DbConn = e.Vars.Apply(e.Config.DbConn)
+
 		e.Config.DbQuery = e.Vars.Apply(e.Config.DbQuery)
+
 		if e.Report != nil {
 			e.Report.AddAttachment("query", allure.TextPlain, []byte(e.Config.DbQuery))
 			if e.Config.DbConn != "" {
@@ -113,11 +115,11 @@ func (e *Db) Do() error {
 		if err != nil {
 			return err
 		}
-
 		isSelect, err := isSelectStatement(e.Config.DbQuery)
 		if err != nil {
 			return err
 		}
+
 		if isSelect {
 			res, err := makeQuery(e.Config.DbQuery, db)
 			if err != nil {
@@ -130,6 +132,7 @@ func (e *Db) Do() error {
 		if err := execQuery(e.Config.DbQuery, db); err != nil {
 			return err
 		}
+
 	}
 
 	return nil
@@ -215,7 +218,7 @@ func execQuery(dbQuery string, db *sql.DB) error {
 	queries := strings.Split(dbQuery, ";")
 	for _, q := range queries {
 		if _, err := db.Exec(q); err != nil {
-			return err
+			return fmt.Errorf("failed exec db query %s, err %v", q, err)
 		}
 	}
 
@@ -256,7 +259,7 @@ func isSelectStatement(dbQuery string) (bool, error) {
 	queries := strings.Split(dbQuery, ";")
 	stmt, err := sqlparser.Parse(queries[0])
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 
 	switch stmt.(type) {

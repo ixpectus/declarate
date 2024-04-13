@@ -49,6 +49,7 @@ func New(directory string, cfg RunConfig) *Suite {
 			cfg.Output.SetReport(cfg.Report)
 		}
 	}
+
 	return &Suite{
 		Directory: directory,
 		Config:    cfg,
@@ -91,6 +92,7 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 
 func (s *Suite) Run() error {
 	color.NoColor = s.Config.NoColor
+
 	allTests, err := s.AllTests(s.Directory)
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
@@ -100,6 +102,7 @@ func (s *Suite) Run() error {
 		log.Println(err)
 		return fmt.Errorf("filter tests by tags: %w", err)
 	}
+
 	if len(s.Config.Filepathes) > 0 {
 		if len(s.Config.Tags) > 0 {
 			tests = s.filterTestsByPathes(allTests, tests)

@@ -14,6 +14,14 @@ import (
 func (e *ScriptCmd) run(scriptPath string) (string, error) {
 	cmds := strings.Split(strings.TrimRight(scriptPath, "\n"), " ")
 	cmd := exec.Command(cmds[0], cmds[1:]...)
+
+	if e.Config.NoWait {
+		if err := cmd.Start(); err != nil {
+			return "", fmt.Errorf("cmd start: %w", err)
+		}
+
+		return "", nil
+	}
 	bb := bytes.Buffer{}
 	errBB := bytes.Buffer{}
 	cmd.Stdout = &bb

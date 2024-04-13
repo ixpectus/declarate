@@ -21,11 +21,13 @@ type extendedConfig struct {
 type scriptConfig struct {
 	Path     string  `yaml:"path,omitempty"`
 	Response *string `yaml:"response,omitempty"`
+	NoWait   bool    `yaml:"nowait,omitempty"`
 }
 
 type Config struct {
 	Cmd      string  `yaml:"script_path,omitempty"`
 	Response *string `yaml:"script_response,omitempty"`
+	NoWait   bool    `yaml:"script_nowait,omitempty"`
 }
 
 func (ex *extendedConfig) isEmpty() bool {
@@ -60,18 +62,21 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return nil, err
 	}
 	cfg := &Config{}
+
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
 	}
 	if cfg.isEmpty() && cfgExtended.isEmpty() {
 		return nil, nil
 	}
+
 	if cfgExtended != nil && cfgExtended.Script != nil {
 		return &ScriptCmd{
 			comparer: u.comparer,
 			Config: &Config{
 				Cmd:      cfgExtended.Script.Path,
 				Response: cfgExtended.Script.Response,
+				NoWait:   cfgExtended.Script.NoWait,
 			},
 		}, nil
 	}

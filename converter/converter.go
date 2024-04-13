@@ -2,8 +2,6 @@ package converter
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -82,7 +80,9 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 		i++
 		converted := DeclarateTest{}
 		converted.Name = v.Name
+		found := false
 		if v.RequestURL != "" && (v.DbQueryTmpl != "" || len(v.DatabaseChecks) > 0 || v.AfterRequestScriptParams != nil) {
+			found = true
 			convertedRequest := request(v)
 			convertedRequest.Name += " in api"
 			convertedDb := db(v)
@@ -93,6 +93,7 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 			steps = append(steps, convertedDb...)
 			converted.Steps = steps
 		} else if v.DbQueryTmpl != "" || len(v.DatabaseChecks) > 0 {
+			found = true
 			if len(v.DatabaseChecks) > 0 {
 				steps := []DeclarateTest{}
 				convertedDb := db(v)
@@ -103,8 +104,10 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 				converted.Name = v.Name
 			}
 		} else if v.RequestURL != "" {
+			found = true
 			converted = request(v)
-		} else if v.Variables != nil || len(v.Tags) > 0 {
+		} else if v.Variables != nil && len(v.Tags) > 0 {
+			found = true
 			if len(v.Tags) > 0 {
 				converted.Definition = &Definition{
 					Tags: v.Tags,
@@ -119,12 +122,22 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 			}
 			continue
 		} else if len(v.Tags) > 0 {
+			found = true
 			converted.Definition = &Definition{
 				Tags: v.Tags,
 			}
 		} else if v.AfterRequestScriptParams != nil {
+			found = true
 			converted = afterRequest(v)
-		} else {
+		}
+		if v.Variables != nil {
+			found = true
+			if converted.Name == "" {
+				converted.Name = v.Name
+			}
+			converted = variables(v, converted)
+		}
+		if !found {
 			continue
 		}
 		if v.Poll != nil {
@@ -155,7 +168,7 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 func afterRequest(g GonkeyTest) DeclarateTest {
 	res := DeclarateTest{}
 	res.Name = g.Name
-	res.ScriptPath = g.AfterRequestScriptParams.PathTmpl
+	res.ScriptPath = varFix(g.AfterRequestScriptParams.PathTmpl)
 	return res
 }
 
@@ -175,14 +188,26 @@ func request(g GonkeyTest) DeclarateTest {
 	for _, v := range g.VariablesToSet {
 		res.Variables = map[string]string{}
 		for k1, v1 := range v {
-			res.Variables[k1] = "body." + v1
+			res.Variables[k1] = v1
 		}
 	}
 	for k, v := range g.ResponseTmpls {
-		js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", varFix(v), k)
-		var prettyJSON bytes.Buffer
-		_ = json.Indent(&prettyJSON, []byte(js1), "", "  ")
-		res.ResponseTmpls = prettyJSON.String()
+		res.ResponseStatus = k
+		if v == "" {
+			continue
+		}
+		// js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", varFix(v), k)
+		// js1 := varFix(v)
+		// var prettyJSON bytes.Buffer
+		// err := json.Indent(&prettyJSON, []byte(js1), "", "  ")
+		// if err != nil {
+		// 	fmt.Printf("\n>>> %v <<< debug\n", k)
+		// 	fmt.Printf("\n>>> %v <<< debug\n", res.Name)
+		// 	fmt.Printf("\n>>> %v <<< debug\n", err)
+		// 	fmt.Printf("\n>>> %v <<< debug\n", js1)
+		// 	panic(2)
+		// }
+		res.ResponseTmpls = varFix(v)
 		break
 	}
 	return res

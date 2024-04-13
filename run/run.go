@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 	"testing"
 	"time"
@@ -176,6 +177,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 		}
 
 		estimated := finish.Sub(time.Now())
+
 		testResult, err = r.runOne(
 			v,
 			0,
@@ -225,6 +227,7 @@ func (r *Runner) setupCommand(cmd contract.Doer) contract.Doer {
 
 func (r *Runner) runCommand(cmd contract.Doer) (*string, error) {
 	cmd = r.setupCommand(cmd)
+
 	if err := cmd.Do(); err != nil {
 		return nil, err
 	}
@@ -246,11 +249,18 @@ func (r *Runner) runOne(
 		commandResponseBody *string
 		firstErrResult      *Result
 	)
+
+	defer func() {
+		if rr := recover(); rr != nil {
+			fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
+		}
+	}()
 	conf.Name = r.currentVars.Apply(conf.Name)
 
 	for _, command := range conf.Commands {
 		r.beforeTestStep(fileName, &conf, lvl)
 		var err error
+
 		commandResponseBody, err = r.runCommand(command)
 		if err != nil {
 			res := &Result{

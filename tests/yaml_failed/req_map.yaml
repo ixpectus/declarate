@@ -2,8 +2,6 @@
   method: GET
   path: /tom
   response: |
-    {
-      "body": {"age": 28,"name":"Tom1", "items":[1, 2, 3, 4]}
-    }
+      {"age": 28,"name":"Tom1", "items":[1, 2, 3, 4]}
   comparisonParams:
     ignoreArraysOrdering: true
