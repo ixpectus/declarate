@@ -35,6 +35,7 @@ type RunConfig struct {
 	CleanRun          bool
 	Report            contract.Report
 	SuiteName         string
+	EpicName          string
 	SubSuiteName      string
 	Variables         contract.Vars
 	Builders          []contract.CommandBuilder
@@ -226,7 +227,7 @@ func (s *Suite) Run() error {
 					report.ReportOptions{
 						Description: description,
 						Suite:       s.Config.SuiteName,
-						Epic:        s.Config.SuiteName + "-epic",
+						Epic:        s.Config.EpicName,
 						SubSuite:    s.Config.SubSuiteName,
 						Tags:        s.Config.Tags,
 					},
