@@ -1,6 +1,7 @@
 package suite
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/tools"
+	"github.com/recoilme/pudge"
 	"gopkg.in/yaml.v2"
 )
 
@@ -22,19 +24,22 @@ type SuiteConfig struct {
 }
 
 type RunConfig struct {
-	NoColor        bool
-	RunAll         bool
-	FailFast       bool
-	Tags           []string
-	Filepathes     []string
-	SkipFilename   []string
-	DryRun         bool
-	Report         contract.Report
-	Variables      contract.Vars
-	Builders       []contract.CommandBuilder
-	Output         contract.Output
-	TestRunWrapper contract.TestWrapper
-	T              *testing.T
+	NoColor           bool
+	RunAll            bool
+	FailFast          bool
+	Tags              []string
+	Filepathes        []string
+	SkipFilename      []string
+	DryRun            bool
+	Continue          bool
+	CleanRun          bool
+	Report            contract.Report
+	Variables         contract.Vars
+	Builders          []contract.CommandBuilder
+	Output            contract.Output
+	TestRunWrapper    contract.TestWrapper
+	T                 *testing.T
+	PersistentStorage contract.Persistent
 }
 
 type Suite struct {
@@ -90,7 +95,42 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 	return definitions, nil
 }
 
+const (
+	keyToRun  = "to_run"
+	keyRunned = "runned"
+)
+
+func (s *Suite) runnedTests() ([]string, error) {
+	rawTests, err := s.Config.PersistentStorage.Get(keyRunned)
+	if err != nil && !errors.Is(err, pudge.ErrKeyNotFound) {
+		return nil, err
+	}
+	tests := []string{}
+	if rawTests != "" {
+		tests = strings.Split(rawTests, ",")
+	}
+
+	return tests, nil
+}
+
+func (s *Suite) addRunnedTest(testName string) error {
+	if s.Config.PersistentStorage == nil {
+		return nil
+	}
+	tests, err := s.runnedTests()
+	if err != nil {
+		return err
+	}
+	tests = append(tests, testName)
+	s.Config.PersistentStorage.Set(keyRunned, strings.Join(tests, ","))
+
+	return nil
+}
+
 func (s *Suite) Run() error {
+	if s.Config.CleanRun {
+		s.Config.PersistentStorage.Reset()
+	}
 	color.NoColor = s.Config.NoColor
 
 	allTests, err := s.AllTests(s.Directory)
@@ -102,6 +142,13 @@ func (s *Suite) Run() error {
 		log.Println(err)
 		return fmt.Errorf("filter tests by tags: %w", err)
 	}
+	if !s.Config.Continue && s.Config.PersistentStorage != nil {
+		s.Config.PersistentStorage.Set(keyToRun, "")
+		s.Config.PersistentStorage.Set(keyRunned, "")
+	}
+	if s.Config.PersistentStorage != nil {
+		s.Config.PersistentStorage.Set(keyToRun, strings.Join(tests, ","))
+	}
 
 	if len(s.Config.Filepathes) > 0 {
 		if len(s.Config.Tags) > 0 {
@@ -109,6 +156,10 @@ func (s *Suite) Run() error {
 		} else {
 			tests = s.filterTestsByPathes(allTests, []string{})
 		}
+	}
+	if s.Config.Continue {
+		runned, _ := s.runnedTests()
+		tests = s.filterTestsByAlreadyRun(tests, runned)
 	}
 
 	runner := run.New(run.RunnerConfig{
@@ -166,6 +217,9 @@ func (s *Suite) Run() error {
 					}
 				}
 				s.Config.Report.Test(t, action, report.ReportOptions{Description: "Important test"})
+				if !s.Config.T.Failed() && !failed {
+					s.addRunnedTest(v)
+				}
 			})
 		} else {
 			failed, err = runner.Run(v, nil)
@@ -174,6 +228,9 @@ func (s *Suite) Run() error {
 				if s.Config.FailFast {
 					return err
 				}
+			}
+			if !failed {
+				s.addRunnedTest(v)
 			}
 		}
 	}
@@ -213,6 +270,27 @@ func (s *Suite) filterTestsByPathes(
 	}
 
 	return selectedTests
+}
+
+func (s *Suite) filterTestsByAlreadyRun(
+	allTests []string,
+	alreadyRun []string,
+) []string {
+	res := []string{}
+	for _, v := range allTests {
+		found := false
+		for _, v1 := range alreadyRun {
+			if v1 == v {
+				found = true
+				break
+			}
+		}
+		if !found {
+			res = append(res, v)
+		}
+	}
+
+	return res
 }
 
 func (r *Suite) filterTestsByTags(tests []string) ([]string, error) {

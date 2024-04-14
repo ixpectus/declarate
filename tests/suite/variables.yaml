@@ -24,3 +24,19 @@
     passed ./tests/yaml_variables/eval.yaml:check eval direct call
 
 
+
+- name: test vars persistent 
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests -dir ./tests/yaml_vars_all_persistent
+  shell_response: |
+    passed ./tests/yaml_vars_all_persistent/1_persistent_set.yaml:set variables
+
+    echo Donny 
+    passed ./tests/yaml_vars_all_persistent/1_persistent_set.yaml:check echo persistent variable
+
+    echo noqwerty 
+    passed ./tests/yaml_vars_all_persistent/1_persistent_set.yaml:check echo persistent variable
+
+    echo noqwerty 
+    passed ./tests/yaml_vars_all_persistent/2_persistent_get.yaml:get persistent variable
+

@@ -15,37 +15,48 @@ import (
 var VariableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
 
 type Variables struct {
-	data       map[string]string
-	eval       contract.Evaluator
-	functions  map[string]goval.ExpressionFunction
-	persistent persistent
+	data          map[string]string
+	eval          contract.Evaluator
+	functions     map[string]goval.ExpressionFunction
+	persistent    persistent
+	allPersistent bool
 }
 
 func New(
 	evaluator contract.Evaluator,
 	persistent persistent,
+	allPersistent bool,
 ) *Variables {
 	gofakeit.Seed(0)
 	vv := &Variables{
-		data:       map[string]string{},
-		eval:       evaluator,
-		persistent: persistent,
+		data:          map[string]string{},
+		eval:          evaluator,
+		persistent:    persistent,
+		allPersistent: allPersistent,
 	}
+
 	return vv
 }
 
-func (v *Variables) Set(k, val string) {
+func (v *Variables) Set(k, val string) error {
+	if v.allPersistent {
+		return v.SetPersistent(k, val)
+	}
 	val = v.Apply(val)
 	val = v.eval.Evaluate(val)
 	if strings.ToUpper(k) == k {
 		os.Setenv(k, val)
 	}
 	v.data[k] = val
+	return nil
 }
 
 func (v *Variables) SetPersistent(k, val string) error {
 	val = v.Apply(val)
 	val = v.eval.Evaluate(val)
+	if strings.ToUpper(k) == k {
+		os.Setenv(k, val)
+	}
 
 	return v.persistent.Set(k, val)
 }

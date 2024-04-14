@@ -6,7 +6,7 @@ import (
 )
 
 type Vars interface {
-	Set(k, val string)
+	Set(k, val string) error
 	Get(k string) string
 	Apply(text string) string
 	SetPersistent(k, val string) error
@@ -136,4 +136,10 @@ type CompareParams struct {
 	AllowArrayExtraItems *bool `json:"allowArrayExtraItems,omitempty" yaml:"allowArrayExtraItems,omitempty"`
 	LineByLine           *bool `json:"lineByLine,omitempty" yaml:"lineByLine,omitempty"`
 	FailFast             bool  `json:"failFast,omitempty" yaml:"failFast,omitempty"` // End compare operation after first error
+}
+
+type Persistent interface {
+	Set(key string, value string) error
+	Get(key string) (string, error)
+	Reset() error
 }

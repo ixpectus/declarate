@@ -1,0 +1,12 @@
+- name: set variables
+  variables:
+    password: noqwerty
+    anotherVar: "$(someName())"
+
+- name: check echo persistent variable
+  echo:
+    message: '{{$anotherVar}}'
+
+- name: check echo persistent variable
+  echo:
+    message: '{{$password}}'

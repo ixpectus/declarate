@@ -28,6 +28,11 @@ var (
 		"",
 		"tags for filter tags, example `-tags tag1,tag2`",
 	)
+	flagContinue = flag.Bool(
+		"continue",
+		false,
+		"continue last test execution",
+	)
 	flagTests = flag.String(
 		"tests",
 		"",
@@ -98,8 +103,10 @@ func main() {
 		DefaultHost:     "http://127.0.0.1:8181/",
 		Wrapper:         tests.NewDebugWrapper(),
 		Report:          report.NewEmptyReport(),
+		Continue:        *flagContinue,
 		Tags:            tags,
 		Filepathes:      filePathes,
+		AllPersistent:   true,
 	})
 	if err := s.Run(); err != nil {
 		log.Println(err)

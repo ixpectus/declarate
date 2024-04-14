@@ -33,15 +33,24 @@ type SuiteConfig struct {
 	T               *testing.T
 	Output          contract.Output
 	Report          contract.Report
+	Continue        bool
 	FailFast        bool
+	AllPersistent   bool
 }
 
 func NewDefaultSuite(conf SuiteConfig) *suite.Suite {
 	evaluator := eval.NewEval(nil)
-	vv := variables.New(evaluator, kv.New("persistent", conf.ClearPersistent))
+	persistentStorage := kv.New(
+		"persistent",
+		conf.ClearPersistent,
+	)
+	vv := variables.New(
+		evaluator,
+		persistentStorage,
+		conf.AllPersistent,
+	)
 	cmp := compare.New(contract.CompareParams{}, vv)
 	connLoader := db.NewPGLoader(conf.DefaultDBConn)
-
 	var out contract.Output
 	out = &output.OutputPrintln{
 		WithProgressBar: conf.WithProgresBar,
@@ -50,17 +59,19 @@ func NewDefaultSuite(conf SuiteConfig) *suite.Suite {
 		out = conf.Output
 	}
 	s := suite.New(conf.Dir, suite.RunConfig{
-		RunAll:         false,
-		NoColor:        conf.NoColor,
-		SkipFilename:   conf.SkipTests,
-		TestRunWrapper: conf.Wrapper,
-		DryRun:         conf.DryRun,
-		Variables:      vv,
-		Tags:           conf.Tags,
-		T:              conf.T,
-		Filepathes:     conf.Filepathes,
-		Report:         conf.Report,
-		Output:         out,
+		RunAll:            false,
+		NoColor:           conf.NoColor,
+		SkipFilename:      conf.SkipTests,
+		TestRunWrapper:    conf.Wrapper,
+		DryRun:            conf.DryRun,
+		Variables:         vv,
+		Tags:              conf.Tags,
+		T:                 conf.T,
+		Filepathes:        conf.Filepathes,
+		Report:            conf.Report,
+		Output:            out,
+		Continue:          conf.Continue,
+		PersistentStorage: persistentStorage,
 		Builders: []contract.CommandBuilder{
 			&echo.Unmarshaller{},
 			vars.NewUnmarshaller(evaluator),

@@ -19,7 +19,7 @@ import (
 
 var (
 	evaluator  = eval.NewEval(nil)
-	vv         = variables.New(evaluator, kv.New("persistent", false))
+	vv         = variables.New(evaluator, kv.New("persistent", false), true)
 	cmp        = compare.New(contract.CompareParams{}, vv)
 	connLoader = db.NewPGLoader("postgres://postgres@127.0.0.1:5440/?sslmode=disable")
 	runner     = run.New(run.RunnerConfig{

@@ -111,10 +111,10 @@ func (e *Db) Do() error {
 		}
 		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
 		db, err := e.connectLoader.Get(e.Config.DbConn)
-		defer db.Close()
 		if err != nil {
 			return err
 		}
+		defer db.Close()
 		isSelect, err := isSelectStatement(e.Config.DbQuery)
 		if err != nil {
 			return err
