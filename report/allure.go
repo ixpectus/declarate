@@ -30,7 +30,15 @@ func (a *AllureReport) AddAttachment(name string, mimeType allure.MimeType, cont
 }
 
 func (a *AllureReport) Test(t *testing.T, action func(), options ReportOptions) {
-	allure.Test(t, allure.Action(action), allure.Description(options.Description))
+	allure.Test(
+		t,
+		allure.Action(action),
+		allure.Description(options.Description),
+		allure.Epic(options.Epic),
+		allure.Suite(options.Suite),
+		allure.SubSuite(options.SubSuite),
+		allure.Tags(options.Tags...),
+	)
 }
 
 func (a *AllureReport) Description(description string) allure.Option {

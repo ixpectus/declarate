@@ -34,6 +34,8 @@ type RunConfig struct {
 	Continue          bool
 	CleanRun          bool
 	Report            contract.Report
+	SuiteName         string
+	SubSuiteName      string
 	Variables         contract.Vars
 	Builders          []contract.CommandBuilder
 	Output            contract.Output
@@ -189,6 +191,7 @@ func (s *Suite) Run() error {
 			log.Println(err)
 			s.Config.T.Fail()
 		}
+		var description string
 		if len(definitions) > 0 {
 			if definitions[0].definition.Definition.Condition != "" {
 				if !condition.IsTrue(
@@ -199,6 +202,7 @@ func (s *Suite) Run() error {
 					continue
 				}
 			}
+			description = definitions[0].definition.Definition.Description
 		}
 
 		if s.Config.T != nil {
@@ -216,7 +220,17 @@ func (s *Suite) Run() error {
 						t.Fail()
 					}
 				}
-				s.Config.Report.Test(t, action, report.ReportOptions{Description: "Important test"})
+				s.Config.Report.Test(
+					t,
+					action,
+					report.ReportOptions{
+						Description: description,
+						Suite:       s.Config.SuiteName,
+						Epic:        s.Config.SuiteName + "-epic",
+						SubSuite:    s.Config.SubSuiteName,
+						Tags:        s.Config.Tags,
+					},
+				)
 				if !s.Config.T.Failed() && !failed {
 					s.addRunnedTest(v)
 				}

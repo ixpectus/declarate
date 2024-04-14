@@ -2,8 +2,9 @@ package suite
 
 type testDefinition struct {
 	Definition *struct {
-		Tags      []string `yaml:"tags,omitempty"`
-		Condition string   `yaml:"condition,omitempty"`
+		Tags        []string `yaml:"tags,omitempty"`
+		Condition   string   `yaml:"condition,omitempty"`
+		Description string   `yaml:"description,omitempty"`
 	} `yaml:"definition,omitempty"`
 }
 
