@@ -253,7 +253,7 @@ func variables(g GonkeyTest, res DeclarateTest) DeclarateTest {
 	res.Name = g.Name
 	res.Variables = map[string]string{}
 	for k, v := range g.Variables {
-		res.Variables[k] = strings.ReplaceAll(v, "$eval", "$")
+		res.Variables[k] = strings.ReplaceAll(varFix(v), "$eval", "$")
 	}
 	return res
 }
