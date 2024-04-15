@@ -192,7 +192,10 @@ func (s *Suite) Run() error {
 			log.Println(err)
 			s.Config.T.Fail()
 		}
-		var description string
+		var (
+			description string
+			id          string
+		)
 		if len(definitions) > 0 {
 			if definitions[0].definition.Definition.Condition != "" {
 				if !condition.IsTrue(
@@ -204,6 +207,7 @@ func (s *Suite) Run() error {
 				}
 			}
 			description = definitions[0].definition.Definition.Description
+			id = definitions[0].definition.Definition.ID
 		}
 
 		if s.Config.T != nil {
@@ -225,6 +229,7 @@ func (s *Suite) Run() error {
 					t,
 					action,
 					report.ReportOptions{
+						ID:          id,
 						Description: description,
 						Suite:       s.Config.SuiteName,
 						Epic:        s.Config.EpicName,

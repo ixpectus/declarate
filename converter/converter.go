@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var startID = 5000
+
 type Converter struct {
 	sourceDir string
 	targetDir string
@@ -125,6 +127,7 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 			found = true
 			converted.Definition = &Definition{
 				Tags: v.Tags,
+				// ID:   startID,
 			}
 		} else if v.AfterRequestScriptParams != nil {
 			found = true
@@ -160,6 +163,14 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 				Duration: duration,
 			}
 		}
+		// if i == 1 {
+		// 	if converted.Definition == nil {
+		// 		converted.Definition = &Definition{
+		// 			ID: startID,
+		// 		}
+		// 	}
+		// 	startID++
+		// }
 		res = append(res, converted)
 	}
 	return res
@@ -169,6 +180,9 @@ func afterRequest(g GonkeyTest) DeclarateTest {
 	res := DeclarateTest{}
 	res.Name = g.Name
 	res.ScriptPath = varFix(g.AfterRequestScriptParams.PathTmpl)
+	if g.AfterRequestScriptParams.Timeout == -1 {
+		res.NoWait = true
+	}
 	return res
 }
 

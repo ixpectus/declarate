@@ -5,6 +5,7 @@ type testDefinition struct {
 		Tags        []string `yaml:"tags,omitempty"`
 		Condition   string   `yaml:"condition,omitempty"`
 		Description string   `yaml:"description,omitempty"`
+		ID          string   `yaml:"id,omitempty"`
 	} `yaml:"definition,omitempty"`
 }
 

@@ -35,6 +35,7 @@ func (a *AllureReport) Test(t *testing.T, action func(), options ReportOptions) 
 		allure.Action(action),
 		allure.Description(options.Description),
 		allure.Epic(options.Epic),
+		allure.ID(options.ID),
 		allure.Suite(options.Suite),
 		allure.SubSuite(options.SubSuite),
 		allure.Tags(options.Tags...),
