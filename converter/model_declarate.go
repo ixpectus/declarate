@@ -9,7 +9,7 @@ type DeclarateTest struct {
 	DbResponse       string                 `json:"db_response,omitempty" yaml:"db_response,omitempty"`
 	ComparisonParams contract.CompareParams `json:"comparisonParams,omitempty" yaml:"comparisonParams,omitempty"`
 	ScriptPath       string                 `json:"script_path,omitempty" yaml:"script_path,omitempty"`
-	NoWait           bool                   `json:"nowait,omitempty" yaml:"nowait,omitempty"`
+	NoWait           bool                   `json:"script_nowait,omitempty" yaml:"script_nowait,omitempty"`
 	ScriptResponse   *string                `json:"script_response,omitempty" yaml:"script_response,omitempty"`
 	RequestTmpl      string                 `json:"request,omitempty" yaml:"request,omitempty"`
 	RequestURL       string                 `json:"path,omitempty" yaml:"path,omitempty" yaml:"path"`

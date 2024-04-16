@@ -259,11 +259,16 @@ func isSelectStatement(dbQuery string) (bool, error) {
 	queries := strings.Split(dbQuery, ";")
 	stmt, err := sqlparser.Parse(queries[0])
 	if err != nil {
-		return false, nil
+		dbQuery = strings.Trim(dbQuery, " ")
+		dbQuery = strings.ToLower(dbQuery)
+		return strings.HasPrefix(dbQuery, "select"), nil
 	}
-
 	switch stmt.(type) {
 	case *sqlparser.Select:
+		return true, nil
+	case *sqlparser.Union:
+		return true, nil
+	case *sqlparser.ParenSelect:
 		return true, nil
 	default:
 		return false, nil
