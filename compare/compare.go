@@ -365,7 +365,10 @@ func (c *Comparer) getUnmatchedArrays(expected, actual []interface{}, params *co
 		if !found {
 			expectedError = append(expectedError, expectedElem)
 			if params.FailFast {
-				return expectedError, actual[0:1]
+				if len(actual) > 0 {
+					return expectedError, actual[0:1]
+				}
+				return expectedError, actual
 			}
 		}
 	}
