@@ -208,7 +208,7 @@ func (e *Request) Do() error {
 	}
 
 	if e.report != nil {
-		e.report.AddAttachment("response", allure.TextPlain, []byte(tools.JSONPrettyPrint(r)))
+		e.report.AddAttachment("response", allure.ApplicationJson, []byte(tools.JSONPrettyPrint(r)))
 	}
 	e.responseBody = tools.To(r)
 
