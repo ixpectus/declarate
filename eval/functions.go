@@ -58,10 +58,18 @@ var defaultFunctions = map[string]goval.ExpressionFunction{
 
 		return true, nil
 	},
+	"intStrict": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return false, nil
+		}
+		_, ok := args[0].(int)
+		return ok, nil
+	},
 	"num": func(args ...interface{}) (interface{}, error) {
 		if len(args) == 0 {
 			return false, nil
 		}
+
 		v := fmt.Sprintf("%v", args[0])
 		_, err := strconv.ParseFloat(v, 64)
 		return err == nil, nil

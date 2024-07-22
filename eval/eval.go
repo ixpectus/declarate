@@ -29,6 +29,7 @@ func NewEval(functions map[string]goval.ExpressionFunction) *Eval {
 
 func (e *Eval) Evaluate(s string) string {
 	used := usedEval(s)
+
 	for _, val := range used {
 		eval := goval.NewEvaluator()
 		result, err := eval.Evaluate(val, nil, e.functions)
@@ -36,6 +37,7 @@ func (e *Eval) Evaluate(s string) string {
 			s = strings.ReplaceAll(s, fmt.Sprintf("$(%s)", val), fmt.Sprintf("%v", result))
 		}
 	}
+
 	return s
 }
 

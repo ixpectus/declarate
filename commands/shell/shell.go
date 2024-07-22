@@ -21,13 +21,15 @@ type extendedConfig struct {
 }
 
 type shellConfig struct {
-	Cmd      string  `yaml:"cmd,omitempty"`
-	Response *string `yaml:"response,omitempty"`
+	Cmd              string                 `yaml:"cmd,omitempty"`
+	Response         *string                `yaml:"response,omitempty"`
+	ComparisonParams contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
 }
 
 type Config struct {
-	Cmd      string  `yaml:"shell_cmd,omitempty"`
-	Response *string `yaml:"shell_response,omitempty"`
+	Cmd              string                 `yaml:"shell_cmd,omitempty"`
+	Response         *string                `yaml:"shell_response,omitempty"`
+	ComparisonParams contract.CompareParams `json:"comparisonParams" yaml:"comparisonParams"`
 }
 
 func (e *ShellCmd) SetVars(vv contract.Vars) {
@@ -72,8 +74,9 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 		return &ShellCmd{
 			comparer: u.comparer,
 			Config: &Config{
-				Cmd:      cfgExtended.Shell.Cmd,
-				Response: cfgExtended.Shell.Response,
+				Cmd:              cfgExtended.Shell.Cmd,
+				Response:         cfgExtended.Shell.Response,
+				ComparisonParams: cfgExtended.Shell.ComparisonParams,
 			},
 		}, nil
 	}
@@ -159,7 +162,18 @@ func (e *ShellCmd) ResponseBody() *string {
 
 func (e *ShellCmd) Check() error {
 	if e.Config.Response != nil {
-		errs := e.comparer.Compare(*e.Config.Response, e.responseBody, contract.CompareParams{})
+		var (
+			err error
+			errs []error
+		)
+		if e.Config.ComparisonParams.CompareJson != nil && *e.Config.ComparisonParams.CompareJson {
+			errs, err = e.comparer.CompareJsonBody(*e.Config.Response, e.responseBody, e.Config.ComparisonParams)
+			if err != nil {
+				return fmt.Errorf("compare json failed: %w", err)
+			}
+		} else {
+			errs = e.comparer.Compare(*e.Config.Response, e.responseBody, e.Config.ComparisonParams)
+		}
 		if len(errs) > 0 {
 			msg := ""
 			for _, v := range errs {

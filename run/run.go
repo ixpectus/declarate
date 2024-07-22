@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
@@ -113,9 +114,13 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 				r.logPass(v.Name, fileName, testResult, 0)
 			}
 		}
+		name := v.Name
+		if name == "" && hasVarsCommand(v.Commands) {
+			name = "setup variables"
+		}
 		r.config.Report.Step(
 			report.ReportOptions{
-				Description: v.Name,
+				Description: name,
 			},
 			action,
 		)
@@ -125,6 +130,17 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 
 	}
 	return false, nil
+}
+
+func hasVarsCommand(commands []contract.Doer) bool {
+	for _, v := range commands {
+		_, ok := v.(*vars.VarsCmd)
+		if ok {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (r *Runner) run(

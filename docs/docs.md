@@ -1,10 +1,53 @@
-# Tests 
+# Tests
+
+The test consists of one or more YAML files that represent a sequence of [commands.](#commands)
+
+```yaml
+- name: set variables
+  variables:
+    name: Tom
+    path: tom
+
+- name: check request
+  method: GET
+  path: /{{$path}}
+  fullResponse: |
+    {
+      "body":{"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4]}, 
+      "status": 200
+    }
+  comparisonParams:
+    ignoreArraysOrdering: true
+
+- name: check request
+  method: GET
+  path: /{{$path}}
+  fullResponse: |
+    {
+      "body":{"age": 28,"name":"{{$name}}", "items":[1, 2, 3]} 
+    }
+  comparisonParams:
+    allowArrayExtraItems: true
+    ignoreArraysOrdering: true
+
+```
 
 ## Commands
 
-### Request 
+### Request
 
-#### Light mode example
+Used for making API requests and comparing responses. Various [modifiers](#modifiers) and [comparison parameters](#comparison-parameters) can be used during the comparison.
+
+#### Light mode
+##### Fields
+
+- `path` request path
+- `method` request method(GET, POST, PUT and others)
+- `response` response body
+- `resonseStatus` response status
+
+##### Light mode example
+
 ```yaml
 - name: check request in light mode
   method: GET
@@ -14,7 +57,14 @@
       {"age": 28,"name":"name1", "items":[1, 2, 3]}
 ```
 
-#### Extended mode example
+#### Extended mode
+
+- `path` request path
+- `method` request method(GET, POST, PUT and others)
+- `fullResponse` includes the complete response, including body, status and all headers
+
+##### Extended mode example
+
 ```yaml
 - name: check request
   method: GET
@@ -25,10 +75,13 @@
       "status": 200
     }
 ```
+
 Extended mode is useful when it is neccesary save status to variable
 
-### Database 
+### Database
+
 #### Example
+
 ```yaml
 - name: check values in table
   db_conn: '{{$full_connection}}'
@@ -36,19 +89,25 @@ Extended mode is useful when it is neccesary save status to variable
   db_response: >
     [{"id":"q"}]
 ```
+
 ##### Properties
+
 - `db_conn` database connection string, if it not set default database connection string will be used.
 
 ### Script 
+
 #### Example
+
 ```yaml
 - name: script check
   script: 
     path: "./tests/scripts/echo.sh"
 ```
 
-### Shell 
+### Shell
+
 #### Example
+
 ```yaml
 - name: shell command 2
   shell_cmd: | 
@@ -56,13 +115,15 @@ Extended mode is useful when it is neccesary save status to variable
   variables:
     name: '*'
 ```
-Run shell command and save it output to name variable
 
+Run shell command and save it output to name variable
 
 ## Variables
 
 ### Set variables
+
 #### Examples
+
 ```yaml
 - name: set variables
   variables:
@@ -70,9 +131,12 @@ Run shell command and save it output to name variable
 ```
 
 ### Set variables from commands response
-Setting variables from responses is the same for different commands.  
-It is possible set variables from commands responses, using [gjson](github.com/tidwall/gjson) 
+
+Setting variables from responses is the same for different commands.
+It is possible set variables from commands responses, using [gjson](https://github.com/tidwall/gjson) 
+
 #### Set variables from request command
+
 ```yaml
 - name: setup variables
   variables: |
@@ -94,6 +158,7 @@ It is possible set variables from commands responses, using [gjson](github.com/t
 ```
 
 #### Set variables from database command example
+
 ```yaml
   db_query: |
     select 1 as a;
@@ -102,11 +167,15 @@ It is possible set variables from commands responses, using [gjson](github.com/t
 
 ## Compare response
 
-### Comparison params
+### Comparison parameters
+
 - `allowArrayExtraItems` allow extra items on array comparison
 - `ignoreArraysOrdering` ignore array ordering on array comparison
-#### Examples 
+
+#### Examples
+
 ##### Request
+
 ```yaml
 - name: check request 2
   method: GET
@@ -120,15 +189,18 @@ It is possible set variables from commands responses, using [gjson](github.com/t
     ignoreArraysOrdering: true
     allowArrayExtraItems: true
 ```
+
 The test will pass successfully with the following responses.
 
 - Using `allowArrayExtraItems` parameter
+
 ```json
 {
   "body": {"age": 28,"name":"{{$name}}", "items":[1, 2, 3, 4, 5, 6]}, 
   "status": 200
 }
 ```
+
 - Using `ignoreArraysOrdering` parameter
 ```json
 {
@@ -137,11 +209,14 @@ The test will pass successfully with the following responses.
 }
 ```
 
-### Modificators
+### Modifiers
 
 #### Regexp
+
 When comparing responses, you can use regular expressions with the `$matchRegexp` modifier.
+
 ##### Examples
+
 - master can be any 
 ```json
     [
@@ -154,35 +229,46 @@ When comparing responses, you can use regular expressions with the `$matchRegexp
       }
     ]
 ```
+
 - version should start from 15
+
 ```json
  {"version": "$matchRegexp(^15.+$)"} 
 ```
-#### Custom modificators
-- `any` 
+
+#### Custom modifiers
+- `any` must be present and can contain any value.
+
   Example 
   ```json
     {
       "body":{"name":"$any", "items":[1, 2, 3, 4]}, 
     }
    ```
-- `notEmpty`  
+
+- `notEmpty`
+
   Example 
   ```json
     {
-      "body":{"age": "$num","name":"$any", "items":[1, 2, 3, 4]}, 
+      "body":{"name":"$notEmpty", "items":[1, 2, 3, 4]}, 
       "status": "$oneOf(300, 200)"
     }
    ```
-- `num`  
+
+- `num` must contain numeric value.
+
   Example 
   ```json
     {
       "body":{"age": "$num","items":[1, 2, 3, 4]}, 
     }
    ```
-- `oneOf`  
+
+- `oneOf` must be one of the following.
+
   Example 
+
   ```json
     {
       "status": "$oneOf(300, 200)"
@@ -193,7 +279,6 @@ When comparing responses, you can use regular expressions with the `$matchRegexp
 
 ### Test steps
 Test steps can be combined using the `steps` directive. 
-#### Example
 ```yaml
 - name: database list SHOULD be empty for user
   steps:
