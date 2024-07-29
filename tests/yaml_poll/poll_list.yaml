@@ -1,0 +1,10 @@
+- name: check poll handler
+  method: GET
+  path: /pollList
+  response: |
+      {"databases":[],"extensions":[],"indexes":[],"roles":["postgres"],"schemas":[],"tables":[],"tablespaces":[]}
+  responseStatus: 200
+  poll:
+    duration: 100ms
+    interval: 10ms
+
