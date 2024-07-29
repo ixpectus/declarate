@@ -329,8 +329,11 @@ Test steps or the entire test can be skipped according to conditions.
 ### Polling
 
 #### Example with response regexp
-Within 100 seconds, a request will be sent to the 'poll' handler every second. 
-The polling will continue until the response matches the regular expression in `respone_regexp` field.
+Within 100 seconds, a request will be sent to the `poll` handler every second. 
+
+The polling 
+- will continue as long as the response matches the regular expression in `poll.respone_regexp` field
+- will succeed when the response matches the `.response` field.
 ```yaml
 - name: check poll handler with regexp success
   method: GET
@@ -345,8 +348,11 @@ The polling will continue until the response matches the regular expression in `
 ```
 
 #### Example with response object
-Within 100 seconds, a request will be sent to the 'poll' handler every second. 
-The polling will continue until the response matches response object.
+Within 100 seconds, a request will be sent to the `poll` handler every second. 
+
+The polling 
+- will continue as long as the response matches the response object in `poll.response` field
+- will succeed when the response matches `.response` field `{"age": 31,"name":"Tommy"}`
 ```yaml
 - name: check poll handler with regexp success
   method: GET
@@ -365,4 +371,4 @@ The polling will continue until the response matches response object.
 - `duration` 
 - `interval`
 - `response_regexp`
-- `response`
+- `response` 
