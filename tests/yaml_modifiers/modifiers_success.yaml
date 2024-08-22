@@ -1,0 +1,31 @@
+- name: when json contains number in double quotas intStrict should not match 
+  comparisonParams:
+    compareJson: true
+  shell_cmd: 
+    echo '{"a":21}'
+  shell_response: |
+   {"a":"$intStrict"} 
+
+- name: test any modifier
+  comparisonParams:
+    compareJson: true
+  shell_cmd: 
+    echo '{"a":21}'
+  shell_response: |
+   {"a":"$any"} 
+
+- name: test num on value int
+  comparisonParams:
+    compareJson: true
+  shell_cmd: 
+    echo '{"a":21}'
+  shell_response: |
+   {"a":"$num"} 
+
+- name: test num on value string with numbers
+  comparisonParams:
+    compareJson: true
+  shell_cmd: 
+    echo '{"a":21}'
+  shell_response: |
+   {"a":"$num"} 

@@ -51,6 +51,23 @@ func (v *Variables) Set(k, val string) error {
 	return nil
 }
 
+func (v *Variables) SetAll(m map[string]string) (map[string]string, error) {
+	res := map[string]string{}
+	for k, val := range m {
+		if err := v.Set(k, val); err != nil {
+			return nil, fmt.Errorf("set key %v, value %v: %w", k, val, err)
+		}
+		if !v.allPersistent {
+			res[k] = v.data[k]
+		} else {
+			val, _ := v.persistent.Get(k)
+			res[k] = val
+		}
+	}
+
+	return res, nil
+}
+
 func (v *Variables) SetPersistent(k, val string) error {
 	val = v.Apply(val)
 	val = v.eval.Evaluate(val)

@@ -1,0 +1,8 @@
+- name: test modifiers
+  shell_cmd: | 
+    {{$CMD}} -dir ./tests/yaml_modifiers/modifiers_success.yaml
+  shell_response: |
+    passed ./tests/yaml_modifiers/modifiers_success.yaml:when json contains number in double quotas intStrict should not match
+    passed ./tests/yaml_modifiers/modifiers_success.yaml:test any modifier
+    passed ./tests/yaml_modifiers/modifiers_success.yaml:test num on value int
+    passed ./tests/yaml_modifiers/modifiers_success.yaml:test num on value string with numbers

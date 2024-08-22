@@ -118,3 +118,11 @@ func CheckConnect(host string, port string) bool {
 	}
 	return false
 }
+
+func FormatVariables(m map[string]string) string {
+	vv := []string{}
+	for k, v := range m {
+		vv = append(vv, fmt.Sprintf("%v:%v", k, v))
+	}
+	return strings.Join(vv, "\n")
+}

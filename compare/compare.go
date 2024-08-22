@@ -32,7 +32,7 @@ func (x ErrorSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 // Sort is a convenience method: x.Sort() calls Sort(x).
 func (x ErrorSlice) Sort() { sort.Sort(x) }
 
-var regexExprRx = regexp.MustCompile(`^\$matchRegexp\((.+)\)$`)
+var regexExprRx = regexp.MustCompile(`\$matchRegexp\((.+)\)$`)
 
 // compare compares values as plain text
 // It can be compared several ways:

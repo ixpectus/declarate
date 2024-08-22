@@ -1,6 +1,10 @@
 package run
 
-import "github.com/ixpectus/declarate/variables"
+import (
+	"github.com/dailymotion/allure-go"
+	"github.com/ixpectus/declarate/tools"
+	"github.com/ixpectus/declarate/variables"
+)
 
 func (r *Runner) fillVariablesByResponse(
 	commandResponseBody *string,
@@ -22,9 +26,8 @@ func (r *Runner) fillVariablesByResponse(
 		if err != nil {
 			return err
 		}
-		for k, v := range vars {
-			r.currentVars.Set(k, v)
-		}
+		res, _ := r.currentVars.SetAll(vars)
+		r.config.Report.AddAttachment("variables from response", allure.TextPlain, []byte(tools.FormatVariables(res)))
 	}
 
 	return nil
@@ -49,9 +52,8 @@ func (r *Runner) fillPersistentVariablesByResponse(
 		if err != nil {
 			return err
 		}
-		for k, v := range vars {
-			r.currentVars.SetPersistent(k, v)
-		}
+		res, _ := r.currentVars.SetAll(vars)
+		r.config.Report.AddAttachment("variables from response", allure.TextPlain, []byte(tools.FormatVariables(res)))
 	}
 
 	return nil

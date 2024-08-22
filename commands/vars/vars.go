@@ -4,7 +4,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 )
 
 type VarsCmd struct {
@@ -71,8 +73,9 @@ func (e *VarsCmd) Do() error {
 			}
 			return true
 		})
+		m := map[string]string{}
 		for k := range keys {
-			e.Vars.Set(keys[k], e.Config.Data[keys[k]])
+			m[keys[k]] = e.Config.Data[keys[k]]
 		}
 
 		keys = make([]string, 0, len(e.Config.DataPersistent))
@@ -88,7 +91,12 @@ func (e *VarsCmd) Do() error {
 			return true
 		})
 		for k := range keys {
-			e.Vars.Set(keys[k], e.Config.DataPersistent[keys[k]])
+			m[keys[k]] = e.Config.DataPersistent[keys[k]]
+		}
+
+		res, _ := e.Vars.SetAll(m)
+		if len(m) > 0 {
+			e.report.AddAttachment("variables", allure.TextPlain, []byte(tools.FormatVariables(res)))
 		}
 	}
 

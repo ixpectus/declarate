@@ -1,0 +1,11 @@
+- name: set variables
+  variables:
+    var: qqq
+
+- name: check regexp
+  comparisonParams:
+    compareJson: true
+  shell_cmd: 
+    echo '{"a":"qqq 06:47:00 +00:00 17.07.2024"}'
+  shell_response: |
+   {"a":"{{$qqq}} $matchRegexp(^\\d{2}:\\d{2}:\\d{2} (\\+|-){1}\\d{2}:\\d{2} \\d{2}\\.\\d{2}\\.\\d{4}$)"} 
