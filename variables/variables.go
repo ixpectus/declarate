@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/brianvoe/gofakeit"
@@ -48,12 +49,41 @@ func (v *Variables) Set(k, val string) error {
 		os.Setenv(k, val)
 	}
 	v.data[k] = val
+
 	return nil
+}
+
+func reorderMap(mapData map[string]string) []string {
+	cmpFn := func(a, b string) bool {
+		countA := strings.Count(a, "{{") + strings.Count(a, "$(")
+		countB := strings.Count(b, "{{") + strings.Count(b, "$(")
+		if countA != countB {
+			return countA > countB
+		} else if countA == 0 && countB == 0 {
+			return false
+		}
+
+		return true
+	}
+
+	keys := make([]string, len(mapData))
+	i := 0
+	for key := range mapData {
+		keys[i] = key
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return !cmpFn(mapData[keys[i]], mapData[keys[j]])
+	})
+
+	return keys
 }
 
 func (v *Variables) SetAll(m map[string]string) (map[string]string, error) {
 	res := map[string]string{}
-	for k, val := range m {
+	keys := reorderMap(m)
+	for _, k := range keys {
+		val := m[k]
 		if err := v.Set(k, val); err != nil {
 			return nil, fmt.Errorf("set key %v, value %v: %w", k, val, err)
 		}
@@ -102,6 +132,7 @@ func (v *Variables) Apply(text string) string {
 		text = strings.ReplaceAll(text, "{{$"+val+"}}", v.Get(val))
 	}
 	text = v.eval.Evaluate(text)
+
 	return text
 }
 
