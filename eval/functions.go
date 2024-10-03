@@ -16,6 +16,12 @@ var defaultFunctions = map[string]goval.ExpressionFunction{
 	"someName": func(args ...interface{}) (interface{}, error) {
 		return "Donny", nil
 	},
+	"getInput": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return nil, fmt.Errorf("method getInput accept one parameter")
+		}
+		return args[0], nil
+	},
 	"randFirstName": func(args ...interface{}) (interface{}, error) {
 		return gofakeit.FirstName(), nil
 	},

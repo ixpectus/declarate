@@ -22,7 +22,13 @@
 
     echo 2 
     passed ./tests/yaml_variables/eval.yaml:check eval direct call
+    passed ./tests/yaml_variables/order.yaml:setup dependent variables
 
+    echo new value 
+    passed ./tests/yaml_variables/order.yaml:variable password must print zvar variable value
+
+    echo new value 
+    passed ./tests/yaml_variables/order.yaml:variable res must print zvar variable value
 
 
 - name: test vars persistent 
