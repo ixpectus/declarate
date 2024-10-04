@@ -128,6 +128,7 @@ type Comparer interface {
 
 type DBConnectLoader interface {
 	Get(string) (*sql.DB, error)
+	DefaultConnectionString() string
 }
 
 type CompareParams struct {

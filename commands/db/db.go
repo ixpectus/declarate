@@ -107,6 +107,8 @@ func (e *Db) Do() error {
 			e.Report.AddAttachment("query", allure.TextPlain, []byte(e.Config.DbQuery))
 			if e.Config.DbConn != "" {
 				e.Report.AddAttachment("conn", allure.TextPlain, []byte(e.Config.DbConn))
+			} else {
+				e.Report.AddAttachment("conn", allure.TextPlain, []byte(e.connectLoader.DefaultConnectionString()))
 			}
 		}
 		e.Config.DbResponse = e.Vars.Apply(e.Config.DbResponse)
