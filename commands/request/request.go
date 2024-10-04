@@ -191,20 +191,17 @@ func (e *Request) Do() error {
 	client := &http.Client{}
 	curlReq, _ := http2curl.GetCurlCommand(req)
 	reqStart := time.Now()
+	e.report.AddAttachment(fmt.Sprintf("request, time %v", reqStart.Format(
+		time.RFC822Z,
+	)), allure.TextPlain, []byte(curlReq.String()))
 	resp, err := client.Do(req)
 	if err != nil {
-		e.report.AddAttachment(fmt.Sprintf("request, start %v", reqStart.Format(
-			time.RFC822Z,
-		)), allure.TextPlain, []byte(curlReq.String()))
 		return err
 	}
 	reqFinish := time.Now()
 	reqDuration := reqFinish.Sub(reqStart)
 	if e.report != nil {
-		e.report.AddAttachment(fmt.Sprintf("request, start %v, finish %v, duration %v sec", reqStart.Format(
-			time.RFC822Z,
-		), reqFinish, reqDuration.Seconds(),
-		), allure.TextPlain, []byte(curlReq.String()))
+		e.report.AddAttachment(fmt.Sprintf("request"), allure.TextPlain, []byte(curlReq.String()))
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	_ = resp.Body.Close()
@@ -220,6 +217,9 @@ func (e *Request) Do() error {
 
 	if e.report != nil {
 		e.report.AddAttachment("response", allure.ApplicationJson, []byte(tools.JSONPrettyPrint(r)))
+		e.report.AddAttachment("meta", allure.ApplicationJson, []byte(tools.JSONPrettyPrint(
+			fmt.Sprintf(`{"start":"%s", "finish":%s, "duration": %s}`, reqStart, reqFinish, reqDuration.Round(time.Millisecond)),
+		)))
 	}
 	e.responseBody = tools.To(r)
 
