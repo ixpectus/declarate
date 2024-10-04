@@ -7,13 +7,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/tidwall/gjson"
+	"moul.io/http2curl"
 
 	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
-	"github.com/tidwall/gjson"
-	"moul.io/http2curl"
 )
 
 const (
@@ -188,12 +190,21 @@ func (e *Request) Do() error {
 	}
 	client := &http.Client{}
 	curlReq, _ := http2curl.GetCurlCommand(req)
-	if e.report != nil {
-		e.report.AddAttachment("request", allure.TextPlain, []byte(curlReq.String()))
-	}
+	reqStart := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
+		e.report.AddAttachment(fmt.Sprintf("request, start %v", reqStart.Format(
+			time.RFC822Z,
+		)), allure.TextPlain, []byte(curlReq.String()))
 		return err
+	}
+	reqFinish := time.Now()
+	reqDuration := reqFinish.Sub(reqStart)
+	if e.report != nil {
+		e.report.AddAttachment(fmt.Sprintf("request, start %v, finish %v, duration %v sec", reqStart.Format(
+			time.RFC822Z,
+		), reqFinish, reqDuration.Seconds(),
+		), allure.TextPlain, []byte(curlReq.String()))
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	_ = resp.Body.Close()
