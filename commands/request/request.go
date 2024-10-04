@@ -213,8 +213,8 @@ func (e *Request) Do() error {
 	if e.report != nil {
 		e.report.AddAttachment("response", allure.ApplicationJson, []byte(tools.JSONPrettyPrint(r)))
 		e.report.AddAttachment("meta", allure.TextPlain, []byte(tools.FormatVariables(map[string]string{
-			"start":    reqStart.Format(time.RFC822),
-			"finish":   reqFinish.Format(time.RFC822),
+			"start":    reqStart.Format(time.RFC3339Nano),
+			"finish":   reqFinish.Format(time.RFC3339Nano),
 			"duration": reqDuration.Round(time.Millisecond).String(),
 		})))
 	}
