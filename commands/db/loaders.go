@@ -6,6 +6,10 @@ type PGLoader struct {
 	defaultConn string
 }
 
+func (p PGLoader) DefaultConnectionString() string {
+	return p.defaultConn
+}
+
 func (p PGLoader) Get(connection string) (*sql.DB, error) {
 	if connection == "" {
 		connection = p.defaultConn
@@ -14,6 +18,7 @@ func (p PGLoader) Get(connection string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return db, nil
 }
 

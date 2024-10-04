@@ -1,6 +1,8 @@
 package compare
 
-import "github.com/ixpectus/declarate/contract"
+import (
+	"github.com/ixpectus/declarate/contract"
+)
 
 type Comparer struct {
 	defaultComparisonParams contract.CompareParams

@@ -13,8 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var startID = 5000
-
 type Converter struct {
 	sourceDir string
 	targetDir string
@@ -127,7 +125,6 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 			found = true
 			converted.Definition = &Definition{
 				Tags: v.Tags,
-				// ID:   startID,
 			}
 		} else if v.AfterRequestScriptParams != nil {
 			found = true
@@ -163,14 +160,6 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 				Duration: duration,
 			}
 		}
-		// if i == 1 {
-		// 	if converted.Definition == nil {
-		// 		converted.Definition = &Definition{
-		// 			ID: startID,
-		// 		}
-		// 	}
-		// 	startID++
-		// }
 		res = append(res, converted)
 	}
 	return res
@@ -210,17 +199,6 @@ func request(g GonkeyTest) DeclarateTest {
 		if v == "" {
 			continue
 		}
-		// js1 := fmt.Sprintf("{\"body\":%v,\"status\":%v}", varFix(v), k)
-		// js1 := varFix(v)
-		// var prettyJSON bytes.Buffer
-		// err := json.Indent(&prettyJSON, []byte(js1), "", "  ")
-		// if err != nil {
-		// 	fmt.Printf("\n>>> %v <<< debug\n", k)
-		// 	fmt.Printf("\n>>> %v <<< debug\n", res.Name)
-		// 	fmt.Printf("\n>>> %v <<< debug\n", err)
-		// 	fmt.Printf("\n>>> %v <<< debug\n", js1)
-		// 	panic(2)
-		// }
 		res.ResponseTmpls = varFix(v)
 		break
 	}

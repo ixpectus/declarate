@@ -1,10 +1,9 @@
 package vars
 
 import (
-	"sort"
-	"strings"
-
+	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
+	"github.com/ixpectus/declarate/tools"
 )
 
 type VarsCmd struct {
@@ -48,6 +47,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	if cfg.Data == nil && cfg.DataPersistent == nil {
 		return nil, nil
 	}
+
 	return &VarsCmd{
 		Config: cfg,
 	}, nil
@@ -59,36 +59,16 @@ func (e *VarsCmd) GetConfig() interface{} {
 
 func (e *VarsCmd) Do() error {
 	if e.Config != nil {
-		keys := make([]string, 0, len(e.Config.Data))
-		for k := range e.Config.Data {
-			keys = append(keys, k)
+		m := map[string]string{}
+		for k, v := range e.Config.Data {
+			m[k] = v
 		}
-		sort.Slice(keys, func(i, j int) bool {
-			iContains := strings.Contains(e.Config.Data[keys[i]], "{{")
-			jContains := strings.Contains(e.Config.Data[keys[j]], "{{")
-			if iContains && !jContains {
-				return false
-			}
-			return true
-		})
-		for k := range keys {
-			e.Vars.Set(keys[k], e.Config.Data[keys[k]])
+		for k, v := range e.Config.DataPersistent {
+			m[k] = v
 		}
-
-		keys = make([]string, 0, len(e.Config.DataPersistent))
-		for k := range e.Config.DataPersistent {
-			keys = append(keys, k)
-		}
-		sort.Slice(keys, func(i, j int) bool {
-			iContains := strings.Contains(e.Config.DataPersistent[keys[i]], "{{")
-			jContains := strings.Contains(e.Config.DataPersistent[keys[j]], "{{")
-			if iContains && !jContains {
-				return false
-			}
-			return true
-		})
-		for k := range keys {
-			e.Vars.Set(keys[k], e.Config.DataPersistent[keys[k]])
+		res, _ := e.Vars.SetAll(m)
+		if len(m) > 0 {
+			e.report.AddAttachment("variables", allure.TextPlain, []byte(tools.FormatVariables(res)))
 		}
 	}
 

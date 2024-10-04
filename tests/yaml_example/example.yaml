@@ -276,3 +276,26 @@
     passed ./tests/yaml_definition/definition.yaml:check steps behaviour
 
 
+- name: check modifiers
+  shell_cmd: | 
+    {{$cmd}} -dir ./tests/yaml_modifiers
+  shell_response: |
+    failed ./tests/yaml_modifiers//modifiers_int_strict.yaml:when json contains number in double quotas $intStrict should not match
+    response body differs: 
+    at path $.a values do not match by condition:
+    expected:
+    $intStrict
+    actual:
+    21
+
+
+    expected response: 
+    {"a":"$intStrict"} 
+
+    actual response: 
+    {"a":"21"}
+
+    passed modifiers_success.yaml:when json contains number in double quotas $intStrict should not match
+    passed modifiers_success.yaml:test any modifier
+    passed modifiers_success.yaml:test $num on value int
+    passed modifiers_success.yaml:test $num on value string with numbers
