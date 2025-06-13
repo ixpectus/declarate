@@ -1,0 +1,13 @@
+- name: check request
+  method: GET
+  path: /{{$path}}
+  fullResponse: |
+    {
+      "body":{"age": 28, "items":[1, 2, 3, 4]}, 
+      "status": 200
+    }
+  variables:
+    name: body.name
+  comparisonParams:
+    ignoreArraysOrdering: true
+

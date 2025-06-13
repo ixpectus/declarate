@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "golang.go",
+    "redhat.vscode-yaml",
+    "ms-vscode.vscode-json",
+    "davidanson.vscode-markdownlint",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.test-adapter-converter",
+    "hbenl.vscode-test-explorer",
+    "github.vscode-pull-request-github",
+    "github.copilot"
+  ]
+}
