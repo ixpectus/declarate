@@ -117,7 +117,23 @@ install: build ## Install binary to $GOPATH/bin
 	@echo "Installing declarate..."
 	@go install ./cmd/example
 
+# Git hooks
+install-hooks: ## Install git hooks
+	@echo "Installing git hooks..."
+	@cp scripts/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "Git hooks installed successfully!"
+
+uninstall-hooks: ## Uninstall git hooks
+	@echo "Uninstalling git hooks..."
+	@rm -f .git/hooks/pre-commit
+	@echo "Git hooks uninstalled!"
+
 # CI targets
+ci-check: ## Run all CI checks locally (same as GitHub Actions)
+	@echo "Running CI checks locally..."
+	@./scripts/ci-check.sh
+
 ci-test: deps lint test-race test-cover ## Run all CI tests
 	@echo "All CI checks passed!"
 
