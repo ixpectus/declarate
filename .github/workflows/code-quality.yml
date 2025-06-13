@@ -1,0 +1,90 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run security scan every day at 00:00 UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+    
+    - name: Install go tools
+      run: |
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install github.com/kisielk/errcheck@latest
+        go install golang.org/x/tools/cmd/goimports@latest
+        go install github.com/gordonklaus/ineffassign@latest
+        go install github.com/client9/misspell/cmd/misspell@latest
+    
+    - name: Go format check
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "The following files are not formatted correctly:"
+          gofmt -s -l .
+          exit 1
+        fi
+    
+    - name: Go imports check
+      run: |
+        if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+          echo "The following files have import issues:"
+          goimports -l .
+          exit 1
+        fi
+    
+    - name: Go vet
+      run: go vet ./...
+    
+    - name: Staticcheck
+      run: staticcheck ./...
+    
+    - name: Error check
+      run: errcheck ./...
+    
+    - name: Ineffective assignments
+      run: ineffassign ./...
+    
+    - name: Misspell check
+      run: misspell -error .
+    
+    - name: Go mod tidy check
+      run: |
+        go mod tidy
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "go mod tidy made changes, please run 'go mod tidy' and commit the changes"
+          git diff
+          exit 1
+        fi
+
+  vulnerability-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+    
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+    
+    - name: Run govulncheck
+      run: govulncheck ./...
+    
+    - name: Run Nancy (Sonatype vulnerability scanner)
+      uses: sonatypecommunity/nancy-github-action@main
+      with:
+        nancyVersion: "v1.0.46"
