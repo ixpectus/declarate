@@ -144,7 +144,6 @@ ci-build: ## Build for multiple platforms (used in CI)
 	@GOOS=linux GOARCH=arm64 go build -o dist/declarate-linux-arm64 ./cmd/example/
 	@GOOS=darwin GOARCH=amd64 go build -o dist/declarate-darwin-amd64 ./cmd/example/
 	@GOOS=darwin GOARCH=arm64 go build -o dist/declarate-darwin-arm64 ./cmd/example/
-	@GOOS=windows GOARCH=amd64 go build -o dist/declarate-windows-amd64.exe ./cmd/example/
 	go tool cover -html=cover.out -o cover.html
 
 
