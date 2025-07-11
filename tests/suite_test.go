@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -19,7 +20,8 @@ import (
 )
 
 func TestSuite(t *testing.T) {
-	os.Chdir("../")
+	// os.Chdir("../")
+	fmt.Println(os.Getwd())
 	evaluator := eval.NewEval(nil)
 	vv := variables.New(evaluator, kv.New("persistent", false), true)
 	cmp := compare.New(contract.CompareParams{}, vv)
