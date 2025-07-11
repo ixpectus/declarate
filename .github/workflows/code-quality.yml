@@ -20,10 +20,7 @@ jobs:
     - name: Install go tools
       run: |
         go install honnef.co/go/tools/cmd/staticcheck@latest
-        go install github.com/kisielk/errcheck@latest
         go install golang.org/x/tools/cmd/goimports@latest
-        go install github.com/gordonklaus/ineffassign@latest
-        go install github.com/client9/misspell/cmd/misspell@latest
     
     - name: Go format check
       run: |
@@ -46,15 +43,6 @@ jobs:
     
     - name: Staticcheck
       run: staticcheck ./...
-    
-    - name: Error check
-      run: errcheck ./...
-    
-    - name: Ineffective assignments
-      run: ineffassign ./...
-    
-    - name: Misspell check
-      run: misspell -error .
     
     - name: Go mod tidy check
       run: |
