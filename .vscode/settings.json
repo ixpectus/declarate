@@ -1,0 +1,43 @@
+{
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "go.useLanguageServer": true,
+  "go.formatTool": "goimports",
+  "go.testFlags": ["-v", "-race"],
+  "go.testTimeout": "60s",
+  "go.coverOnSave": false,
+  "go.coverOnSingleTest": false,
+  "go.coverOnTestPackage": true,
+  "go.buildOnSave": "package",
+  "go.lintOnSave": "package",
+  "go.vetOnSave": "package",
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "keep",
+    "editor.formatOnSave": true
+  },
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on"
+  },
+  "files.exclude": {
+    "**/build": true,
+    "**/persistent": true,
+    "**/persistent.idx": true,
+    "**/allure-results": true,
+    "**/*.exe": true
+  },
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml"
+  }
+}

@@ -21,7 +21,6 @@ func (c *config) isEmpty() bool {
 }
 
 type Unmarshaller struct {
-	host string
 }
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {

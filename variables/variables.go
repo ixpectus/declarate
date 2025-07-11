@@ -9,7 +9,6 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/ixpectus/declarate/contract"
-	"github.com/maja42/goval"
 	"github.com/tidwall/gjson"
 )
 
@@ -18,7 +17,6 @@ var VariableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)
 type Variables struct {
 	data          map[string]string
 	eval          contract.Evaluator
-	functions     map[string]goval.ExpressionFunction
 	persistent    persistent
 	allPersistent bool
 }

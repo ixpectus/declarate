@@ -163,7 +163,7 @@ func (e *ShellCmd) ResponseBody() *string {
 func (e *ShellCmd) Check() error {
 	if e.Config.Response != nil {
 		var (
-			err error
+			err  error
 			errs []error
 		)
 		if e.Config.ComparisonParams.CompareJson != nil && *e.Config.ComparisonParams.CompareJson {

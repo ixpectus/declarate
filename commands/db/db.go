@@ -10,10 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/xwb1989/sqlparser"
 
-	"github.com/fatih/color"
 	"github.com/ixpectus/declarate/contract"
-
-	"github.com/kylelemons/godebug/pretty"
 )
 
 type Db struct {
@@ -59,6 +56,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 			Comparer:      u.comparer,
 		}, nil
 	}
+
 	return &Db{
 		Config:        cfgShort,
 		connectLoader: u.connectLoader,
@@ -134,7 +132,6 @@ func (e *Db) Do() error {
 		if err := execQuery(e.Config.DbQuery, db); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
@@ -180,40 +177,6 @@ func (e *Db) Check() error {
 	}
 
 	return nil
-}
-
-func toJsonArray(items []string, qual, testName string) ([]interface{}, error) {
-	var itemJSONs []interface{}
-	for i, row := range items {
-		var itemJson interface{}
-		if err := json.Unmarshal([]byte(row), &itemJson); err != nil {
-			return nil, fmt.Errorf(
-				"invalid JSON in the %s DB response for test %s:\n row #%d:\n %s\n error:\n%s",
-				qual,
-				testName,
-				i,
-				row,
-				err.Error(),
-			)
-		}
-		itemJSONs = append(itemJSONs, itemJson)
-	}
-	return itemJSONs, nil
-}
-
-func compareDbResponseLength(expected, actual []string, query interface{}) error {
-	var err error
-
-	if len(expected) != len(actual) {
-		err = fmt.Errorf(
-			"quantity of items in database do not match (-expected: %s +actual: %s)\n     test query:\n%s\n    result diff:\n%s",
-			color.CyanString("%v", len(expected)),
-			color.CyanString("%v", len(actual)),
-			color.CyanString("%v", query),
-			color.CyanString("%v", pretty.Compare(expected, actual)),
-		)
-	}
-	return err
 }
 
 func execQuery(dbQuery string, db *sql.DB) error {

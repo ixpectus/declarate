@@ -8,7 +8,6 @@
     ./tests/yaml/nested/nested.yaml
     ./tests/yaml/req.yaml
     ./tests/yaml/shell.yaml
-
 - name: test dry run for single file
   shell_cmd: | 
     {{$CMD}} -dryRun -dir ./tests/yaml/req.yaml
@@ -24,4 +23,3 @@
     ./tests/yaml/config.yaml
     ./tests/yaml/nested/nested.yaml
     ./tests/yaml/shell.yaml
-

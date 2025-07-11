@@ -176,7 +176,7 @@ func (s *Suite) Run() error {
 	)
 
 	if s.Config.DryRun {
-		fmt.Println(fmt.Sprintf("tests to run\n%s", strings.Join(tests, "\n")))
+		fmt.Printf("tests to run\n%s\n", strings.Join(tests, "\n"))
 		if err := s.validate(tests, runner); err != nil {
 			return err
 		}
@@ -202,7 +202,7 @@ func (s *Suite) Run() error {
 					s.Config.Variables,
 					definitions[0].definition.Definition.Condition,
 				) {
-					log.Println(fmt.Sprintf("test %s skipped by condition", v))
+					log.Printf("test %s skipped by condition\n", v)
 					continue
 				}
 			}
@@ -262,7 +262,7 @@ func (s *Suite) validate(tests []string, runner *run.Runner) error {
 	for _, v := range tests {
 		err := runner.Validate(v)
 		if err != nil {
-			log.Println(fmt.Sprintf("invalid test `%s` description\n  %v", v, err))
+			log.Printf("invalid test `%s` description\n  %v\n", v, err)
 			hasInvalid = true
 		}
 	}

@@ -35,7 +35,7 @@ func NewBar(timeFinish time.Time) *Bar {
 func (b *Bar) Start() {
 	tick := time.NewTicker(1 * time.Second)
 	defer tick.Stop()
-	for true {
+	for {
 		select {
 		case <-b.ctx.Done():
 			b.bar.Exit()
@@ -47,7 +47,7 @@ func (b *Bar) Start() {
 }
 
 func (b *Bar) SetCurrent() {
-	b.bar.Set(int(time.Now().Sub(b.start).Seconds()))
+	b.bar.Set(int(time.Since(b.start).Seconds()))
 }
 
 func (b *Bar) Stop() {

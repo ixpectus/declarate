@@ -1,2 +1,84 @@
+# Build artifacts
 build/
+dist/
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+cover.out
+coverage.html
+*.test
+test-results/
+
+# Allure results
+allure-results/
+
+# Persistent data
+persistent
+persistent.idx
+tests/persistent
+tests/persistent.idx
+
+# IDE/Editor files
+.vscode/settings.json.user
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Go specific
+vendor/
+
+# Dependencies (if using go mod vendor)
+# vendor/
+
+# Local environment files
+.env
+.env.local
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage reports
+coverage.txt
+coverage.out
+coverage.html
+
+# Benchmark results
+*.bench
+
+# Memory profiles
+*.mem
+heap.out
+
+# CPU profiles
+*.prof
+
+# Security scan results
+results.sarif
+
+# Local config files
+config.local.*
 

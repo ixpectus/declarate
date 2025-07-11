@@ -1,0 +1,84 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+    
+    - name: Install go tools
+      run: |
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install golang.org/x/tools/cmd/goimports@latest
+    
+    - name: Go format check
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "The following files are not formatted correctly:"
+          gofmt -s -l .
+          exit 1
+        fi
+    
+    - name: Go imports check
+      run: |
+        if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+          echo "The following files have import issues:"
+          goimports -l .
+          exit 1
+        fi
+    
+    - name: Go vet
+      run: go vet ./...
+    
+    - name: Staticcheck
+      run: staticcheck ./...
+    
+    - name: Go mod tidy check
+      run: |
+        go mod tidy
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "go mod tidy made changes, please run 'go mod tidy' and commit the changes"
+          git diff
+          exit 1
+        fi
+
+  # vulnerability-scan:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   
+  #   - name: Set up Go
+  #     uses: actions/setup-go@v4
+  #     with:
+  #       go-version: '1.20'
+  #   
+  #   - name: Install security tools
+  #     run: |
+  #       go install golang.org/x/vuln/cmd/govulncheck@latest
+  #       go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+  #   
+  #   - name: Run govulncheck
+  #     run: govulncheck ./...
+  #     continue-on-error: true
+  #   
+  #   - name: Run Gosec Security Scanner
+  #     run: gosec -no-fail -fmt json -out gosec-report.json ./...
+  #     continue-on-error: true
+  #   
+  #   - name: Upload Gosec results
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: gosec-report
+  #       path: gosec-report.json
+  #     if: always()

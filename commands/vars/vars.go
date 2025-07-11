@@ -9,7 +9,6 @@ import (
 type VarsCmd struct {
 	Config *Config
 	Vars   contract.Vars
-	eval   contract.Evaluator
 	report contract.ReportAttachement
 }
 
@@ -40,9 +39,6 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 	cfg := &Config{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, err
-	}
-	if cfg == nil {
-		return nil, nil
 	}
 	if cfg.Data == nil && cfg.DataPersistent == nil {
 		return nil, nil

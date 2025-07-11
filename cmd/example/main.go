@@ -20,9 +20,6 @@ var (
 	flagDryRun = flag.Bool(
 		"dryRun", false, "show tests for run, don't run them",
 	)
-	flagFailFast = flag.Bool(
-		"failFast", false, "fail after first fail test",
-	)
 	flagTags = flag.String(
 		"tags",
 		"",
@@ -42,11 +39,6 @@ var (
 		"progress_bar",
 		false,
 		"progress bar for poll interval",
-	)
-	flagOutput = flag.String(
-		"output",
-		"print",
-		"test output log or print",
 	)
 
 	flagClearPersistent = flag.Bool(

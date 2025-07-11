@@ -1,0 +1,4 @@
+- name: script check stderr log
+  script: 
+    path: "./tests/scripts/echox.sh {{$name1}}"
+

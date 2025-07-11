@@ -1,0 +1,150 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goheader
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - govet
+    - grouper
+    - importas
+    - ineffassign
+    - lll
+    - maintidx
+    - makezero
+    - misspell
+    - mnd
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - promlinter
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - wastedassign
+    - whitespace
+  settings:
+    cyclop:
+      max-complexity: 15
+    depguard:
+      rules:
+        logger:
+          deny:
+            - pkg: golang.org/x/net/context
+              desc: you probably need stdlib context instead
+    funlen:
+      lines: 100
+      statements: 50
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+        - rangeValCopy
+        - hugeParam
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    lll:
+      line-length: 140
+    nlreturn:
+      block-size: 5
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - err113
+          - gochecknoglobals
+          - gosec
+          - mnd
+          - nosprintfhostport
+          - prealloc
+        path: test
+      - linters:
+          - govet
+        path: pkg/api/server
+      - path: (.+)\.go$
+        text: 'var-naming: don''t use an underscore in package name'
+      - path: (.+)\.go$
+        text: 'ST1003: should not use underscores in package names'
+    paths:
+      - .*mock.go$
+      - .*_test.go$
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 200
+  max-same-issues: 20
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/ixpectus/declarate)
+    goimports:
+      local-prefixes:
+        - github.com/ixpectus/declarate/
+  exclusions:
+    generated: lax
+    paths:
+      - .*mock.go$
+      - .*_test.go$
+      - third_party$
+      - builtin$
+      - examples$

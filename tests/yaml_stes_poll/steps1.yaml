@@ -1,0 +1,13 @@
+- name: conactenate steps and poll with response
+  steps:
+    - name: request 1
+      method: GET
+      path: /tom
+      responseStatus: 200
+      response: |
+        {"age": 28,"name":"Tomm", "items":[1, 2, 3, 4]}
+      comparisonParams:
+        ignoreArraysOrdering: true
+  poll:
+    duration: 100ms
+    interval: 10ms

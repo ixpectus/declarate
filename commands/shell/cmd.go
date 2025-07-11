@@ -59,7 +59,8 @@ func (e *ShellCmd) run(command string) ([]string, error) {
 				e.report.AddAttachment("stderr", allure.TextPlain, errBB.Bytes())
 			}
 			log.Println(cmd.String())
-			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, string(bb.Bytes()), string(errBB.Bytes()))
+
+			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, bb.String(), errBB.String())
 		}
 		if e.report != nil {
 			e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
