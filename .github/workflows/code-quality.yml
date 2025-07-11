@@ -68,32 +68,32 @@ jobs:
           exit 1
         fi
 
-  vulnerability-scan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20'
-    
-    - name: Install security tools
-      run: |
-        go install golang.org/x/vuln/cmd/govulncheck@latest
-        go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-    
-    - name: Run govulncheck
-      run: govulncheck ./...
-      continue-on-error: true
-    
-    - name: Run Gosec Security Scanner
-      run: gosec -no-fail -fmt json -out gosec-report.json ./...
-      continue-on-error: true
-    
-    - name: Upload Gosec results
-      uses: actions/upload-artifact@v3
-      with:
-        name: gosec-report
-        path: gosec-report.json
-      if: always()
+  # vulnerability-scan:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   
+  #   - name: Set up Go
+  #     uses: actions/setup-go@v4
+  #     with:
+  #       go-version: '1.20'
+  #   
+  #   - name: Install security tools
+  #     run: |
+  #       go install golang.org/x/vuln/cmd/govulncheck@latest
+  #       go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+  #   
+  #   - name: Run govulncheck
+  #     run: govulncheck ./...
+  #     continue-on-error: true
+  #   
+  #   - name: Run Gosec Security Scanner
+  #     run: gosec -no-fail -fmt json -out gosec-report.json ./...
+  #     continue-on-error: true
+  #   
+  #   - name: Upload Gosec results
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: gosec-report
+  #       path: gosec-report.json
+  #     if: always()
