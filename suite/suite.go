@@ -9,13 +9,14 @@ import (
 	"testing"
 
 	"github.com/fatih/color"
+	"github.com/recoilme/pudge"
+	"gopkg.in/yaml.v2"
+
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/run"
 	"github.com/ixpectus/declarate/tools"
-	"github.com/recoilme/pudge"
-	"gopkg.in/yaml.v2"
 )
 
 type SuiteConfig struct {
@@ -95,6 +96,7 @@ func (s *Suite) testsDefinitions(tests []string) ([]testWithDefinition, error) {
 			definitions = append(definitions, realDefinitions[0])
 		}
 	}
+
 	return definitions, nil
 }
 
@@ -254,6 +256,7 @@ func (s *Suite) Run() error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -273,6 +276,7 @@ func (s *Suite) validate(tests []string, runner *run.Runner) error {
 			return fmt.Errorf("tests validation failed")
 		}
 	}
+
 	return nil
 }
 

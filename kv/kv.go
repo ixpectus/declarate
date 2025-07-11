@@ -38,6 +38,7 @@ func (k *KV) Get(key string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("kv get: %w", err)
 	}
+
 	return value, nil
 }
 

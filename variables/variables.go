@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/ixpectus/declarate/contract"
 	"github.com/tidwall/gjson"
+
+	"github.com/ixpectus/declarate/contract"
 )
 
 var VariableRx = regexp.MustCompile(`{{\s*\$(\w+)\s*}}`)

@@ -31,8 +31,10 @@ func (p *Poll) PollInterval() []time.Duration {
 		if duration > 0 {
 			res = append(res, duration)
 		}
+
 		return res
 	}
+
 	return []time.Duration{}
 }
 
@@ -52,6 +54,7 @@ func (p *Poll) pollContinue(response *string) (bool, []error, error) {
 		if response == nil || !rx.MatchString(*response) {
 			return false, nil, nil
 		}
+
 		return true, nil, nil
 	}
 	if p.ResponseTmpls != nil && p.comparer != nil {
@@ -60,5 +63,6 @@ func (p *Poll) pollContinue(response *string) (bool, []error, error) {
 			return false, errs, err
 		}
 	}
+
 	return true, nil, nil
 }

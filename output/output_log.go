@@ -7,6 +7,7 @@ import (
 
 	"github.com/dailymotion/allure-go"
 	"github.com/fatih/color"
+
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 )
@@ -89,7 +90,6 @@ func (o *Output) logWithProgressBar(message contract.Message) {
 				logText := colorFail.Sprint(message.Message)
 				log.Println(prefix + logText)
 			}
-
 		}
 		if message.Type == contract.MessageTypeNotify && !strings.Contains(message.Message, "start") {
 			logText := colorNotify.Sprint(message.Message)

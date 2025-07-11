@@ -11,7 +11,7 @@ var pollCounter atomic.Int32
 
 // The `json:"whatever"` bit is a way to tell the JSON
 // encoder and decoder to use those names instead of the
-// capitalised names
+// capitalised names.
 type person struct {
 	Name  string `json:"name"`
 	Age   int    `json:"age"`

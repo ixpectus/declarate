@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Function to format variables with ordered keys
+// Function to format variables with ordered keys.
 func FormatVariablesWithOrderedKeys(m map[string]string) string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -17,6 +17,7 @@ func FormatVariablesWithOrderedKeys(m map[string]string) string {
 	for i, k := range keys {
 		vv[i] = fmt.Sprintf("%s:%s", k, m[k])
 	}
+
 	return strings.Join(vv, "\n")
 }
 

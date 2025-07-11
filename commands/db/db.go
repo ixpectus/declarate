@@ -127,6 +127,7 @@ func (e *Db) Do() error {
 			}
 			e.responseBody = &res
 			e.Report.AddAttachment("response", allure.TextPlain, []byte(res))
+
 			return nil
 		}
 		if err := execQuery(e.Config.DbQuery, db); err != nil {
@@ -144,6 +145,7 @@ func (e *Db) IsValid() error {
 			return fmt.Errorf("cannot parse db response: `%v`", e.Config.DbResponse)
 		}
 	}
+
 	return nil
 }
 
@@ -183,7 +185,7 @@ func execQuery(dbQuery string, db *sql.DB) error {
 	queries := strings.Split(dbQuery, ";")
 	for _, q := range queries {
 		if _, err := db.Exec(q); err != nil {
-			return fmt.Errorf("failed exec db query %s, err %v", q, err)
+			return fmt.Errorf("failed exec db query %s, err %w", q, err)
 		}
 	}
 

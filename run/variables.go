@@ -2,6 +2,7 @@ package run
 
 import (
 	"github.com/dailymotion/allure-go"
+
 	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
 )
@@ -75,5 +76,6 @@ func (r *Runner) fillAllVariables(
 	); err != nil {
 		return err
 	}
+
 	return nil
 }

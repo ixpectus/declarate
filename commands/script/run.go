@@ -36,7 +36,8 @@ func (e *ScriptCmd) run(scriptPath string) (string, error) {
 			e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
 			e.report.AddAttachment("stderr", allure.TextPlain, errBB.Bytes())
 		}
-		return "", fmt.Errorf("process finished with error = %v, output %v, std err %v", err, bb.String(), errBB.String())
+
+		return "", fmt.Errorf("process finished with error = %w, output %v, std err %v", err, bb.String(), errBB.String())
 	}
 	e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())
 	e.report.AddAttachment("stderr", allure.TextPlain, errBB.Bytes())

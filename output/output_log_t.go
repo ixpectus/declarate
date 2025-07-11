@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dailymotion/allure-go"
+
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 )
@@ -81,7 +82,6 @@ func (o *OutputT) logWithProgressBar(message contract.Message) {
 				logText := colorFail.Sprint(message.Message)
 				log.Println(prefix + logText)
 			}
-
 		}
 		hideStart := strings.Contains(message.Message, "start") && !message.HasNestedSteps
 		if message.Type == contract.MessageTypeNotify && !hideStart && message.Name != "" {

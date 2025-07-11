@@ -39,5 +39,6 @@ func (c *Comparer) merge(params contract.CompareParams) contract.CompareParams {
 	if params.IgnoreValues != nil {
 		mergedParams.IgnoreValues = params.IgnoreValues
 	}
+
 	return mergedParams
 }

@@ -2,6 +2,7 @@ package vars
 
 import (
 	"github.com/dailymotion/allure-go"
+
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 )
