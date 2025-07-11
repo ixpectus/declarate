@@ -29,6 +29,7 @@ func CmdGet(scriptPath string) *exec.Cmd {
 		cmd = exec.Command(parts[0])
 	}
 	cmd.Env = os.Environ()
+
 	return cmd
 }
 
@@ -60,7 +61,7 @@ func (e *ShellCmd) run(command string) ([]string, error) {
 			}
 			log.Println(cmd.String())
 
-			return nil, fmt.Errorf("process finished with error = %v, output %v, std err %v", err, bb.String(), errBB.String())
+			return nil, fmt.Errorf("process finished with error = %w, output %v, std err %v", err, bb.String(), errBB.String())
 		}
 		if e.report != nil {
 			e.report.AddAttachment("stdout", allure.TextPlain, bb.Bytes())

@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ixpectus/declarate/suite"
 	"gopkg.in/yaml.v3"
+
+	"github.com/ixpectus/declarate/suite"
 )
 
 type Converter struct {
@@ -120,6 +121,7 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 				converted = variables(v, converted)
 				res = append(res, converted)
 			}
+
 			continue
 		} else if len(v.Tags) > 0 {
 			found = true
@@ -162,6 +164,7 @@ func convert(originalTests []GonkeyTest) []DeclarateTest {
 		}
 		res = append(res, converted)
 	}
+
 	return res
 }
 
@@ -172,6 +175,7 @@ func afterRequest(g GonkeyTest) DeclarateTest {
 	if g.AfterRequestScriptParams.Timeout == -1 {
 		res.NoWait = true
 	}
+
 	return res
 }
 
@@ -200,8 +204,10 @@ func request(g GonkeyTest) DeclarateTest {
 			continue
 		}
 		res.ResponseTmpls = varFix(v)
+
 		break
 	}
+
 	return res
 }
 
@@ -238,6 +244,7 @@ func db(g GonkeyTest) []DeclarateTest {
 		}
 		tests = append(tests, d)
 	}
+
 	return tests
 }
 
@@ -247,6 +254,7 @@ func variables(g GonkeyTest, res DeclarateTest) DeclarateTest {
 	for k, v := range g.Variables {
 		res.Variables[k] = strings.ReplaceAll(varFix(v), "$eval", "$")
 	}
+
 	return res
 }
 
@@ -269,5 +277,6 @@ func readLines(filePath string) ([]byte, error) {
 		res = append(res, []byte(line)...)
 		res = append(res, []byte("\n")...)
 	}
+
 	return res, nil
 }

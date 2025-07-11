@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dailymotion/allure-go"
 	"github.com/tidwall/gjson"
 	"moul.io/http2curl"
 
-	"github.com/dailymotion/allure-go"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/tools"
 	"github.com/ixpectus/declarate/variables"
@@ -77,6 +77,7 @@ func (u *Unmarshaller) Build(unmarshal func(any) error) (contract.Doer, error) {
 	if cfg.FullResponse != nil {
 		mode = modeFull
 	}
+
 	return &Request{
 		Config:        cfg,
 		Host:          u.host,
@@ -295,6 +296,7 @@ func (e *Request) checkLight() error {
 				if err != nil {
 					return fmt.Errorf("remarshall real response %v: %w", realResponse, err)
 				}
+
 				return &contract.TestError{
 					Title:         "response differs",
 					Expected:      expectedRemarshal,
@@ -357,6 +359,7 @@ func (e *Request) checkFull() error {
 				if err != nil {
 					return fmt.Errorf("remarshall real response %v: %w", realResponse, err)
 				}
+
 				return &contract.TestError{
 					Title:         "response differs",
 					Expected:      expectedRemarshal,
@@ -385,12 +388,13 @@ func request(r RequestConfig, b *bytes.Buffer, host string) (*http.Request, erro
 	}
 
 	for k, v := range r.HeadersVal {
-		if strings.ToLower(k) == "host" {
+		if strings.EqualFold(k, "host") {
 			req.Host = v
 		} else {
 			req.Header.Add(k, v)
 		}
 	}
+
 	return req, nil
 }
 

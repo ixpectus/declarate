@@ -8,16 +8,17 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/ixpectus/declarate/commands/vars"
 	"github.com/ixpectus/declarate/compare"
 	"github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/report"
 	"github.com/ixpectus/declarate/tools"
-	"gopkg.in/yaml.v2"
 )
 
-// it is global because used in run/config::UnmarshalYAML
+// it is global because used in run/config::UnmarshalYAML.
 var builders []contract.CommandBuilder
 
 type Runner struct {
@@ -57,6 +58,7 @@ func New(c RunnerConfig) *Runner {
 		c.Report = report.NewEmptyReport()
 	}
 	c.Output.SetReport(c.Report)
+
 	return &Runner{
 		config: c,
 		output: c.Output,
@@ -127,8 +129,8 @@ func (r *Runner) Run(fileName string, t *testing.T) (bool, error) {
 		if !res {
 			return false, nil
 		}
-
 	}
+
 	return false, nil
 }
 
@@ -165,6 +167,7 @@ func (r *Runner) run(
 		return testResult, fmt.Errorf("run test for file %s: %w", fileName, err)
 	}
 	r.afterTest(fileName, v, *testResult)
+
 	return testResult, nil
 }
 
@@ -200,7 +203,6 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			fileName,
 			isPolling,
 		)
-
 		// unexpected test error run
 		if err != nil {
 			pollResult.Finish = time.Now()
@@ -252,6 +254,7 @@ func (r *Runner) runCommand(cmd contract.Doer) (*string, error) {
 	if err := cmd.Check(); err != nil {
 		return responseBody, err
 	}
+
 	return responseBody, nil
 }
 
@@ -287,6 +290,7 @@ func (r *Runner) runOne(
 				Response: commandResponseBody,
 			}
 			r.afterTestStep(fileName, &conf, *res, isPolling)
+
 			return res, nil
 		}
 	}
@@ -315,6 +319,7 @@ func (r *Runner) runOne(
 				} else {
 					results = append(results, "")
 				}
+
 				continue
 			}
 			if testResult.Err != nil {
@@ -350,6 +355,7 @@ func (r *Runner) runOne(
 			FileName: fileName,
 		}
 		r.afterTestStep(fileName, &conf, *res, isPolling)
+
 		return res, nil
 	}
 
@@ -366,5 +372,6 @@ func (r *Runner) runOne(
 	}
 
 	r.afterTestStep(fileName, &conf, *res, isPolling)
+
 	return res, nil
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+
 	conditionRule "github.com/ixpectus/declarate/condition"
 	"github.com/ixpectus/declarate/contract"
 	"github.com/ixpectus/declarate/eval"
@@ -153,7 +154,7 @@ func getType(value interface{}) string {
 }
 
 func isScalarType(t string) bool {
-	return !(t == "array" || t == "map")
+	return t != "array" && t != "map"
 }
 
 func (c *Comparer) compareLeafs(path string, expected, actual interface{}) []error {
@@ -235,6 +236,7 @@ func (c *Comparer) comparePure(path string, expected, actual interface{}) (error
 				expectedStr,
 				actualStr,
 			)
+
 			return []error{res}
 		}
 		for k := range linesExpected {
@@ -245,6 +247,7 @@ func (c *Comparer) comparePure(path string, expected, actual interface{}) (error
 				}
 			}
 		}
+
 		return nil
 	} else if expected != actual {
 		errors = append(errors, MakeError(path, "values do not match", expected, actual))
@@ -323,6 +326,7 @@ func MakeError(path, msg string, expected, actual interface{}) error {
 			color.RedString("%v", actual),
 		)
 	}
+
 	return fmt.Errorf(
 		"%s:\n     expected: \n%s\n       actual: \n%s",
 		msg,
@@ -338,6 +342,7 @@ func convertToArray(array interface{}) []interface{} {
 	for i := 0; i < ref.Len(); i++ {
 		interfaceSlice = append(interfaceSlice, ref.Index(i).Interface())
 	}
+
 	return interfaceSlice
 }
 
@@ -359,6 +364,7 @@ func (c *Comparer) getUnmatchedArrays(expected, actual []interface{}, params *co
 					actual[i] = actual[len(actual)-1]
 				}
 				actual = actual[:len(actual)-1]
+
 				break
 			}
 		}

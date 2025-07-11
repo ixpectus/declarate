@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dailymotion/allure-go"
+
 	"github.com/ixpectus/declarate/contract"
 )
 
@@ -80,6 +81,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 			},
 		}, nil
 	}
+
 	return &ShellCmd{
 		comparer: u.comparer,
 		Config:   cfg,
@@ -188,5 +190,6 @@ func (e *ShellCmd) Check() error {
 			}
 		}
 	}
+
 	return nil
 }

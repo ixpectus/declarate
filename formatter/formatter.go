@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/ixpectus/declarate/converter"
 	"github.com/ixpectus/declarate/suite"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -124,5 +125,6 @@ func readLines(filePath string) ([]byte, error) {
 		res = append(res, []byte(line)...)
 		res = append(res, []byte("\n")...)
 	}
+
 	return res, nil
 }

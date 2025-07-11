@@ -78,6 +78,7 @@ var defaultFunctions = map[string]goval.ExpressionFunction{
 
 		v := fmt.Sprintf("%v", args[0])
 		_, err := strconv.ParseFloat(v, 64)
+
 		return err == nil, nil
 	},
 	"empty": func(args ...interface{}) (interface{}, error) {

@@ -20,8 +20,7 @@ func (c *config) isEmpty() bool {
 	return c == nil || c.Message == ""
 }
 
-type Unmarshaller struct {
-}
+type Unmarshaller struct{}
 
 func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
 	cfgExtended := &extendedConfig{}
@@ -87,6 +86,7 @@ func (e *Echo) Do() error {
 		fmt.Printf("\necho %v \n", e.Config.Message)
 		return nil
 	}
+
 	return nil
 }
 
@@ -120,7 +120,9 @@ func (e *Echo) Check() error {
 				return fmt.Errorf("expected %s, got %s", *b, e.Config.Message)
 			}
 		}
+
 		return nil
 	}
+
 	return nil
 }

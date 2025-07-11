@@ -96,6 +96,7 @@ func (r *Runner) logErr(res Result) {
 			PollResult:          res.PollResult,
 			PollConditionFailed: res.PollConditionFailed,
 		})
+
 		return
 	}
 	if res.Err != nil {

@@ -80,6 +80,7 @@ func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, 
 			},
 		}, nil
 	}
+
 	return &ScriptCmd{
 		comparer: u.comparer,
 		Config:   cfg,
@@ -130,5 +131,6 @@ func (e *ScriptCmd) Check() error {
 			}
 		}
 	}
+
 	return nil
 }

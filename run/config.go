@@ -33,5 +33,6 @@ func (u *runConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			u.Commands = append(u.Commands, b)
 		}
 	}
+
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/dailymotion/allure-go"
+
 	"github.com/ixpectus/declarate/report"
 )
 
