@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -24,15 +24,14 @@ const (
 )
 
 type Request struct {
-	Config         *RequestConfig
-	defaultConfig  DefaultConfig
-	mode           string
-	Vars           contract.Vars
-	Host           string
-	responseBody   *string
-	responseStatus int
-	comparer       contract.Comparer
-	report         contract.ReportAttachement
+	Config        *RequestConfig
+	defaultConfig DefaultConfig
+	mode          string
+	Vars          contract.Vars
+	Host          string
+	responseBody  *string
+	comparer      contract.Comparer
+	report        contract.ReportAttachement
 }
 
 type Unmarshaller struct {
@@ -62,16 +61,14 @@ func NewUnmarshaller(
 	for _, v := range opts {
 		v(u)
 	}
+
 	return u
 }
 
-func (u *Unmarshaller) Build(unmarshal func(interface{}) error) (contract.Doer, error) {
+func (u *Unmarshaller) Build(unmarshal func(any) error) (contract.Doer, error) {
 	cfg := &RequestConfig{}
 	if err := unmarshal(cfg); err != nil {
 		return nil, fmt.Errorf("unmarshall request: %w", err)
-	}
-	if cfg == nil {
-		return nil, nil
 	}
 	if cfg.RequestURL == "" {
 		return nil, nil
@@ -113,7 +110,7 @@ func (e *Request) SetReport(r contract.ReportAttachement) {
 	e.report = r
 }
 
-func (e *Request) GetConfig() interface{} {
+func (e *Request) GetConfig() any {
 	return e.Config
 }
 
@@ -124,6 +121,7 @@ func (e *Request) applyHeadersVal(headers map[string]string) map[string]string {
 		v = e.Vars.Apply(v)
 		res[k] = v
 	}
+
 	return res
 }
 
@@ -191,14 +189,14 @@ func (e *Request) Do() error {
 	client := &http.Client{}
 	curlReq, _ := http2curl.GetCurlCommand(req)
 	reqStart := time.Now()
-	e.report.AddAttachment(fmt.Sprintf("request"), allure.TextPlain, []byte(curlReq.String()))
+	e.report.AddAttachment("request", allure.TextPlain, []byte(curlReq.String()))
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	reqFinish := time.Now()
 	reqDuration := reqFinish.Sub(reqStart)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	_ = resp.Body.Close()
 	if err != nil {
 		return err
@@ -310,6 +308,7 @@ func (e *Request) checkLight() error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -371,6 +370,7 @@ func (e *Request) checkFull() error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -392,15 +392,6 @@ func request(r RequestConfig, b *bytes.Buffer, host string) (*http.Request, erro
 		}
 	}
 	return req, nil
-}
-
-func actualRequestBody(req *http.Request) string {
-	if req.Body != nil {
-		reqBodyStream, _ := req.GetBody()
-		reqBody, _ := ioutil.ReadAll(reqBodyStream)
-		return string(reqBody)
-	}
-	return ""
 }
 
 func newCommonRequest(host string, r RequestConfig) (*http.Request, error) {

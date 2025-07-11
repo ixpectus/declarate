@@ -192,7 +192,7 @@ func (r *Runner) runWithPollInterval(v runConfig, fileName string) (*Result, err
 			isPolling = false
 		}
 
-		estimated := finish.Sub(time.Now())
+		estimated := time.Until(finish)
 
 		testResult, err = r.runOne(
 			v,

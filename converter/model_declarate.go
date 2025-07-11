@@ -9,10 +9,10 @@ type DeclarateTest struct {
 	DbResponse       string                 `json:"db_response,omitempty" yaml:"db_response,omitempty"`
 	ComparisonParams contract.CompareParams `json:"comparisonParams,omitempty" yaml:"comparisonParams,omitempty"`
 	ScriptPath       string                 `json:"script_path,omitempty" yaml:"script_path,omitempty"`
-	NoWait           bool                   `json:"script_nowait,omitempty" yaml:"script_nowait,omitempty"`
+	NoWait           bool                   `json:"script_nowait,omitempty" yaml:"nowait,omitempty"`
 	ScriptResponse   *string                `json:"script_response,omitempty" yaml:"script_response,omitempty"`
 	RequestTmpl      string                 `json:"request,omitempty" yaml:"request,omitempty"`
-	RequestURL       string                 `json:"path,omitempty" yaml:"path,omitempty" yaml:"path"`
+	RequestURL       string                 `json:"path,omitempty" yaml:"path,omitempty"`
 	Method           string                 `json:"method,omitempty" yaml:"method,omitempty"`
 	ResponseTmpls    string                 `json:"response,omitempty" yaml:"response,omitempty"`
 	ResponseStatus   int                    `json:"responseStatus,omitempty" yaml:"responseStatus,omitempty"`
@@ -26,9 +26,4 @@ type DeclarateTest struct {
 type Definition struct {
 	Tags []string `yaml:"tags,omitempty"`
 	ID   int      `yaml:"id,omitempty"`
-}
-
-type response struct {
-	Body   string `json:"body,omitempty"`
-	Status int    `json:"status,omitempty"`
 }
