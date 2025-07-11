@@ -50,7 +50,13 @@ jobs:
     
     - name: Download dependencies
       run: go mod download
-    
+
+    - name: Create build directory
+      run: mkdir -p build                                   
+
+    - name: Build cli test app  
+      run: go build -o build/main cmd/example/main.go     
+
     - name: Build
       run: go build -v ./...
     
