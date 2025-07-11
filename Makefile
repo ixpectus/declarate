@@ -24,7 +24,7 @@ build-all: ## Build all binaries
 # Test targets
 test: allure-results build ## Run tests
 	@echo "Running tests..."
-	@go test -v ./tests/... -count=1 -run TestSuite
+	@go test -v ./... -count=1 
 
 test-unit: ## Run unit tests only
 	@echo "Running unit tests..."
