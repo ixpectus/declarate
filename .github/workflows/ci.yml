@@ -49,10 +49,12 @@ jobs:
     
     - name: Verify dependencies
       run: go mod verify
-    
+    - name: Create build directory
+      run: mkdir -p build                                   
+    - name: Build cli test app  
+      run: go build -o build/main cmd/example/main.go     
     - name: Build
       run: go build -v ./...
-    
     - name: Run tests
       run: go test -v -race -coverprofile=coverage.out ./...
       env:
