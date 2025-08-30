@@ -10,7 +10,7 @@ require (
 	github.com/maja42/goval v1.3.1
 	github.com/recoilme/pudge v1.0.3
 	github.com/schollz/progressbar/v3 v3.13.1
-	github.com/tidwall/gjson v1.14.4
+	github.com/tidwall/gjson v1.18.0
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
