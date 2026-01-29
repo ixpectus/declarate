@@ -1,12 +1,12 @@
 module github.com/ixpectus/declarate
 
-go 1.20
+go 1.21
 
 require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/dailymotion/allure-go v0.7.0
 	github.com/fatih/color v1.15.0
-	github.com/lib/pq v1.10.7
+	github.com/lib/pq v1.11.0
 	github.com/maja42/goval v1.3.1
 	github.com/recoilme/pudge v1.0.3
 	github.com/schollz/progressbar/v3 v3.13.1
