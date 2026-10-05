@@ -5,6 +5,10 @@
 - Currently declarate in the early stages of development
 - Inspired by [gonkey](https://github.com/lamoda/gonkey)
 
+## License
+
+[MIT](LICENSE)
+
 ## Concepts 
 - tests consists of different actions
 - every action do something and has json(or plain text) response
